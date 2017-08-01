@@ -11,7 +11,7 @@ namespace PravoAdder
         static void Main(string[] args)
         {
             var excelReader = new ExcelReader("test.xlsx");
-            var filler = new DBFiller();
+            var filler = new DatabaseFiller();
             filler.Authentication("admin@pravo.ru", "123123");
             filler.AddProjectAsync("ctest");
         }

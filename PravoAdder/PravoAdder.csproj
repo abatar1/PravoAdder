@@ -65,13 +65,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DBFiller.cs" />
-    <Compile Include="Domain\Authentication.cs" />
-    <Compile Include="Domain\FirstBlock.cs" />
-    <Compile Include="Domain\GeneralInformation.cs" />
-    <Compile Include="Domain\InitialRequirements.cs" />
-    <Compile Include="Domain\Project.cs" />
-    <Compile Include="Domain\ProjectFolder.cs" />
+    <Compile Include="DatabaseFiller.cs" />
     <Compile Include="ExcelReader.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
