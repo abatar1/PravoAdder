@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Authentication;
 using System.Text;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace PravoAdder
@@ -40,34 +41,64 @@ namespace PravoAdder
                 Login = login
             };
        
-            var response = Client.PostAsJsonAsync("authentication/account/login", authentication).Result;
+            var response = Client.PostAsJsonAsync("authentication/account/login", authentication).Result;  //async
             _userCookie = CookieContainer.GetCookies(BaseAddress).Cast<Cookie>().FirstOrDefault();
             if (_userCookie == null) throw new AuthenticationException("Cannot create new session");
 
-            dynamic message = JsonConvert.DeserializeObject(response.Content.ReadAsStringAsync().Result);
+            dynamic message = GetMessageFromResponce(response).Result; //async
             if (!(bool)message.Succeeded) throw new AuthenticationException("Wrong login or password");
 
             response.EnsureSuccessStatusCode();
         }
 
-        public void AddProjectAsync(string projectName, object projectFolder = null, string description = null)
+        public void AddProject(string projectName, string folderName, string description = null)
         {
             var content = new
             {
                 Name = projectName,
-                ProjectFolder = projectFolder,
+                ProjectFolder = GetProjectFolder(folderName),
                 Description = description
             };
+            var request = CreateRequest(content, "api/ProjectGroups", HttpMethod.Put);
 
-            var message = new HttpRequestMessage(HttpMethod.Put, "api/ProjectGroups")
-            {
-                Content = new StringContent(content.ToString(), Encoding.UTF8, "application/json")
-            };
-            message.Headers.Add("Cookie", _userCookie.ToString());
-
-            var response = Client.SendAsync(message).Result;
-            //var response = Client.PutAsJsonAsync("api/ProjectGroups", content).Result;
+            var response = Client.SendAsync(request).Result;
             response.EnsureSuccessStatusCode();
+        }
+
+        private static async Task<dynamic> GetMessageFromResponce(HttpResponseMessage response)
+        {
+            var message = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject(message);
+        }
+
+        private HttpRequestMessage CreateRequest(object content, string requestUri, HttpMethod method)
+        {
+            var serializedContent = JsonConvert.SerializeObject(content);
+            var request = new HttpRequestMessage(method, requestUri)
+            {
+                Content = new StringContent(serializedContent, Encoding.UTF8, "application/json")
+            };
+            request.Headers.Add("Cookie", _userCookie.ToString());
+
+            return request;
+        }
+
+        private object GetProjectFolder(string folderName)
+        {
+            var content = new
+            {
+                Name = folderName,
+                PageSize = 20,
+                Page = 1
+            };
+            
+            var request = CreateRequest(content, "api/ProjectFolders/GetProjectFoldersForEdit", HttpMethod.Post);      
+
+            var response = Client.SendAsync(request).Result; 
+            dynamic message = GetMessageFromResponce(response).Result[0];
+
+            response.EnsureSuccessStatusCode();
+            return null;
         }
     }
 }
