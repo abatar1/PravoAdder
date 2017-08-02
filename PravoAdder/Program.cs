@@ -1,19 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
+using PravoAdder.DatabaseEnviroment;
 
 namespace PravoAdder
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            var excelReader = new ExcelReader("test.xlsx");
+            var excel = ExcelReader.ReadDataFromTable("test.xlsx");
+            var blocks = BlockReader.Read("blocksInfo.json");
+            var generalBlock = BlockReader.GetBlockByName(blocks, "Общая информация");
+
             var filler = new DatabaseFiller();
-            filler.Authentication("admin@pravo.ru", "123123");
-            filler.AddProject("ctest", "Тест (админ)");
+
+            filler.Authentication(
+                login: "admin@pravo.ru",
+                password: "123123");
+
+            filler.AddProjectGroup(
+                projectGroupName: "test_new",
+                folderName: "Тест (админ)");
+
+            var projectId = filler.AddProject(
+                projectName: "test-nproject",
+                folderName: "Тест (админ)",
+                projectTypeName: "1-я инстанция",
+                responsibleName: "Casepro Admin",
+                projectGroupName: "test_new");
+
+            filler.AddGeneralInformation(
+                projectId: projectId,
+                generalBlock: generalBlock,
+                excel: excel.First());
         }
     }
 }

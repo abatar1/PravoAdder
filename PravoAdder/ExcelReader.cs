@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using OfficeOpenXml;
@@ -7,14 +8,7 @@ namespace PravoAdder
 {
     public class ExcelReader
     {
-        private readonly IEnumerable<IEnumerable<string>> _tableData;
-
-        public ExcelReader(string filename)
-        {
-            _tableData = ReadDataFromTable(filename);
-        }
-
-        private IEnumerable<IEnumerable<string>> ReadDataFromTable(string filename, int dataRowNum = 4)
+        public static IEnumerable<IDictionary<int, string>> ReadDataFromTable(string filename, int dataRowNum = 4)
         {
             using (var xlPackage = new ExcelPackage(new FileInfo(filename)))
             {
@@ -26,7 +20,9 @@ namespace PravoAdder
                 {
                     yield return myWorksheet
                         .Cells[rowNum, 2, rowNum, totalColumns]
-                        .Select(c => c.Value?.ToString() ?? string.Empty);
+                        .Select(c => c.Value?.ToString() ?? string.Empty)
+                        .Zip(Enumerable.Range(2, totalColumns), (value, key) => new {value, key})                       
+                        .ToDictionary(key => key.key, value => value.value);
                 }
             }
         }       

@@ -65,8 +65,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DatabaseFiller.cs" />
+    <Compile Include="BlockReader.cs" />
+    <Compile Include="DatabaseEnviroment\HttpAuthenticator.cs" />
+    <Compile Include="DatabaseEnviroment\DatabaseFiller.cs" />
+    <Compile Include="DatabaseEnviroment\DatabaseGetter.cs" />
+    <Compile Include="Domain\Block.cs" />
+    <Compile Include="Domain\BlockField.cs" />
+    <Compile Include="Domain\BlockLine.cs" />
     <Compile Include="ExcelReader.cs" />
+    <Compile Include="HttpHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

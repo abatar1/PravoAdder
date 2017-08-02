@@ -1,0 +1,35 @@
+{
+  "Blocks": [
+    {
+      "VisualBlockId": "62bd6406-3c8e-e511-80cb-00155d0a322c",
+      "Name": "Общая информация",
+      "Lines": [
+        {
+          "BlockLineId": "1ced6980-d153-e611-80ce-00155d0a322c",
+          "Fields": [
+            {
+              "Name": "Дата подачи в ЮД",
+              "VisualBlockProjectFieldId": "99dc36d0-3c8e-e511-80cb-00155d0a322c",
+              "ColumnNumber": 4
+            },
+            {
+              "Name": "Номер договора",
+              "VisualBlockProjectFieldId": "9adc36d0-3c8e-e511-80cb-00155d0a322c",
+              "ColumnNumber": 6
+            }
+          ]
+        },
+        {
+          "BlockLineId": "1eed6980-d153-e611-80ce-00155d0a322c",
+          "Fields": [
+            {
+              "Name": "Дата подачи в суд",
+              "VisualBlockProjectFieldId": "9fdc36d0-3c8e-e511-80cb-00155d0a322c",
+              "ColumnNumber": 5
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
