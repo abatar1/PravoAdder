@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using PravoAdder.Domain;
+using PravoAdder.Domain.Info;
 
 namespace PravoAdder.DatabaseEnviroment
 {
@@ -63,28 +66,68 @@ namespace PravoAdder.DatabaseEnviroment
             return JObject.Parse(responseContent)["Result"]["Id"].ToString();
         }
 
-        public void AddGeneralInformation(string projectId, Block generalBlock, IDictionary<int, string> excel)
+        public void AddInformation(string projectId, BlockInfo blockInfo, IDictionary<int, string> excelRow)
         {
-            var tmpLines = new List<BlockLine>();
-            foreach (var line in generalBlock.Lines)
+            var tmpLines = new List<BlockLineInfo>();
+            foreach (var line in blockInfo.Lines)
             {
-                var tmpFields = new List<BlockField>();
+                var tmpFields = new List<BlockFieldInfo>();
                 foreach (var field in line.Fields)
                 {
-                    field.Value = excel[field.ColumnNumber];
+                    var fieldData = excelRow[field.ColumnNumber];
+                    if (fieldData == string.Empty) continue;
+                    switch (field.Type)
+                    {
+                        case "Value":
+                            field.Value = Convert(fieldData);
+                            break;
+                        case "Formula":
+                            dynamic calculationFormula = DatabaseGetter.GetCalculationFormulas(field.SpecialData);
+                            field.Value = new
+                            {
+                                Result = Convert(fieldData),
+                                CalculationFormulaId = calculationFormula.Id
+                            };
+                            break;
+                        case "Custom":
+                            var correctName = $"{fieldData.First().ToString().ToUpper()}{fieldData.Substring(1)}";
+                            field.Value = new
+                            {
+                                Name = correctName,
+                                Id = field.SpecialData,
+                                IsCustom = true
+                            };
+                            break;
+                        default:
+                            throw new ArgumentException("Unknown type of value.");
+                    }
                     tmpFields.Add(field);
                 }
-                line.Fields = new List<BlockField>(tmpFields);
+                line.Fields = new List<BlockFieldInfo>(tmpFields);
                 tmpLines.Add(line);
             }
 
             var content = new
             {
-                VisualBlockId = generalBlock.Id,
+                VisualBlockId = blockInfo.Id,
                 ProjectId = projectId,
-                Lines = tmpLines
+                Lines = tmpLines,
+                FrontOrder = 0
             };
             var response = SendAddRequest(content, "ProjectCustomValues/Create", HttpMethod.Post).Result;
-        }       
-    }
+        }
+
+        private static object Convert(string value)
+        {
+            if (TypeDescriptor.GetConverter(typeof(int)).IsValid(value))
+            {
+                return int.Parse(value);
+            }
+            if (TypeDescriptor.GetConverter(typeof(double)).IsValid(value.Replace(',', '.')))
+            {
+                return double.Parse(value);
+            }
+            return value;
+        }
+    }  
 }

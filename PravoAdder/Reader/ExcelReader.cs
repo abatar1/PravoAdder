@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using OfficeOpenXml;
 
-namespace PravoAdder
+namespace PravoAdder.Reader
 {
     public class ExcelReader
     {

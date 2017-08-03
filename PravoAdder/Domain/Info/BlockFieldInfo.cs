@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace PravoAdder.Domain
+namespace PravoAdder.Domain.Info
 {
-    public class BlockField
+    public class BlockFieldInfo
     {
         [JsonIgnore]
         public string Name { get; set; }
@@ -14,6 +14,12 @@ namespace PravoAdder.Domain
         public int ColumnNumber { get; set; }
 
         [JsonProperty(PropertyName = "Value")]
-        public string Value { get; set; }
+        public object Value { get; set; }
+
+        [JsonIgnore]
+        public string Type { get; set; }
+
+        [JsonIgnore]
+        public string SpecialData { get; set; }
     }
 }

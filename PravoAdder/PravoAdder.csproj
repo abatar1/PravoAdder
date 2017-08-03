@@ -65,17 +65,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BlockReader.cs" />
+    <Compile Include="Domain\Info\HeaderBlockInfo.cs" />
+    <Compile Include="Reader\BlockReader.cs" />
     <Compile Include="DatabaseEnviroment\HttpAuthenticator.cs" />
     <Compile Include="DatabaseEnviroment\DatabaseFiller.cs" />
     <Compile Include="DatabaseEnviroment\DatabaseGetter.cs" />
-    <Compile Include="Domain\Block.cs" />
-    <Compile Include="Domain\BlockField.cs" />
-    <Compile Include="Domain\BlockLine.cs" />
-    <Compile Include="ExcelReader.cs" />
+    <Compile Include="Domain\Info\BlockInfo.cs" />
+    <Compile Include="Domain\Info\BlockFieldInfo.cs" />
+    <Compile Include="Domain\Info\BlockLineInfo.cs" />
+    <Compile Include="Domain\Settings.cs" />
+    <Compile Include="Reader\ExcelReader.cs" />
     <Compile Include="HttpHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reader\SettingsReader.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
