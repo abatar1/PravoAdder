@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PravoAdder.Domain;
 
@@ -82,8 +81,8 @@ namespace PravoAdder.DatabaseEnviroment
             var content = new
             {
                 VisualBlockId = generalBlock.Id,
-                Lines = tmpLines,
-                ProjectId = projectId
+                ProjectId = projectId,
+                Lines = tmpLines
             };
             var response = SendAddRequest(content, "ProjectCustomValues/Create", HttpMethod.Post).Result;
         }       
