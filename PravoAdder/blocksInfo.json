@@ -15,7 +15,7 @@
             {
               "Name": "Номер договора",
               "VisualBlockProjectFieldId": "9adc36d0-3c8e-e511-80cb-00155d0a322c",
-              "ColumnNumber": 6
+              "ColumnNumber": 5
             }
           ]
         },
@@ -25,7 +25,7 @@
             {
               "Name": "Дата подачи в суд",
               "VisualBlockProjectFieldId": "9fdc36d0-3c8e-e511-80cb-00155d0a322c",
-              "ColumnNumber": 5
+              "ColumnNumber": 6
             }
           ]
         }

@@ -19,11 +19,22 @@ namespace PravoAdder
                 {
                     yield return myWorksheet
                         .Cells[rowNum, 2, rowNum, totalColumns]
-                        .Select(c => c.Value?.ToString() ?? string.Empty)
-                        .Zip(Enumerable.Range(2, totalColumns), (value, key) => new {value, key})                       
+                        .Select(c => FormatCell(c.Value) ?? string.Empty)
+                        .Zip(Enumerable.Range(1, totalColumns - 1), (value, key) => new {value, key})                       
                         .ToDictionary(key => key.key, value => value.value);
                 }
             }
-        }       
+        }
+
+        private static string FormatCell(object cell)
+        {
+            var cellString = cell?.ToString();
+            if (!(cell is DateTime)) return cellString;
+            
+            var separatorIndex = cellString.IndexOf(" ", StringComparison.Ordinal);
+            if (separatorIndex > 0) cellString = cellString.Substring(0, separatorIndex);
+
+            return string.Join("-", cellString.Split('.').Reverse());
+        }
     }
 }
