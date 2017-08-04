@@ -49,7 +49,7 @@ namespace PravoAdder.Reader
         {
             var jBlocks = JObject.Parse(File.ReadAllText(filePath));
 
-            return new HeaderBlockInfo()
+            return new HeaderBlockInfo
             {
                 ProjectName = excelRow[jBlocks["ProjectName"].ToObject<int>()],
                 ProjectGroupName = excelRow[jBlocks["ProjectGroupName"].ToObject<int>()],

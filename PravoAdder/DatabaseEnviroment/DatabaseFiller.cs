@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using PravoAdder.Domain.Info;
@@ -20,10 +21,19 @@ namespace PravoAdder.DatabaseEnviroment
             DatabaseGetter = new DatabaseGetter();
         }
 
-        public void Authentication(string login, string password)
+        public bool Authentication(string login, string password)
         {
-            HttpAuthenticator.Authentication(login, password);
-            DatabaseGetter.Authentication(login, password);
+            try
+            {
+                HttpAuthenticator.Authentication(login, password);
+                DatabaseGetter.Authentication(login, password);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new AuthenticationException($"Autentification failed. {ex.Message}", ex);
+            }
+            
         }
 
         private static async Task<HttpResponseMessage> SendAddRequest(object content, string uri, HttpMethod method)

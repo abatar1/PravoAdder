@@ -10,7 +10,10 @@ namespace PravoAdder.Reader
     {
         public static IEnumerable<IDictionary<int, string>> ReadDataFromTable(string filename, int dataRowNum = 4)
         {
-            using (var xlPackage = new ExcelPackage(new FileInfo(filename)))
+            var info = new FileInfo(filename);
+            if (!info.Exists) throw new FileNotFoundException($"File {filename} not found");
+
+            using (var xlPackage = new ExcelPackage(info))
             {
                 var myWorksheet = xlPackage.Workbook.Worksheets.First();
                 var totalRows = myWorksheet.Dimension.End.Row;
