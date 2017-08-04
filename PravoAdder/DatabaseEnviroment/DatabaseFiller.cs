@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Authentication;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
+using PravoAdder.Domain;
 using PravoAdder.Domain.Info;
 
 namespace PravoAdder.DatabaseEnviroment
@@ -29,14 +29,13 @@ namespace PravoAdder.DatabaseEnviroment
                 DatabaseGetter.Authentication(login, password);
                 return true;
             }
-            catch (Exception ex)
+            catch (AuthenticationException ex)
             {
                 throw new AuthenticationException($"Autentification failed. {ex.Message}", ex);
-            }
-            
+            }           
         }
 
-        private static async Task<HttpResponseMessage> SendAddRequest(object content, string uri, HttpMethod method)
+        public static async Task<HttpResponseMessage> SendAddRequest(object content, string uri, HttpMethod method)
         {
             var request = HttpHelper.CreateRequest(content, $"api/{uri}", method, HttpAuthenticator.UserCookie);
 
@@ -46,8 +45,11 @@ namespace PravoAdder.DatabaseEnviroment
             return response;
         }
 
-        public void AddProjectGroup(string projectGroupName, string folderName, string description = null)
+        public async Task<EnviromentMessage> AddProjectGroup(string projectGroupName, string folderName, string description)
         {
+            var projectGroup = DatabaseGetter.GetProjectGroup(projectGroupName, 20);
+            if (projectGroup != null) return new EnviromentMessage(projectGroup.Id, "Group already exists.");
+
             var content = new
             {
                 Name = projectGroupName,
@@ -55,25 +57,32 @@ namespace PravoAdder.DatabaseEnviroment
                 Description = description
             };
 
-            var response = SendAddRequest(content, "ProjectGroups", HttpMethod.Put).Result;
+            var response = await SendAddRequest(content, "ProjectGroups", HttpMethod.Put);
+
+            return new EnviromentMessage(await HttpHelper.GetContentId(response), "Added succefully.");
         }
 
-        public string AddProject(string projectName, string folderName, string projectTypeName, string responsibleName,
-            string projectGroupName)
+        public async Task<EnviromentMessage> AddProject(Settings settings, HeaderBlockInfo headerInfo, string projectGroupId)
         {
+            var project = DatabaseGetter.GetProject(headerInfo.ProjectName, projectGroupId, settings.FolderName, 20);
+            if (project != null) return new EnviromentMessage(project.Id, "Project already exists.");
+
             var content = new
             {
-                ProjectFolder = DatabaseGetter.GetProjectFolder(folderName),
-                ProjectType = DatabaseGetter.GetProjectType(projectTypeName),
-                Responsible = DatabaseGetter.GetResponsible(responsibleName),
-                ProjectGroup = DatabaseGetter.GetProjectGroup(projectGroupName),
-                Name = projectName
+                ProjectFolder = DatabaseGetter.GetProjectFolder(settings.FolderName),
+                ProjectType = DatabaseGetter.GetProjectType(settings.ProjectTypeName),
+                Responsible = DatabaseGetter.GetResponsible(headerInfo.ResponsibleName),
+                ProjectGroup = new
+                {
+                    Name = headerInfo.ProjectGroupName,
+                    Id = projectGroupId
+                },
+                Name = headerInfo.ProjectName
             };
 
-            var response = SendAddRequest(content, "projects/CreateProject", HttpMethod.Post).Result;
+            var response = await SendAddRequest(content, "projects/CreateProject", HttpMethod.Post);
 
-            var responseContent = response.Content.ReadAsStringAsync().Result;
-            return JObject.Parse(responseContent)["Result"]["Id"].ToString();
+            return new EnviromentMessage(await HttpHelper.GetContentId(response), "Added succefully.");
         }
 
         public void AddInformation(string projectId, BlockInfo blockInfo, IDictionary<int, string> excelRow)
@@ -124,6 +133,7 @@ namespace PravoAdder.DatabaseEnviroment
                 Lines = tmpLines,
                 FrontOrder = 0
             };
+
             var response = SendAddRequest(content, "ProjectCustomValues/Create", HttpMethod.Post).Result;
         }
 

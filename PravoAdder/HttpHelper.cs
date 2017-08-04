@@ -3,6 +3,8 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using PravoAdder.DatabaseEnviroment;
 
 namespace PravoAdder
 {
@@ -24,6 +26,12 @@ namespace PravoAdder
             request.Headers.Add("Cookie", cookie.ToString());
 
             return request;
+        }
+
+        public static async Task<string> GetContentId(HttpResponseMessage response)
+        {
+            var responseContent = await response.Content.ReadAsStringAsync();
+            return JObject.Parse(responseContent)["Result"]["Id"].ToString();
         }
     }
 }

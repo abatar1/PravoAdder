@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.IO;
 using System.Linq;
 using PravoAdder.DatabaseEnviroment;
@@ -55,33 +56,31 @@ namespace PravoAdder
 
         public static IEnumerable<IDictionary<int, string>> ReadExcelFile()
         {
-            string excelFilename;
+            var state = true;
+            var excelFilename = "";
             while (true)
-            {
-                try
+            {                
+                if (state)
                 {
                     Console.WriteLine("Write excel filename: ");
                     excelFilename = $"{Console.ReadLine()}.xlsx";
-                    break;
+                }
+                
+                Console.WriteLine("Reading excel file...");
+                try
+                {   
+                    return ExcelReader.ReadDataFromTable(excelFilename).ToList();
                 }
                 catch (FileNotFoundException ex)
                 {
                     Console.WriteLine($"{ex.Message}");
                 }
-            }
-
-            while (true)
-            {
-                try
-                {
-                    Console.WriteLine("Reading excel file...");
-                    return ExcelReader.ReadDataFromTable(excelFilename).ToList();
-                }
                 catch (IOException ex)
                 {
                     Console.WriteLine($"{ex.Message} Please close file and press Enter.");
+                    state = false;
                     Console.ReadLine();
-                }
+                }                
             }
         }
     }

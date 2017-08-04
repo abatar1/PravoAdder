@@ -11,7 +11,7 @@ namespace PravoAdder.Reader
         public static IEnumerable<IDictionary<int, string>> ReadDataFromTable(string filename, int dataRowNum = 4)
         {
             var info = new FileInfo(filename);
-            if (!info.Exists) throw new FileNotFoundException($"File {filename} not found");
+            if (!info.Exists) throw new FileNotFoundException($"File {filename} not found!");
 
             using (var xlPackage = new ExcelPackage(info))
             {

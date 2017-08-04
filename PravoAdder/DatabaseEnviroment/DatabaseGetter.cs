@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Logical;
+using OfficeOpenXml.VBA;
 
 namespace PravoAdder.DatabaseEnviroment
 {
@@ -50,32 +52,80 @@ namespace PravoAdder.DatabaseEnviroment
             };
         }
 
-        public object GetProjectType(string projectTypeName)
+        public dynamic GetProjectGroup(string projectName, int pageSize)
+        {
+            var content = new
+            {
+                Name = "",
+                PageSize = pageSize,
+                Page = 1
+            };
+
+            var pages = GetPages(content, "", "ProjectGroups/PostProjectGroups");
+
+            foreach (var page in pages)
+            {
+
+                var name = (string) page?["Name"];
+                if (name == projectName)
+                    return new
+                    {
+                        Name = name,
+                        Id = (string)page?["Id"]
+                    };          
+            }
+            return null;
+        }
+
+        public dynamic GetProject(string projectName, string projectGroupid, string folderName, int pageSize)
+        {
+            var content = new
+            {
+                FullSearchString = "",
+                PageSize = pageSize,
+                Page = 1,
+                FolderId = GetProjectFolder(folderName).Id
+            };
+
+            var projectGroup = GetPages(content, "", "Projects/GetGroupedProjects")
+                .FirstOrDefault(pf => pf?["ProjectGroupResponse"]?["Id"] == projectGroupid);
+
+            foreach (var project in projectGroup?["Projects"])
+            {
+                var name = (string) project?["Name"];
+                if (projectName == name)
+                {
+                    return new
+                    {
+                        Name = (string) project?["Name"],
+                        Id = (string) project?["Id"]
+                    };
+                }              
+            }
+            return null;
+        }
+
+        public dynamic GetProjectType(string projectTypeName)
         {
             return GetSimplePage(projectTypeName, "ProjectTypes/GetProjectTypes");
         }
 
-        public object GetProjectGroup(string projectGroupName)
-        {
-            return GetSimplePage(projectGroupName, "ProjectGroups/PostProjectGroups");
-        }
-
-        public object GetResponsible(string resposibleName)
+        public dynamic GetResponsible(string resposibleName)
         {
             return GetSimplePage(resposibleName.Replace(".", ""), "CompanyUsersSuggest");
         }
 
-        public object GetProjectFolder(string folderName)
+        public dynamic GetProjectFolder(string folderName)
         {
             return GetSimplePage(folderName, "ProjectFolders/GetProjectFoldersForEdit");
         }
 
-        public object GetParticipant(string participantName)
+        public dynamic GetParticipant(string participantName)
         {
             return GetSimplePage(participantName, "ParticipantsSuggest/GetParticipants");
         }
 
-        public object GetCalculationFormulas(string formulaName)
+        public dynamic GetCalculationFormulas(string formulaName)
         {
             return GetSimplePage(formulaName, "CalculationFormulasSuggest/GetCalculationFormulas");
         }

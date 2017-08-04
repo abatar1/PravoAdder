@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using PravoAdder.DatabaseEnviroment;
-using PravoAdder.Domain;
 using PravoAdder.Reader;
 
 namespace PravoAdder
@@ -26,24 +23,23 @@ namespace PravoAdder
             foreach (var excelRow in excel)
             {
                 var headerBlock = BlockReader.ReadHeaderBlock("blocksInfo.json", excelRow);
-                Console.WriteLine($"\tAdding project group {headerBlock.ProjectGroupName}...");
-                filler.AddProjectGroup(
-                    projectGroupName: headerBlock.ProjectGroupName,
-                    folderName: settings.FolderName);
 
-                Console.WriteLine($"\tAdding project {headerBlock.ProjectName}...");
-                var projectId = filler.AddProject(
-                    projectName: headerBlock.ProjectName,
+                Console.Write($"\tAdding project group {headerBlock.ProjectGroupName}...");
+                var projectGroupSender = filler.AddProjectGroup(
+                    projectGroupName: headerBlock.ProjectGroupName,
                     folderName: settings.FolderName,
-                    projectTypeName: settings.ProjectTypeName,
-                    responsibleName: headerBlock.ResponsibleName,
-                    projectGroupName: headerBlock.ProjectGroupName);
+                    description: "Created automatically.").Result;
+                Console.WriteLine($"{projectGroupSender.Message}");
+
+                Console.Write($"\tAdding project {headerBlock.ProjectName}...");
+                var projectSender = filler.AddProject(settings, headerBlock, projectGroupSender.Content).Result;
+                Console.WriteLine($"{projectSender.Message}");
 
                 foreach (var blockInfo in blocksInfo)
                 {
                     Console.WriteLine($"\tAdding information to project's block {blockInfo.Name}...");
                     filler.AddInformation(
-                        projectId: projectId,
+                        projectId: projectSender.Content,
                         blockInfo: blockInfo,
                         excelRow: excelRow);
                 }
