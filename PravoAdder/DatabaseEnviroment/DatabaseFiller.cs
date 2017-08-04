@@ -35,14 +35,14 @@ namespace PravoAdder.DatabaseEnviroment
             }           
         }
 
-        public static async Task<HttpResponseMessage> SendAddRequest(object content, string uri, HttpMethod method)
+        private static async Task<EnviromentMessage> SendAddRequest(object content, string uri, HttpMethod method)
         {
             var request = HttpHelper.CreateRequest(content, $"api/{uri}", method, HttpAuthenticator.UserCookie);
 
             var response = await HttpAuthenticator.Client.SendAsync(request);
             response.EnsureSuccessStatusCode();
 
-            return response;
+            return new EnviromentMessage(await HttpHelper.GetContentId(response), "Added succefully.");
         }
 
         public async Task<EnviromentMessage> AddProjectGroup(string projectGroupName, string folderName, string description)
@@ -57,9 +57,7 @@ namespace PravoAdder.DatabaseEnviroment
                 Description = description
             };
 
-            var response = await SendAddRequest(content, "ProjectGroups", HttpMethod.Put);
-
-            return new EnviromentMessage(await HttpHelper.GetContentId(response), "Added succefully.");
+            return await SendAddRequest(content, "ProjectGroups", HttpMethod.Put);
         }
 
         public async Task<EnviromentMessage> AddProject(Settings settings, HeaderBlockInfo headerInfo, string projectGroupId)
@@ -80,12 +78,10 @@ namespace PravoAdder.DatabaseEnviroment
                 Name = headerInfo.ProjectName
             };
 
-            var response = await SendAddRequest(content, "projects/CreateProject", HttpMethod.Post);
-
-            return new EnviromentMessage(await HttpHelper.GetContentId(response), "Added succefully.");
+            return await SendAddRequest(content, "projects/CreateProject", HttpMethod.Post);
         }
 
-        public void AddInformation(string projectId, BlockInfo blockInfo, IDictionary<int, string> excelRow)
+        public async Task<EnviromentMessage> AddInformation(string projectId, BlockInfo blockInfo, IDictionary<int, string> excelRow)
         {
             var tmpLines = new List<BlockLineInfo>();
             foreach (var line in blockInfo.Lines)
@@ -134,7 +130,7 @@ namespace PravoAdder.DatabaseEnviroment
                 FrontOrder = 0
             };
 
-            var response = SendAddRequest(content, "ProjectCustomValues/Create", HttpMethod.Post).Result;
+            return await SendAddRequest(content, "ProjectCustomValues/Create", HttpMethod.Post);
         }
 
         private static object Convert(string value)

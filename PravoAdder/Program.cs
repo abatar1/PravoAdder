@@ -18,8 +18,8 @@ namespace PravoAdder
             var filler = new DatabaseFiller();
             ConsoleHelper.Autentification(settings, filler);
             ConsoleHelper.LoadConfigFromConsole(settings);
-            settings.Save("config.json");
-
+            settings.Save("config.json");                     
+        
             foreach (var excelRow in excel)
             {
                 var headerBlock = BlockReader.ReadHeaderBlock("blocksInfo.json", excelRow);
@@ -38,7 +38,7 @@ namespace PravoAdder
                 foreach (var blockInfo in blocksInfo)
                 {
                     Console.WriteLine($"\tAdding information to project's block {blockInfo.Name}...");
-                    filler.AddInformation(
+                    var blockSender = filler.AddInformation(
                         projectId: projectSender.Content,
                         blockInfo: blockInfo,
                         excelRow: excelRow);
