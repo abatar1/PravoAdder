@@ -18,14 +18,14 @@ namespace PravoAdder
         }
 
         public void Run()
-        {
-            var excelTable = ConsoleHelper.ReadExcelFile();
-
+        {           
             Console.WriteLine("Reading config files...");
             var blocksInfo = BlockReader.ReadBlocks(_blocksInfoFilename).ToList();
             var settings = SettingsReader.Read(_configFilename);
             ConsoleHelper.LoadConfigFromConsole(settings);
             settings.Save(_configFilename);
+
+            var excelTable = ConsoleHelper.ReadExcelFile(settings.DataRowPosition, settings.InformationRowPosition);
 
             var filler = new DatabaseFiller();
             ConsoleHelper.Autentification(settings, filler);                      

@@ -51,9 +51,21 @@ namespace PravoAdder.Helper
                 Console.WriteLine("Project type name: ");
                 settings.ProjectTypeName = Console.ReadLine();
             }
+
+            if (settings.DataRowPosition == 0)
+            {
+                Console.WriteLine("Data row position: ");
+                settings.DataRowPosition = Convert.ToInt32(Console.ReadLine());
+            }
+
+            if (settings.InformationRowPosition == 0)
+            {
+                Console.WriteLine("Information row position: ");
+                settings.InformationRowPosition = Convert.ToInt32(Console.ReadLine());
+            }
         }
 
-        public static IEnumerable<IDictionary<int, string>> ReadExcelFile()
+        public static IEnumerable<IDictionary<int, string>> ReadExcelFile(int dataRowPosition, int infoRowPosition)
         {
             var state = true;
             var excelFilename = "";
@@ -68,7 +80,7 @@ namespace PravoAdder.Helper
                 Console.WriteLine("Reading excel file...");
                 try
                 {   
-                    return ExcelReader.ReadDataFromTable(excelFilename).ToList();
+                    return ExcelReader.ReadDataFromTable(excelFilename, dataRowPosition, infoRowPosition).ToList();
                 }
                 catch (FileNotFoundException ex)
                 {

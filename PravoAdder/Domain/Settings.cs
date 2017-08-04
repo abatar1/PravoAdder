@@ -12,5 +12,9 @@ namespace PravoAdder.Domain
         public string FolderName { get; set; }
 
         public string ProjectTypeName { get; set; }
+
+        public int DataRowPosition { get; set; }
+
+        public int InformationRowPosition { get; set; }
     }
 }
