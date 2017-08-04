@@ -7,6 +7,7 @@ using System.Security.Authentication;
 using System.Threading.Tasks;
 using PravoAdder.Domain;
 using PravoAdder.Domain.Info;
+using PravoAdder.Helper;
 
 namespace PravoAdder.DatabaseEnviroment
 {
@@ -45,10 +46,13 @@ namespace PravoAdder.DatabaseEnviroment
             return new EnviromentMessage(await HttpHelper.GetContentId(response), "Added succefully.");
         }
 
-        public async Task<EnviromentMessage> AddProjectGroup(string projectGroupName, string folderName, string description)
+        public async Task<EnviromentMessage> AddProjectGroup(string projectGroupName, string folderName, string description, bool overwrite = true)
         {
-            var projectGroup = DatabaseGetter.GetProjectGroup(projectGroupName, 20);
-            if (projectGroup != null) return new EnviromentMessage(projectGroup.Id, "Group already exists.");
+            if (overwrite)
+            {
+                var projectGroup = DatabaseGetter.GetProjectGroup(projectGroupName, 20);
+                if (projectGroup != null) return new EnviromentMessage(projectGroup.Id, "Group already exists.");
+            }           
 
             var content = new
             {
@@ -60,10 +64,13 @@ namespace PravoAdder.DatabaseEnviroment
             return await SendAddRequest(content, "ProjectGroups", HttpMethod.Put);
         }
 
-        public async Task<EnviromentMessage> AddProject(Settings settings, HeaderBlockInfo headerInfo, string projectGroupId)
+        public async Task<EnviromentMessage> AddProject(Settings settings, HeaderBlockInfo headerInfo, string projectGroupId, bool overwrite = true)
         {
-            var project = DatabaseGetter.GetProject(headerInfo.ProjectName, projectGroupId, settings.FolderName, 20);
-            if (project != null) return new EnviromentMessage(project.Id, "Project already exists.");
+            if (overwrite)
+            {
+                var project = DatabaseGetter.GetProject(headerInfo.ProjectName, projectGroupId, settings.FolderName, 20);
+                if (project != null) return new EnviromentMessage(project.Id, "Project already exists.");
+            }
 
             var content = new
             {

@@ -6,7 +6,7 @@ using PravoAdder.DatabaseEnviroment;
 using PravoAdder.Domain;
 using PravoAdder.Reader;
 
-namespace PravoAdder
+namespace PravoAdder.Helper
 {
     public class ConsoleHelper
     {
