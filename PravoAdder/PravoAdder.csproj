@@ -65,6 +65,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConsoleHelper.cs" />
     <Compile Include="Domain\Info\HeaderBlockInfo.cs" />
     <Compile Include="Reader\BlockReader.cs" />
     <Compile Include="DatabaseEnviroment\HttpAuthenticator.cs" />
