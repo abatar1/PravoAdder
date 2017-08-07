@@ -8,22 +8,20 @@ namespace PravoAdder
 {
     public class PravoAdder
     {
-        private readonly string _blocksInfoFilename;
         private readonly string _configFilename;
 
-        public PravoAdder(string blocksInfoFilename, string configFilename)
+        public PravoAdder(string configFilename)
         {
-            _blocksInfoFilename = blocksInfoFilename;
             _configFilename = configFilename;
         }
 
         public void Run()
         {           
             Console.WriteLine("Reading config files...");
-            var blocksInfo = BlockReader.ReadBlocks(_blocksInfoFilename).ToList();
             var settings = SettingsReader.Read(_configFilename);
             ConsoleHelper.LoadConfigFromConsole(settings);
             settings.Save(_configFilename);
+            var blocksInfo = BlockReader.ReadBlocks(settings.IdComparerPath).ToList();                                
 
             var excelTable = ConsoleHelper.ReadExcelFile(settings.DataRowPosition, settings.InformationRowPosition);
 
@@ -32,7 +30,7 @@ namespace PravoAdder
 
             foreach (var excelRow in excelTable)
             {
-                var headerBlock = BlockReader.ReadHeaderBlock(_blocksInfoFilename, excelRow);
+                var headerBlock = BlockReader.ReadHeaderBlock(settings.IdComparerPath, excelRow);
 
                 Console.Write($"\tAdding project group {headerBlock.ProjectGroupName}...");
                 var projectGroupSender = filler.AddProjectGroup(

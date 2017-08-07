@@ -12,6 +12,6 @@ namespace PravoAdder.Domain.Info
         public IEnumerable<BlockFieldInfo> Fields { get; set; }
 
         [JsonProperty(PropertyName = "Order")]
-        public int Order { get; set; } = 0;
+        public int Order { get; set; }
     }
 }

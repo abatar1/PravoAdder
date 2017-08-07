@@ -89,17 +89,20 @@ namespace PravoAdder.DatabaseEnviroment
             var projectGroup = GetPages(content, "", "Projects/GetGroupedProjects")
                 .FirstOrDefault(pf => pf?["ProjectGroupResponse"]?["Id"] == projectGroupid);
 
-            foreach (var project in projectGroup?["Projects"])
+            var projects = projectGroup?["Projects"];
+            if (projects == null) return null;
+
+            foreach (var project in projects)
             {
                 var name = (string) project?["Name"];
-                if (projectName == name)
+                if (name == projectName)
                 {
                     return new
                     {
                         Name = (string) project?["Name"],
                         Id = (string) project?["Id"]
                     };
-                }              
+                }
             }
             return null;
         }

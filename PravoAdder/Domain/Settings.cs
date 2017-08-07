@@ -16,5 +16,7 @@ namespace PravoAdder.Domain
         public int DataRowPosition { get; set; }
 
         public int InformationRowPosition { get; set; }
+
+        public string IdComparerPath { get; set; }
     }
 }

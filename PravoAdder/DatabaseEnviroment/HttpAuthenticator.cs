@@ -12,7 +12,6 @@ namespace PravoAdder.DatabaseEnviroment
     {
         public static HttpClient Client { get; private set; }
         public static Cookie UserCookie { get; private set; }
-
         public static CookieContainer CookieContainer { get; private set; }
         public static Uri BaseAddress { get; } = new Uri("https://testcarcade.casepro.pro/");
 

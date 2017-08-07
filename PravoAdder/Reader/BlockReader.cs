@@ -10,6 +10,8 @@ namespace PravoAdder.Reader
     {
         public static IEnumerable<BlockInfo> ReadBlocks(string filePath)
         {
+            var info = new FileInfo(filePath);
+            if (!info.Exists) throw new FileNotFoundException("Blocks info file doesn't found.");
             var jBlocks = JObject.Parse(File.ReadAllText(filePath));
 
             var blockObjects = AllChildren(jBlocks)

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using OfficeOpenXml;
 
 namespace PravoAdder.Reader
@@ -16,21 +15,20 @@ namespace PravoAdder.Reader
 
             using (var xlPackage = new ExcelPackage(info))
             {
-                var myWorksheet = xlPackage.Workbook.Worksheets.First();
-                var totalRows = myWorksheet.Dimension.End.Row;
-                var totalColumns = myWorksheet.Dimension.End.Column;
+                var worksheet = xlPackage.Workbook.Worksheets.First();
+                var totalRows = worksheet.Dimension.End.Row;
+                var totalColumns = worksheet.Dimension.End.Column;
 
-                var columns = myWorksheet
+                var colorColumnsPositions = worksheet
                     .Cells[infoRowPosition, 1, infoRowPosition, totalColumns]
                     .Where(c => c.Style.Fill.BackgroundColor.Rgb != "")
-                    .Select(c => c.Start.Column)
-                    .ToList();
+                    .Select(c => c.Start.Column);
 
                 for (var rowNum = dataRowPosition; rowNum <= totalRows; rowNum++)
                 {
-                    yield return myWorksheet                        
+                    yield return worksheet                        
                         .Cells[rowNum, 1, rowNum, totalColumns]
-                        .Where(c => columns.Contains(c.Start.Column))
+                        .Where(c => colorColumnsPositions.Contains(c.Start.Column))
                         .Select(c => FormatCell(c.Value) ?? string.Empty)
                         .Zip(Enumerable.Range(1, totalColumns - 1), (value, key) => new {value, key})                       
                         .ToDictionary(key => key.key, value => value.value);

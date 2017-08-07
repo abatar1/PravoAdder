@@ -8,16 +8,22 @@ namespace PravoAdder.Reader
     {
         public static Settings Read(string filePath)
         {
-            var rawJson = File.ReadAllText(filePath);
+            var info = new FileInfo(filePath);       
+            if (!info.Exists) File.Create(info.FullName).Dispose();
 
+            var rawJson = File.ReadAllText(filePath);
+            if (string.IsNullOrEmpty(rawJson)) return new Settings();
             return JsonConvert.DeserializeObject<Settings>(rawJson);
         }
 
-        public static void Save(this Settings settings, string settingsFileName)
+        public static void Save(this Settings settings, string settingsFilePath)
         {
             var jsonSettings = JsonConvert.SerializeObject(settings);
 
-            File.WriteAllText(settingsFileName, jsonSettings);            
+            var info = new FileInfo(settingsFilePath);
+
+            if (!info.Exists) File.Create(info.FullName).Dispose();               
+            File.WriteAllText(settingsFilePath, jsonSettings);        
         }
     }
 }

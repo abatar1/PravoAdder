@@ -38,30 +38,51 @@ namespace PravoAdder.Helper
             }
         }
 
+        private static T LoadValueFromConsole<T>(string message)
+        {
+            while (true)
+            {
+                Console.WriteLine($"{message}: ");
+                var data = Console.ReadLine();
+                if (string.IsNullOrEmpty(data))
+                {
+                    Console.WriteLine($"Wrong {message}!");
+                    continue;
+                }
+                return (T)Convert.ChangeType(data, typeof(T));
+            }
+        }
+
         public static void LoadConfigFromConsole(Settings settings)
         {
-            if (settings.FolderName == string.Empty)
+            if (string.IsNullOrEmpty(settings.Login))
             {
-                Console.WriteLine("Folder name: ");
-                settings.FolderName = Console.ReadLine();
+                settings.Login = LoadValueFromConsole<string>("Login");
             }
 
-            if (settings.ProjectTypeName == string.Empty)
+            if (string.IsNullOrEmpty(settings.FolderName))
             {
-                Console.WriteLine("Project type name: ");
-                settings.ProjectTypeName = Console.ReadLine();
+                settings.FolderName = LoadValueFromConsole<string>("Folder name");
+            }
+
+            if (string.IsNullOrEmpty(settings.ProjectTypeName))
+            {
+                settings.ProjectTypeName = LoadValueFromConsole<string>("Project type name");
             }
 
             if (settings.DataRowPosition == 0)
             {
-                Console.WriteLine("Data row position: ");
-                settings.DataRowPosition = Convert.ToInt32(Console.ReadLine());
+                settings.DataRowPosition = LoadValueFromConsole<int>("Data row position");
             }
 
             if (settings.InformationRowPosition == 0)
             {
-                Console.WriteLine("Information row position: ");
-                settings.InformationRowPosition = Convert.ToInt32(Console.ReadLine());
+                settings.InformationRowPosition = LoadValueFromConsole<int>("Information row position");
+            }
+
+            if (string.IsNullOrEmpty(settings.IdComparerPath))
+            {
+                settings.IdComparerPath = LoadValueFromConsole<string>("Id comparer path");
             }
         }
 
@@ -74,7 +95,9 @@ namespace PravoAdder.Helper
                 if (state)
                 {
                     Console.WriteLine("Write excel filename: ");
-                    excelFilename = $"{Console.ReadLine()}.xlsx";
+                    var filename = Console.ReadLine();
+                    if (filename == null) continue;
+                    excelFilename = filename.Contains(".xlsx") ? filename : $"{filename}.xlsx";
                 }
                 
                 Console.WriteLine("Reading excel file...");
