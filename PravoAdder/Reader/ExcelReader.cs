@@ -40,11 +40,8 @@ namespace PravoAdder.Reader
         {
             var cellString = cell?.ToString();
             if (!(cell is DateTime)) return cellString;
-            
-            var separatorIndex = cellString.IndexOf(" ", StringComparison.Ordinal);
-            if (separatorIndex > 0) cellString = cellString.Substring(0, separatorIndex);
 
-            return string.Join("-", cellString.Split('.').Reverse());
+            return $"{(DateTime) cell:yyyy-MM-dd}";
         }
     }
 }
