@@ -1,39 +1,33 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using PravoAdder.Helper;
 
 namespace PravoAdder.DatabaseEnviroment
 {
     public class DatabaseGetter
     {
-        private static readonly HttpAuthenticator HttpAuthenticator;
+        private readonly HttpAuthenticator _httpAuthenticator;
 
-        static DatabaseGetter()
+        public DatabaseGetter(HttpAuthenticator authenticator)
         {
-            HttpAuthenticator = new HttpAuthenticator();
+            _httpAuthenticator = authenticator;
         }
 
-        public void Authentication(string login, string password)
-        {
-            HttpAuthenticator.Authentication(login, password);
-        }
-
-        private static IEnumerable<dynamic> GetPages(object content, string name, string uri)
+        private IEnumerable<dynamic> GetPages(object content, string name, string uri)
         {          
-            var request = HttpHelper.CreateRequest(content, $"api/{uri}", HttpMethod.Post, HttpAuthenticator.UserCookie);
+            var request = HttpHelper.CreateRequest(content, $"api/{uri}", HttpMethod.Post, _httpAuthenticator.UserCookie);
 
-            var response = HttpAuthenticator.Client.SendAsync(request).Result;
+            var response = _httpAuthenticator.Client.SendAsync(request).Result;
             response.EnsureSuccessStatusCode();
 
-            var jsonMessages = HttpHelper.GetMessageFromResponce(response).Result;
+            var jsonMessages = HttpHelper.GetMessageFromResponceAsync(response).Result;
             foreach (var message in jsonMessages.Result)
             {
                 yield return message;
             }
         }
 
-        private static object GetSimplePage(string name, string uri)
+        private object GetSimplePage(string name, string uri)
         {
             var content = new
             {

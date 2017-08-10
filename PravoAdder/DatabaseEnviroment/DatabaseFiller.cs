@@ -3,80 +3,64 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
-using System.Security.Authentication;
 using System.Threading.Tasks;
 using PravoAdder.Domain;
 using PravoAdder.Domain.Info;
-using PravoAdder.Helper;
 
 namespace PravoAdder.DatabaseEnviroment
 {
     public class DatabaseFiller
     {
-        private static readonly HttpAuthenticator HttpAuthenticator;
-        private static readonly DatabaseGetter DatabaseGetter;
+        private readonly DatabaseGetter _databaseGetter;
+        private readonly HttpAuthenticator _httpAuthenticator;
 
-        static DatabaseFiller()
+        public DatabaseFiller(HttpAuthenticator httpAuthenticator)
         {
-            HttpAuthenticator = new HttpAuthenticator();
-            DatabaseGetter = new DatabaseGetter();
+            _databaseGetter = new DatabaseGetter(httpAuthenticator);
+            _httpAuthenticator = httpAuthenticator;
         }
 
-        public bool Authentication(string login, string password)
+        private async Task<EnviromentMessage> SendAddRequestAsync(object content, string uri, HttpMethod method)
         {
-            try
-            {
-                HttpAuthenticator.Authentication(login, password);
-                DatabaseGetter.Authentication(login, password);
-                return true;
-            }
-            catch (AuthenticationException ex)
-            {
-                throw new AuthenticationException($"Autentification failed. {ex.Message}", ex);
-            }           
-        }
+            var request = HttpHelper.CreateRequest(content, $"api/{uri}", method, _httpAuthenticator.UserCookie);
 
-        private static async Task<EnviromentMessage> SendAddRequest(object content, string uri, HttpMethod method)
-        {
-            var request = HttpHelper.CreateRequest(content, $"api/{uri}", method, HttpAuthenticator.UserCookie);
-
-            var response = await HttpAuthenticator.Client.SendAsync(request);
+            var response = await _httpAuthenticator.Client.SendAsync(request);
             response.EnsureSuccessStatusCode();
 
-            return new EnviromentMessage(await HttpHelper.GetContentId(response), "Added succefully.");
+            return new EnviromentMessage(await HttpHelper.GetContentIdAsync(response), "Added succefully.");
         }
 
-        public async Task<EnviromentMessage> AddProjectGroup(string projectGroupName, string folderName, string description, bool overwrite = true)
+        public async Task<EnviromentMessage> AddProjectGroupAsync(string projectGroupName, string folderName, string description, bool overwrite = true)
         {
             if (overwrite)
             {
-                var projectGroup = DatabaseGetter.GetProjectGroup(projectGroupName, 20);
+                var projectGroup = _databaseGetter.GetProjectGroup(projectGroupName, 20);
                 if (projectGroup != null) return new EnviromentMessage(projectGroup.Id, "Group already exists.");
             }           
 
             var content = new
             {
                 Name = projectGroupName,
-                ProjectFolder = DatabaseGetter.GetProjectFolder(folderName),
+                ProjectFolder = _databaseGetter.GetProjectFolder(folderName),
                 Description = description
             };
 
-            return await SendAddRequest(content, "ProjectGroups", HttpMethod.Put);
+            return await SendAddRequestAsync(content, "ProjectGroups", HttpMethod.Put);
         }
 
-        public async Task<EnviromentMessage> AddProject(Settings settings, HeaderBlockInfo headerInfo, string projectGroupId, bool overwrite = true)
+        public async Task<EnviromentMessage> AddProjectAsync(Settings settings, HeaderBlockInfo headerInfo, string projectGroupId, bool overwrite = true)
         {
             if (overwrite)
             {
-                var project = DatabaseGetter.GetProject(headerInfo.ProjectName, projectGroupId, settings.FolderName, 20);
+                var project = _databaseGetter.GetProject(headerInfo.ProjectName, projectGroupId, settings.FolderName, 20);
                 if (project != null) return new EnviromentMessage(project.Id, "Project already exists.");
             }
 
             var content = new
             {
-                ProjectFolder = DatabaseGetter.GetProjectFolder(settings.FolderName),
-                ProjectType = DatabaseGetter.GetProjectType(settings.ProjectTypeName),
-                Responsible = DatabaseGetter.GetResponsible(headerInfo.ResponsibleName),
+                ProjectFolder = _databaseGetter.GetProjectFolder(settings.FolderName),
+                ProjectType = _databaseGetter.GetProjectType(settings.ProjectTypeName),
+                Responsible = _databaseGetter.GetResponsible(headerInfo.ResponsibleName),
                 ProjectGroup = new
                 {
                     Name = headerInfo.ProjectGroupName,
@@ -85,10 +69,10 @@ namespace PravoAdder.DatabaseEnviroment
                 Name = headerInfo.ProjectName
             };
 
-            return await SendAddRequest(content, "projects/CreateProject", HttpMethod.Post);
+            return await SendAddRequestAsync(content, "projects/CreateProject", HttpMethod.Post);
         }
 
-        public async Task<EnviromentMessage> AddInformation(string projectId, BlockInfo blockInfo, IDictionary<int, string> excelRow)
+        public async Task<EnviromentMessage> AddInformationAsync(string projectId, BlockInfo blockInfo, IDictionary<int, string> excelRow)
         {
             var tmpLines = new List<BlockLineInfo>();
             foreach (var line in blockInfo.Lines)
@@ -104,7 +88,7 @@ namespace PravoAdder.DatabaseEnviroment
                             field.Value = Convert(fieldData);
                             break;
                         case "Formula":
-                            dynamic calculationFormula = DatabaseGetter.GetCalculationFormulas(field.SpecialData);
+                            dynamic calculationFormula = _databaseGetter.GetCalculationFormulas(field.SpecialData);
                             field.Value = new
                             {
                                 Result = Convert(fieldData),
@@ -137,7 +121,7 @@ namespace PravoAdder.DatabaseEnviroment
                 FrontOrder = 0
             };
 
-            return await SendAddRequest(content, "ProjectCustomValues/Create", HttpMethod.Post);
+            return await SendAddRequestAsync(content, "ProjectCustomValues/Create", HttpMethod.Post);
         }
 
         private static object Convert(string value)

@@ -5,5 +5,6 @@
         public string ProjectGroupName { get; set; }
         public string ProjectName { get; set; }
         public string ResponsibleName { get; set; }
+        public string Description { get; set; } = "Created automatically";
     }
 }

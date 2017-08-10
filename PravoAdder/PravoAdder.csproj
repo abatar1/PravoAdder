@@ -58,11 +58,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Helper\ConsoleHelper.cs" />
+    <Compile Include="ConsoleController.cs" />
     <Compile Include="DatabaseEnviroment\EnviromentMessage.cs" />
     <Compile Include="Domain\Info\HeaderBlockInfo.cs" />
     <Compile Include="PravoAdder.cs" />
-    <Compile Include="Reader\BlockReader.cs" />
+    <Compile Include="Reader\BlockInfoReader.cs" />
     <Compile Include="DatabaseEnviroment\HttpAuthenticator.cs" />
     <Compile Include="DatabaseEnviroment\DatabaseFiller.cs" />
     <Compile Include="DatabaseEnviroment\DatabaseGetter.cs" />
@@ -71,7 +71,7 @@
     <Compile Include="Domain\Info\BlockLineInfo.cs" />
     <Compile Include="Domain\Settings.cs" />
     <Compile Include="Reader\ExcelReader.cs" />
-    <Compile Include="Helper\HttpHelper.cs" />
+    <Compile Include="HttpHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reader\SettingsReader.cs" />
@@ -79,6 +79,9 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Helper\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

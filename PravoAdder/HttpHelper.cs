@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace PravoAdder.Helper
+namespace PravoAdder
 {
     public static class HttpHelper
     {
-        public static async Task<dynamic> GetMessageFromResponce(HttpResponseMessage response)
+        public static async Task<dynamic> GetMessageFromResponceAsync(HttpResponseMessage response)
         {
             var message = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject(message);
@@ -27,7 +27,7 @@ namespace PravoAdder.Helper
             return request;
         }
 
-        public static async Task<string> GetContentId(HttpResponseMessage response)
+        public static async Task<string> GetContentIdAsync(HttpResponseMessage response)
         {
             var responseContent = await response.Content.ReadAsStringAsync();
             return JObject.Parse(responseContent)["Result"]["Id"].ToString();

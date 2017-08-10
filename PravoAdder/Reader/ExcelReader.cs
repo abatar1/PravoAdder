@@ -8,7 +8,7 @@ namespace PravoAdder.Reader
 {
     public class ExcelReader
     {
-        public static IEnumerable<IDictionary<int, string>> ReadDataFromTable(string filename, int dataRowPosition, int infoRowPosition)
+        public static IEnumerable<IDictionary<int, string>> ReadDataFromTable(string filename, int dataRowPosition, int infoRowPosition, string[] allowedColors)
         {
             var info = new FileInfo(filename);
             if (!info.Exists) throw new FileNotFoundException($"File {filename} not found!");
@@ -21,7 +21,7 @@ namespace PravoAdder.Reader
 
                 var colorColumnsPositions = worksheet
                     .Cells[infoRowPosition, 1, infoRowPosition, totalColumns]
-                    .Where(c => c.Style.Fill.BackgroundColor.Rgb != "")
+                    .Where(c => allowedColors.Contains(c.Style.Fill.BackgroundColor.Rgb))
                     .Select(c => c.Start.Column);
 
                 for (var rowNum = dataRowPosition; rowNum <= totalRows; rowNum++)

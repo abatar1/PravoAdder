@@ -4,19 +4,20 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Authentication;
-using PravoAdder.Helper;
+
 
 namespace PravoAdder.DatabaseEnviroment
 {
     public class HttpAuthenticator
     {
-        public static HttpClient Client { get; private set; }
-        public static Cookie UserCookie { get; private set; }
-        public static CookieContainer CookieContainer { get; private set; }
-        public static Uri BaseAddress { get; } = new Uri("https://testcarcade.casepro.pro/");
+        public HttpClient Client { get; }
+        public Cookie UserCookie { get; private set; }       
+        private Uri BaseAddress { get; }
+        private CookieContainer CookieContainer { get; }
 
-        public HttpAuthenticator()
+        public HttpAuthenticator(string baseUri)
         {
+            BaseAddress = new Uri(baseUri);
             CookieContainer = new CookieContainer();
             var handler = new HttpClientHandler
             {
@@ -44,7 +45,7 @@ namespace PravoAdder.DatabaseEnviroment
             UserCookie = CookieContainer.GetCookies(BaseAddress).Cast<Cookie>().FirstOrDefault();
             if (UserCookie == null) throw new AuthenticationException("Cannot create new session");
 
-            var message = HttpHelper.GetMessageFromResponce(response).Result;
+            var message = HttpHelper.GetMessageFromResponceAsync(response).Result;
             if (!(bool)message.Succeeded) throw new AuthenticationException("Wrong login or password");
         }
     }

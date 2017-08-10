@@ -6,9 +6,9 @@ using PravoAdder.Domain.Info;
 
 namespace PravoAdder.Reader
 {
-    public class BlockReader
+    public class BlockInfoReader
     {
-        public static IEnumerable<BlockInfo> ReadBlocks(string filePath)
+        public static IEnumerable<BlockInfo> ReadBlocksInfo(string filePath)
         {
             var info = new FileInfo(filePath);
             if (!info.Exists) throw new FileNotFoundException("Blocks info file doesn't found.");
@@ -47,7 +47,7 @@ namespace PravoAdder.Reader
             }
         }
 
-        public static HeaderBlockInfo ReadHeaderBlock(string filePath, IDictionary<int, string> excelRow)
+        public static HeaderBlockInfo ReadHeaderBlockInfo(string filePath, IDictionary<int, string> excelRow)
         {
             var jBlocks = JObject.Parse(File.ReadAllText(filePath));
 
@@ -59,7 +59,7 @@ namespace PravoAdder.Reader
             };
         }
 
-        public static BlockInfo GetBlockByName(IEnumerable<BlockInfo> blocks, string name)
+        public static BlockInfo GetBlockInfoByName(IEnumerable<BlockInfo> blocks, string name)
         {
             return blocks
                 .FirstOrDefault(block => block.Name == name);

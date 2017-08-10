@@ -12,8 +12,7 @@ namespace PravoAdder.Reader
             if (!info.Exists) File.Create(info.FullName).Dispose();
 
             var rawJson = File.ReadAllText(filePath);
-            if (string.IsNullOrEmpty(rawJson)) return new Settings();
-            return JsonConvert.DeserializeObject<Settings>(rawJson);
+            return string.IsNullOrEmpty(rawJson) ? new Settings() : JsonConvert.DeserializeObject<Settings>(rawJson);
         }
 
         public static void Save(this Settings settings, string settingsFilePath)
