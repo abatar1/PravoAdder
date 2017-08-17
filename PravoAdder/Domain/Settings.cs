@@ -26,6 +26,14 @@ namespace PravoAdder.Domain
         public int InformationRowPosition { get; set; }
 
         [DisplayName("Path to the Id file with the table")]
-        public string IdComparerPath { get; set; }        
-    }
+        public string IdComparerPath { get; set; }
+
+	    [JsonIgnore]
+	    [DisplayName("Overwrite project and project's folders?")]
+		public bool Overwrite { get; set; }
+
+	    [JsonIgnore]
+	    [DisplayName("Write excel filename")]
+	    public string ExcelFileName { get; set; }
+	}
 }

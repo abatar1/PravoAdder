@@ -34,7 +34,7 @@ namespace PravoAdder.DatabaseEnviroment
         {
             if (overwrite)
             {
-                var projectGroup = _databaseGetter.GetProjectGroup(projectGroupName, 20);
+                var projectGroup = _databaseGetter.GetProjectGroup(projectGroupName);
                 if (projectGroup != null) return new EnviromentMessage(projectGroup.Id, "Group already exists.");
             }           
 
@@ -52,7 +52,7 @@ namespace PravoAdder.DatabaseEnviroment
         {
             if (overwrite)
             {
-                var project = _databaseGetter.GetProject(headerInfo.ProjectName, projectGroupId, settings.FolderName, 20);
+                var project = _databaseGetter.GetProject(headerInfo.ProjectName, projectGroupId, settings.FolderName);
                 if (project != null) return new EnviromentMessage(project.Id, "Project already exists.");
             }
 
@@ -74,67 +74,80 @@ namespace PravoAdder.DatabaseEnviroment
 
         public async Task<EnviromentMessage> AddInformationAsync(string projectId, BlockInfo blockInfo, IDictionary<int, string> excelRow)
         {
-            var tmpLines = new List<BlockLineInfo>();
+            var contentLines = new List<BlockLineInfo>();
             foreach (var line in blockInfo.Lines)
             {
-                var tmpFields = new List<BlockFieldInfo>();
-                foreach (var field in line.Fields)
+                var contentFields = new List<BlockFieldInfo>();
+                foreach (var fieldInfo in line.Fields)
                 {
-                    var fieldData = excelRow[field.ColumnNumber];
-                    if (fieldData == string.Empty) continue;
-                    switch (field.Type)
-                    {
-                        case "Value":
-                            field.Value = Convert(fieldData);
-                            break;
-                        case "Formula":
-                            dynamic calculationFormula = _databaseGetter.GetCalculationFormulas(field.SpecialData);
-                            field.Value = new
-                            {
-                                Result = Convert(fieldData),
-                                CalculationFormulaId = calculationFormula.Id
-                            };
-                            break;
-                        case "Custom":
-                            var correctName = $"{fieldData.First().ToString().ToUpper()}{fieldData.Substring(1)}";
-                            field.Value = new
-                            {
-                                Name = correctName,
-                                Id = field.SpecialData,
-                                IsCustom = true
-                            };
-                            break;
-                        default:
-                            throw new ArgumentException("Unknown type of value.");
-                    }
-                    tmpFields.Add(field);
+                    var fieldData = excelRow[fieldInfo.ColumnNumber];
+                    if (string.IsNullOrEmpty(fieldData)) continue;
+	                fieldInfo.Value = CreateFieldValueFromData(fieldInfo, fieldData);
+                    contentFields.Add(fieldInfo);
                 }
-                line.Fields = new List<BlockFieldInfo>(tmpFields);
-                tmpLines.Add(line);
+                line.Fields = new List<BlockFieldInfo>(contentFields);
+                contentLines.Add(line);
             }
 
-            var content = new
+            var contentBlock = new
             {
                 VisualBlockId = blockInfo.Id,
                 ProjectId = projectId,
-                Lines = tmpLines,
+                Lines = contentLines,
                 FrontOrder = 0
             };
 
-            return await SendAddRequestAsync(content, "ProjectCustomValues/Create", HttpMethod.Post);
+            return await SendAddRequestAsync(contentBlock, "ProjectCustomValues/Create", HttpMethod.Post);
         }
 
-        private static object Convert(string value)
+	    private object CreateFieldValueFromData(BlockFieldInfo fieldInfo, string fieldData)
+	    {
+		    switch (fieldInfo.Type)
+		    {
+			    case "Value":
+				    return FormatFieldData(fieldData);
+			    case "Formula":
+				    var calculationFormula = _databaseGetter.GetCalculationFormulas(fieldInfo.SpecialData);
+				    return new
+				    {
+					    Result = FormatFieldData(fieldData),
+					    CalculationFormulaId = calculationFormula.Id
+				    };
+			    case "Custom":				    
+					var correctName = $"{fieldData.First().ToString().ToUpper()}{fieldData.Substring(1)}";
+				    return new
+				    {
+					    Name = correctName,
+					    Id = fieldInfo.SpecialData,
+					    IsCustom = true
+				    };
+			    default:
+				    throw new ArgumentException("Unknown type of value.");
+		    }
+		}
+
+	    private static string FormatIntString(string value)
+	    {
+		    if (!value.Contains(',')) return value;
+
+		    var newValue = value.Replace(" ", "");
+			var splitted = newValue.Split(',');
+		    return splitted[1].All(c => c == '0') ? splitted[0] : newValue;
+	    }
+
+        private static object FormatFieldData(string value)
         {
-            if (TypeDescriptor.GetConverter(typeof(int)).IsValid(value))
+	        var correctValue = FormatIntString(value);
+
+			if (TypeDescriptor.GetConverter(typeof(int)).IsValid(correctValue))
             {
-                return int.Parse(value);
+                return int.Parse(correctValue);
             }
-            if (TypeDescriptor.GetConverter(typeof(double)).IsValid(value.Replace(',', '.')))
+			if (TypeDescriptor.GetConverter(typeof(double)).IsValid(value.Replace(',', '.')))
             {
                 return double.Parse(value);
             }
-            return value;
+			return value;
         }
     }  
 }

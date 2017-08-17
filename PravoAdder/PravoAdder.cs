@@ -19,8 +19,8 @@ namespace PravoAdder
             var settings = ConsoleController.LoadSettings(_configFilename);
 
             var blocksInfo = ConsoleController.ReadBlockInfo(settings) as IList<BlockInfo> ?? new List<BlockInfo>();
-            var excelTable = ConsoleController.ReadExcelFile(settings.DataRowPosition, settings.InformationRowPosition, new[] { "FF92D050", null });
-            var authenticator = ConsoleController.Autentification(settings);
+            var excelTable = ConsoleController.ReadExcelFile(settings, new[] { "FF92D050", null });
+            var authenticator = ConsoleController.ConsoleAutentification(settings);
 
             var filler = new DatabaseFiller(authenticator);
 

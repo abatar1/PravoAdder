@@ -21,6 +21,13 @@
               "VisualBlockProjectFieldId": "9adc36d0-3c8e-e511-80cb-00155d0a322c",
               "Type": "Value",
               "ColumnNumber": 5
+            },
+			{
+              "Name": "Статус дела",
+              "VisualBlockProjectFieldId": "9bdc36d0-3c8e-e511-80cb-00155d0a322c",
+              "Type": "Custom",
+              "ColumnNumber": 6,
+			  "SpecialData": "171912c2-2b8e-e511-80cb-00155d0a322c"
             }
           ]
         },
@@ -31,7 +38,7 @@
               "Name": "Дата подачи в суд",
               "VisualBlockProjectFieldId": "9fdc36d0-3c8e-e511-80cb-00155d0a322c",
               "Type": "Value",
-              "ColumnNumber": 6
+              "ColumnNumber": 7
             }
           ]
         }
@@ -48,12 +55,12 @@
               "VisualBlockProjectFieldId": "c16e5402-3532-e611-80ce-00155d0a322c",
               "Name": "Госпошлина",
               "Type": "Value",
-              "ColumnNumber": 8
+              "ColumnNumber": 9
             },
             {
               "VisualBlockProjectFieldId": "c06e5402-3532-e611-80ce-00155d0a322c",
               "Name": "Общая сумма требований без ГП",
-              "ColumnNumber": 7,
+              "ColumnNumber": 8,
               "Type": "Formula",
               "SpecialData": "Сумма первонач. требований (без ГП)"
             }
@@ -65,7 +72,7 @@
             {
               "VisualBlockProjectFieldId": "c36e5402-3532-e611-80ce-00155d0a322c",
               "Name": "Истребование ТС",
-              "ColumnNumber": 10,
+              "ColumnNumber": 11,
               "Type": "Custom",
               "SpecialData": "f5427c6e-d0b9-e511-80cb-00155d0a322c"
             },
@@ -73,12 +80,12 @@
               "VisualBlockProjectFieldId": "c46e5402-3532-e611-80ce-00155d0a322c",
               "Name": "Задолженность по платежам",
               "Type": "Value",
-              "ColumnNumber": 11
+              "ColumnNumber": 12
             },
             {
               "VisualBlockProjectFieldId": "c26e5402-3532-e611-80ce-00155d0a322c",
               "Name": "Общая сумма требований с ГП",
-              "ColumnNumber": 9,
+              "ColumnNumber": 10,
               "Type": "Formula",
               "SpecialData": "Сумма оконч.требований (с ГП)"
             }
@@ -92,19 +99,19 @@
               "VisualBlockProjectFieldId": "c66e5402-3532-e611-80ce-00155d0a322c",
               "Name": "Задолженность по пени",
               "Type": "Value",
-              "ColumnNumber": 12
+              "ColumnNumber": 13
             },
             {
               "VisualBlockProjectFieldId": "c76e5402-3532-e611-80ce-00155d0a322c",
               "Name": "Проценты по 395 ГК РФ",
               "Type": "Value",
-              "ColumnNumber": 13
+              "ColumnNumber": 14
             },
             {
               "VisualBlockProjectFieldId": "c86e5402-3532-e611-80ce-00155d0a322c",
               "Name": "Задолженность по страховке",
               "Type": "Value",
-              "ColumnNumber": 14
+              "ColumnNumber": 15
             }
           ]
         }
@@ -120,7 +127,7 @@
             {
               "VisualBlockProjectFieldId": "8609e848-1139-e611-80ce-00155d0a322c",
               "Name": "Общая сумма требований без ГП",
-              "ColumnNumber": 15,
+              "ColumnNumber": 16,
               "Type": "Formula",
               "SpecialData": "Сумма уст.треб. без ГП (в пользу Каркаде)"
             },
@@ -128,21 +135,21 @@
               "VisualBlockProjectFieldId": "8709e848-1139-e611-80ce-00155d0a322c",
               "Name": "Госпошлина",
               "Type": "Value",
-              "ColumnNumber": 16
+              "ColumnNumber": 17
             },
             {
               "VisualBlockProjectFieldId": "8809e848-1139-e611-80ce-00155d0a322c",
               "Name": "Общая сумма требований с ГП",
-              "ColumnNumber": 17,
+              "ColumnNumber": 18,
               "Type": "Formula",
               "SpecialData": "Сумма уст.треб. с ГП (в пользу Каркаде)"
             },
             {
               "VisualBlockProjectFieldId": "5a444f49-1339-e611-80ce-00155d0a322c",
               "Name": "Истребование ТС",
-              "ColumnNumber": 18,
+              "ColumnNumber": 19,
               "Type": "Custom",
-              "SpecialData": "1047aff1-1139-e611-80ce-00155d0a322c"
+              "SpecialData": "0c47aff1-1139-e611-80ce-00155d0a322c"
             }
           ]
         },
@@ -153,25 +160,25 @@
               "VisualBlockProjectFieldId": "8a09e848-1139-e611-80ce-00155d0a322c",
               "Name": "Задолженность по платежам",
               "Type": "Value",
-              "ColumnNumber": 19
+              "ColumnNumber": 20
             },
             {
               "VisualBlockProjectFieldId": "8c09e848-1139-e611-80ce-00155d0a322c",
               "Name": "Задолженность по пени",
               "Type": "Value",
-              "ColumnNumber": 20
+              "ColumnNumber": 21
             },
             {
               "VisualBlockProjectFieldId": "8d09e848-1139-e611-80ce-00155d0a322c",
               "Name": "Проценты по 395 ГК РФ",
               "Type": "Value",
-              "ColumnNumber": 21
+              "ColumnNumber": 22
             },
             {
               "VisualBlockProjectFieldId": "8e09e848-1139-e611-80ce-00155d0a322c",
               "Name": "Задолженность по страховке",
               "Type": "Value",
-              "ColumnNumber": 22
+              "ColumnNumber": 23
             }
           ]
         }
@@ -188,7 +195,7 @@
               "VisualBlockProjectFieldId": "550a0c32-1b7c-e611-80ce-00155d0a322c",
               "Name": "Дата резолютивной части",
               "Type": "Value",
-              "ColumnNumber": 23
+              "ColumnNumber": 24
             }
           ]
         }

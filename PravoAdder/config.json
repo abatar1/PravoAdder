@@ -1,0 +1,9 @@
+{
+  "Login": "admin@pravo.ru",
+  "BaseUri": "https://testcarcade.casepro.pro/",
+  "FolderName": "Тест (админ)",
+  "ProjectTypeName": "1-я инстанция",
+  "DataRowPosition": 9,
+  "InformationRowPosition": 3,
+  "IdComparerPath": "blocksinfo.json"
+}

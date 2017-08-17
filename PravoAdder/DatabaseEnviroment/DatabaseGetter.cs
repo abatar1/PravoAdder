@@ -27,12 +27,12 @@ namespace PravoAdder.DatabaseEnviroment
             }
         }
 
-        private object GetSimplePage(string name, string uri)
+        private object GetSimplePage(string name, string uri, int pageSize = int.MaxValue)
         {
             var content = new
             {
                 Name = name,
-                PageSize = 50,
+                PageSize = pageSize,
                 Page = 1
             };
 
@@ -45,7 +45,7 @@ namespace PravoAdder.DatabaseEnviroment
             };
         }
 
-        public dynamic GetProjectGroup(string projectName, int pageSize)
+        public dynamic GetProjectGroup(string projectName, int pageSize = int.MaxValue)
         {
             var content = new
             {
@@ -70,7 +70,7 @@ namespace PravoAdder.DatabaseEnviroment
             return null;
         }
 
-        public dynamic GetProject(string projectName, string projectGroupid, string folderName, int pageSize)
+        public dynamic GetProject(string projectName, string projectGroupid, string folderName, int pageSize = int.MaxValue)
         {
             var content = new
             {
@@ -125,5 +125,5 @@ namespace PravoAdder.DatabaseEnviroment
         {
             return GetSimplePage(formulaName, "CalculationFormulasSuggest/GetCalculationFormulas");
         }
-    }
+	}
 }

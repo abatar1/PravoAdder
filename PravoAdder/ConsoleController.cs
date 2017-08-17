@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using PravoAdder.DatabaseEnviroment;
 using PravoAdder.Domain;
 using PravoAdder.Domain.Info;
@@ -13,7 +14,7 @@ namespace PravoAdder
 {
     public class ConsoleController
     {
-        public static HttpAuthenticator Autentification(Settings settings)
+        public static HttpAuthenticator ConsoleAutentification(Settings settings)
         {
             while (true)
             {              
@@ -38,11 +39,28 @@ namespace PravoAdder
 
             foreach (var property in settings.GetType().GetProperties())
             {
-                var nameAttribute = (DisplayNameAttribute)property.GetCustomAttributes(typeof(DisplayNameAttribute)).FirstOrDefault();
+#if DEBUG
+	            switch (property.Name)
+	            {
+		            case "Password":
+			            property.SetValue(settings, "123123");
+			            continue;
+		            case "Overwrite":
+			            property.SetValue(settings, false);
+			            continue;
+		            case "ExcelFileName":
+			            property.SetValue(settings, "test2.xlsx");
+			            continue;
+		            case "DataRowPosition":
+			            property.SetValue(settings, 9);
+			            continue;
+				}
+#endif
+				var nameAttribute = (DisplayNameAttribute) property.GetCustomAttributes(typeof(DisplayNameAttribute)).FirstOrDefault();
                 var displayName = nameAttribute != null ? nameAttribute.DisplayName : property.Name;
                 var value = property.GetValue(settings);
 
-                if (string.IsNullOrEmpty(value?.ToString()))
+				if (string.IsNullOrEmpty(value?.ToString()) || property.PropertyType == typeof(bool))
                 {
                     property.SetValue(settings, LoadValue(displayName, property.PropertyType));
                 }
@@ -69,36 +87,10 @@ namespace PravoAdder
             return BlockInfoReader.ReadBlocksInfo(settings.IdComparerPath).ToList();
         }
 
-        public static IEnumerable<IDictionary<int, string>> ReadExcelFile(int dataRowPosition, int infoRowPosition, string[] allowedColors)
+        public static IEnumerable<IDictionary<int, string>> ReadExcelFile(Settings settings, string[] allowedColors)
         {
-            var state = true;
-            var excelFilename = "";
-            while (true)
-            {                
-                if (state)
-                {
-                    Console.WriteLine("Write excel filename: ");
-                    var filename = Console.ReadLine();
-                    if (string.IsNullOrEmpty(filename)) continue;
-                    excelFilename = filename.Contains(".xlsx") ? filename : $"{filename}.xlsx";
-                }
-                
-                Console.WriteLine("Reading excel file...");
-                try
-                {   
-                    return ExcelReader.ReadDataFromTable(excelFilename, dataRowPosition, infoRowPosition, allowedColors).ToList();
-                }
-                catch (FileNotFoundException ex)
-                {
-                    Console.WriteLine($"{ex.Message}");
-                }
-                catch (IOException ex)
-                {
-                    Console.WriteLine($"{ex.Message} Please close file and press Enter.");
-                    state = false;
-                    Console.ReadLine();
-                }                
-            }
+			Console.WriteLine("Reading excel file...");
+			return ExcelReader.ReadDataFromTable(settings.ExcelFileName, settings.DataRowPosition, settings.InformationRowPosition, allowedColors).ToList();
         }
 
         public static string AddProjectGroup(HeaderBlockInfo headerBlock, DatabaseFiller filler, Settings settings)
@@ -107,7 +99,8 @@ namespace PravoAdder
             var projectGroupSender = filler.AddProjectGroupAsync(
                 projectGroupName: headerBlock.ProjectGroupName,
                 folderName: settings.FolderName,
-                description: headerBlock.Description).Result;
+                description: headerBlock.Description,
+				overwrite: settings.Overwrite).Result;
             Console.WriteLine($"{projectGroupSender.Message}");
 
             return projectGroupSender.Content;
@@ -116,19 +109,19 @@ namespace PravoAdder
         public static string AddProject(HeaderBlockInfo headerBlock, DatabaseFiller filler, Settings settings, string projectGroupId)
         {
             Console.Write($"\tAdding project {headerBlock.ProjectName}...");
-            var projectSender = filler.AddProjectAsync(settings, headerBlock, projectGroupId).Result;
+            var projectSender = filler.AddProjectAsync(settings, headerBlock, projectGroupId, settings.Overwrite).Result;
             Console.WriteLine($"{projectSender.Message}");
 
             return projectSender.Content;
         }
 
-        public static async void AddInformationAsync(BlockInfo blockInfo, DatabaseFiller filler, IDictionary<int, string> excelRow, string projectId)
+        public static void AddInformationAsync(BlockInfo blockInfo, DatabaseFiller filler, IDictionary<int, string> excelRow, string projectId)
         {
             Console.WriteLine($"\tAdding information to project's block {blockInfo.Name}...");
-            var blockSender = await filler.AddInformationAsync(
+            var blockSender = filler.AddInformationAsync(
                 projectId: projectId,
                 blockInfo: blockInfo,
-                excelRow: excelRow);
+                excelRow: excelRow).Result;
         }
 
         public static void SplitLine()

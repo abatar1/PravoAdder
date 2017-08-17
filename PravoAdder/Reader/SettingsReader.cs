@@ -17,7 +17,7 @@ namespace PravoAdder.Reader
 
         public static void Save(this Settings settings, string settingsFilePath)
         {
-            var jsonSettings = JsonConvert.SerializeObject(settings);
+            var jsonSettings = JsonConvert.SerializeObject(settings, Formatting.Indented);
 
             var info = new FileInfo(settingsFilePath);
 

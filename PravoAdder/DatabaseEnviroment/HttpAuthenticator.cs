@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Authentication;
 
-
 namespace PravoAdder.DatabaseEnviroment
 {
     public class HttpAuthenticator
