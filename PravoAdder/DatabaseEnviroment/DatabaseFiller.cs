@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using PravoAdder.Domain;
 using PravoAdder.Domain.Info;
+using PravoAdder.Helper;
 
 namespace PravoAdder.DatabaseEnviroment
 {
@@ -30,27 +31,27 @@ namespace PravoAdder.DatabaseEnviroment
             return new EnviromentMessage(await HttpHelper.GetContentIdAsync(response), "Added succefully.");
         }
 
-        public async Task<EnviromentMessage> AddProjectGroupAsync(string projectGroupName, string folderName, string description, bool overwrite = true)
+        public async Task<EnviromentMessage> AddProjectGroupAsync(Settings settings, HeaderBlockInfo headerInfo)
         {
-            if (overwrite)
+            if (settings.Overwrite)
             {
-                var projectGroup = _databaseGetter.GetProjectGroup(projectGroupName);
+                var projectGroup = _databaseGetter.GetProjectGroup(headerInfo.ProjectGroupName);
                 if (projectGroup != null) return new EnviromentMessage(projectGroup.Id, "Group already exists.");
             }           
 
             var content = new
             {
-                Name = projectGroupName,
-                ProjectFolder = _databaseGetter.GetProjectFolder(folderName),
-                Description = description
+                Name = headerInfo.ProjectGroupName,
+                ProjectFolder = _databaseGetter.GetProjectFolder(settings.FolderName),
+	            headerInfo.Description
             };
 
             return await SendAddRequestAsync(content, "ProjectGroups", HttpMethod.Put);
         }
 
-        public async Task<EnviromentMessage> AddProjectAsync(Settings settings, HeaderBlockInfo headerInfo, string projectGroupId, bool overwrite = true)
+        public async Task<EnviromentMessage> AddProjectAsync(Settings settings, HeaderBlockInfo headerInfo, string projectGroupId)
         {
-            if (overwrite)
+            if (settings.Overwrite)
             {
                 var project = _databaseGetter.GetProject(headerInfo.ProjectName, projectGroupId, settings.FolderName);
                 if (project != null) return new EnviromentMessage(project.Id, "Project already exists.");

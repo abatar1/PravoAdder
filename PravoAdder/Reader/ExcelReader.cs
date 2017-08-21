@@ -8,7 +8,7 @@ namespace PravoAdder.Reader
 {
     public class ExcelReader
     {
-        public static IEnumerable<IDictionary<int, string>> ReadDataFromTable(string filename, int dataRowPosition, int infoRowPosition, string[] allowedColors)
+        public static IEnumerable<IDictionary<int, string>> Read(string filename, int dataRowPosition, int infoRowPosition, string[] allowedColors)
         {
             var info = new FileInfo(filename);
             if (!info.Exists) throw new FileNotFoundException($"File {filename} not found!");

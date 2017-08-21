@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using PravoAdder.DatabaseEnviroment;
 using PravoAdder.Domain;
 using PravoAdder.Domain.Info;
@@ -14,7 +13,12 @@ namespace PravoAdder
 {
     public class ConsoleController
     {
-        public static HttpAuthenticator ConsoleAutentification(Settings settings)
+	    public ConsoleController(TextWriter writer)
+	    {
+		    Console.SetOut(writer);
+	    }
+
+        public HttpAuthenticator Authenticate(Settings settings)
         {
             while (true)
             {              
@@ -32,7 +36,7 @@ namespace PravoAdder
             }
         }
 
-        public static Settings LoadSettings(string configFilename)
+        public Settings LoadSettings(string configFilename)
         {
             Console.WriteLine("Reading config files...");
             var settings = SettingsReader.Read(configFilename);
@@ -81,50 +85,46 @@ namespace PravoAdder
             }
         }      
 
-        public static IEnumerable<BlockInfo> ReadBlockInfo(Settings settings)
+        public IList<BlockInfo> ReadBlockInfo(Settings settings)
         {
             Console.WriteLine("Reading block info file...");
-            return BlockInfoReader.ReadBlocksInfo(settings.IdComparerPath).ToList();
+            return BlockInfoReader.Read(settings.IdComparerPath) as List<BlockInfo> ?? new List<BlockInfo>();
         }
 
-        public static IEnumerable<IDictionary<int, string>> ReadExcelFile(Settings settings, string[] allowedColors)
+        public IEnumerable<IDictionary<int, string>> ReadExcelFile(Settings settings, string[] allowedColors)
         {
 			Console.WriteLine("Reading excel file...");
-			return ExcelReader.ReadDataFromTable(settings.ExcelFileName, settings.DataRowPosition, settings.InformationRowPosition, allowedColors).ToList();
+			return ExcelReader.Read(settings.ExcelFileName, settings.DataRowPosition, settings.InformationRowPosition, allowedColors).ToList();
         }
 
-        public static string AddProjectGroup(HeaderBlockInfo headerBlock, DatabaseFiller filler, Settings settings)
+        public string AddProjectGroup(HeaderBlockInfo headerBlock, DatabaseFiller filler, Settings settings)
         {
             Console.Write($"\tAdding project group {headerBlock.ProjectGroupName}...");
-            var projectGroupSender = filler.AddProjectGroupAsync(
-                projectGroupName: headerBlock.ProjectGroupName,
-                folderName: settings.FolderName,
-                description: headerBlock.Description,
-				overwrite: settings.Overwrite).Result;
+            var projectGroupSender = filler.AddProjectGroupAsync(settings, headerBlock).Result;
             Console.WriteLine($"{projectGroupSender.Message}");
 
             return projectGroupSender.Content;
         }
 
-        public static string AddProject(HeaderBlockInfo headerBlock, DatabaseFiller filler, Settings settings, string projectGroupId)
+        public string AddProject(HeaderBlockInfo headerBlock, DatabaseFiller filler, Settings settings, string projectGroupId)
         {
             Console.Write($"\tAdding project {headerBlock.ProjectName}...");
-            var projectSender = filler.AddProjectAsync(settings, headerBlock, projectGroupId, settings.Overwrite).Result;
+            var projectSender = filler.AddProjectAsync(settings, headerBlock, projectGroupId).Result;
             Console.WriteLine($"{projectSender.Message}");
 
             return projectSender.Content;
         }
 
-        public static void AddInformationAsync(BlockInfo blockInfo, DatabaseFiller filler, IDictionary<int, string> excelRow, string projectId)
+        public void AddInformationAsync(BlockInfo blockInfo, DatabaseFiller filler, IDictionary<int, string> excelRow, string projectId)
         {
             Console.WriteLine($"\tAdding information to project's block {blockInfo.Name}...");
             var blockSender = filler.AddInformationAsync(
                 projectId: projectId,
                 blockInfo: blockInfo,
-                excelRow: excelRow).Result;
+                excelRow: excelRow);
         }
 
-        public static void SplitLine()
+        public void SplitLine()
         {
             Console.WriteLine("\t...");
         }

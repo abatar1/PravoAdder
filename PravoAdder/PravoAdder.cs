@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using PravoAdder.DatabaseEnviroment;
 using PravoAdder.Domain.Info;
 using PravoAdder.Reader;
@@ -16,25 +18,26 @@ namespace PravoAdder
 
         public void Run()
         {           
-            var settings = ConsoleController.LoadSettings(_configFilename);
-
-            var blocksInfo = ConsoleController.ReadBlockInfo(settings) as IList<BlockInfo> ?? new List<BlockInfo>();
-            var excelTable = ConsoleController.ReadExcelFile(settings, new[] { "FF92D050", null });
-            var authenticator = ConsoleController.ConsoleAutentification(settings);
+			var consoleController = new ConsoleController(Console.Out);	      
+			
+            var settings = consoleController.LoadSettings(_configFilename);
+            var blocksInfo = consoleController.ReadBlockInfo(settings);
+            var excelTable = consoleController.ReadExcelFile(settings, new[] { "FF92D050", null });
+            var authenticator = consoleController.Authenticate(settings);
 
             var filler = new DatabaseFiller(authenticator);
 
             foreach (var excelRow in excelTable)
             {
-                var headerBlock = BlockInfoReader.ReadHeaderBlockInfo(settings.IdComparerPath, excelRow);
-                var projectGroupId = ConsoleController.AddProjectGroup(headerBlock, filler, settings);
-                var projectId = ConsoleController.AddProject(headerBlock, filler, settings, projectGroupId);
+                var headerBlock = BlockInfoReader.ReadHeader(settings.IdComparerPath, excelRow);
+                var projectGroupId = consoleController.AddProjectGroup(headerBlock, filler, settings);
+                var projectId = consoleController.AddProject(headerBlock, filler, settings, projectGroupId);
 
                 foreach (var blockInfo in blocksInfo)
                 {
-                    ConsoleController.AddInformationAsync(blockInfo, filler, excelRow, projectId);
+                    consoleController.AddInformationAsync(blockInfo, filler, excelRow, projectId);
                 }     
-                ConsoleController.SplitLine();
+                consoleController.SplitLine();
             }
         }
     }

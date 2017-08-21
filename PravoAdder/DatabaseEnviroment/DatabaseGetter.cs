@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using PravoAdder.Helper;
 
 namespace PravoAdder.DatabaseEnviroment
 {
@@ -40,8 +41,8 @@ namespace PravoAdder.DatabaseEnviroment
 
             return new
             {
-                Id = (string)message?["Id"],
-                Name = (string)message?["Name"],
+                Id = (string) message?["Id"],
+                Name = (string) message?["Name"],
             };
         }
 
@@ -64,7 +65,7 @@ namespace PravoAdder.DatabaseEnviroment
                     return new
                     {
                         Name = name,
-                        Id = (string)page?["Id"]
+                        Id = (string) page?["Id"]
                     };          
             }
             return null;
@@ -81,7 +82,7 @@ namespace PravoAdder.DatabaseEnviroment
             };
 
             var projectGroup = GetPages(content, "", "Projects/GetGroupedProjects")
-                .FirstOrDefault(pf => pf?["ProjectGroupResponse"]?["Id"] == projectGroupid);
+                .FirstOrDefault(pf => pf["ProjectGroupResponse"]["Id"] == projectGroupid);
 
             var projects = projectGroup?["Projects"];
             if (projects == null) return null;
