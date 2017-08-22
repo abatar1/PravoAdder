@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using PravoAdder.Domain;
 using PravoAdder.Domain.Info;
-using PravoAdder.Helper;
+using PravoAdder.Helpers;
 
 namespace PravoAdder.DatabaseEnviroment
 {

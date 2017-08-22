@@ -4,7 +4,7 @@
     {      
         private static void Main(string[] args)
         {
-            var adder = new PravoAdder("config.json");
+            var adder = PravoAdder.Create("config.json");
             adder.Run();
         }
     }

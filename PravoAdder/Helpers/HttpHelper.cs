@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace PravoAdder.Helper
+namespace PravoAdder.Helpers
 {
     public static class HttpHelper
     {

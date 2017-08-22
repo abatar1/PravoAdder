@@ -11,11 +11,12 @@ using PravoAdder.Reader;
 
 namespace PravoAdder
 {
-    public class ConsoleController
+    public class WriterController
     {
-	    public ConsoleController(TextWriter writer)
+	    public WriterController(TextWriter writer)
 	    {
 		    Console.SetOut(writer);
+		    Console.Title = "Pravo adder";
 	    }
 
         public HttpAuthenticator Authenticate(Settings settings)
@@ -56,7 +57,7 @@ namespace PravoAdder
 			            property.SetValue(settings, "test2.xlsx");
 			            continue;
 		            case "DataRowPosition":
-			            property.SetValue(settings, 9);
+			            property.SetValue(settings, 4);
 			            continue;
 				}
 #endif
@@ -91,7 +92,7 @@ namespace PravoAdder
             return BlockInfoReader.Read(settings.IdComparerPath) as List<BlockInfo> ?? new List<BlockInfo>();
         }
 
-        public IEnumerable<IDictionary<int, string>> ReadExcelFile(Settings settings, string[] allowedColors)
+        public IList<IDictionary<int, string>> ReadExcelFile(Settings settings, string[] allowedColors)
         {
 			Console.WriteLine("Reading excel file...");
 			return ExcelReader.Read(settings.ExcelFileName, settings.DataRowPosition, settings.InformationRowPosition, allowedColors).ToList();
@@ -115,14 +116,19 @@ namespace PravoAdder
             return projectSender.Content;
         }
 
-        public void AddInformationAsync(BlockInfo blockInfo, DatabaseFiller filler, IDictionary<int, string> excelRow, string projectId)
+        public async void AddInformationAsync(BlockInfo blockInfo, DatabaseFiller filler, IDictionary<int, string> excelRow, string projectId)
         {
             Console.WriteLine($"\tAdding information to project's block {blockInfo.Name}...");
-            var blockSender = filler.AddInformationAsync(
+            var blockSender = await filler.AddInformationAsync(
                 projectId: projectId,
                 blockInfo: blockInfo,
                 excelRow: excelRow);
         }
+
+	    public void ProcessCount(int current, int total)
+	    {
+			Console.WriteLine($"\t{current}/{total} processing.");
+		}
 
         public void SplitLine()
         {

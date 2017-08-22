@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using PravoAdder.DatabaseEnviroment;
-using PravoAdder.Domain.Info;
 using PravoAdder.Reader;
 
 namespace PravoAdder
@@ -11,14 +9,19 @@ namespace PravoAdder
     {
         private readonly string _configFilename;
 
-        public PravoAdder(string configFilename)
+        private PravoAdder(string configFilename)
         {
             _configFilename = configFilename;
         }
 
+	    public static PravoAdder Create(string configFilename)
+	    {
+		    return new PravoAdder(configFilename);
+	    }
+
         public void Run()
         {           
-			var consoleController = new ConsoleController(Console.Out);	      
+			var consoleController = new WriterController(Console.Out);	      
 			
             var settings = consoleController.LoadSettings(_configFilename);
             var blocksInfo = consoleController.ReadBlockInfo(settings);
@@ -27,15 +30,16 @@ namespace PravoAdder
 
             var filler = new DatabaseFiller(authenticator);
 
-            foreach (var excelRow in excelTable)
+            foreach (var excelContainer in excelTable.Select((row, count) => new {Row = row, Count = count}))
             {
-                var headerBlock = BlockInfoReader.ReadHeader(settings.IdComparerPath, excelRow);
+				consoleController.ProcessCount(excelContainer.Count, excelTable.Count - 1);
+                var headerBlock = BlockInfoReader.ReadHeader(settings.IdComparerPath, excelContainer.Row);
                 var projectGroupId = consoleController.AddProjectGroup(headerBlock, filler, settings);
                 var projectId = consoleController.AddProject(headerBlock, filler, settings, projectGroupId);
 
                 foreach (var blockInfo in blocksInfo)
                 {
-                    consoleController.AddInformationAsync(blockInfo, filler, excelRow, projectId);
+                    consoleController.AddInformationAsync(blockInfo, filler, excelContainer.Row, projectId);
                 }     
                 consoleController.SplitLine();
             }

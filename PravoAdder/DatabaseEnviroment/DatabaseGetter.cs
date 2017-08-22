@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using PravoAdder.Helper;
+using PravoAdder.Helpers;
 
 namespace PravoAdder.DatabaseEnviroment
 {
