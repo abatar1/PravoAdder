@@ -116,11 +116,14 @@ namespace PravoAdder.DatabaseEnviroment
 				    };
 			    case "Custom":				    
 					var correctName = $"{fieldData.First().ToString().ToUpper()}{fieldData.Substring(1)}";
+				    var dictionaryItem = _databaseGetter
+						.GetDictionary(fieldInfo.SpecialData)
+					    ?.First(item => item.Name == correctName);
 				    return new
 				    {
 					    Name = correctName,
-					    Id = fieldInfo.SpecialData,
-					    IsCustom = true
+					    dictionaryItem?.Id,
+						IsCustom = true
 				    };
 			    default:
 				    throw new ArgumentException("Unknown type of value.");

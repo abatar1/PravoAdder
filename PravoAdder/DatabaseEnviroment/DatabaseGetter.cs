@@ -46,7 +46,22 @@ namespace PravoAdder.DatabaseEnviroment
             };
         }
 
-        public dynamic GetProjectGroup(string projectName, int pageSize = int.MaxValue)
+	    private IEnumerable<dynamic> GetSimplePages(string name, string uri, int pageSize = int.MaxValue)
+	    {
+			var content = new
+		    {
+			    Name = name,
+			    PageSize = pageSize,
+			    Page = 1
+		    };
+
+		    foreach (var page in GetPages(content, name, uri))
+		    {
+			    yield return page;
+		    }
+		}
+
+		public dynamic GetProjectGroup(string projectName, int pageSize = int.MaxValue)
         {
             var content = new
             {
@@ -102,7 +117,12 @@ namespace PravoAdder.DatabaseEnviroment
             return null;
         }
 
-        public dynamic GetProjectType(string projectTypeName)
+	    public IList<dynamic> GetDictionary(string dictionaryName)
+	    {
+		    return GetSimplePages("", $"dictionary/{dictionaryName}/getdictionaryitems").ToList();
+	    }
+
+		public dynamic GetProjectType(string projectTypeName)
         {
             return GetSimplePage(projectTypeName, "ProjectTypes/GetProjectTypes");
         }
@@ -125,6 +145,6 @@ namespace PravoAdder.DatabaseEnviroment
         public dynamic GetCalculationFormulas(string formulaName)
         {
             return GetSimplePage(formulaName, "CalculationFormulasSuggest/GetCalculationFormulas");
-        }
+        }	    
 	}
 }

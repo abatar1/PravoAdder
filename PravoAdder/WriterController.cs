@@ -89,7 +89,7 @@ namespace PravoAdder
         public IList<BlockInfo> ReadBlockInfo(Settings settings)
         {
             Console.WriteLine("Reading block info file...");
-            return BlockInfoReader.Read(settings.IdComparerPath) as List<BlockInfo> ?? new List<BlockInfo>();
+	        return BlockInfoReader.Read(settings.IdComparerPath).ToList();
         }
 
         public IList<IDictionary<int, string>> ReadExcelFile(Settings settings, string[] allowedColors)

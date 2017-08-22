@@ -22,12 +22,12 @@
               "Type": "Value",
               "ColumnNumber": 5
             },
-			{
+            {
               "Name": "Статус дела",
               "VisualBlockProjectFieldId": "9bdc36d0-3c8e-e511-80cb-00155d0a322c",
               "Type": "Custom",
               "ColumnNumber": 6,
-			  "SpecialData": "171912c2-2b8e-e511-80cb-00155d0a322c"
+              "SpecialData": "Reserve14Dictionary"
             }
           ]
         },
@@ -74,7 +74,7 @@
               "Name": "Истребование ТС",
               "ColumnNumber": 11,
               "Type": "Custom",
-              "SpecialData": "f5427c6e-d0b9-e511-80cb-00155d0a322c"
+              "SpecialData": "Reserve27Dictionary"
             },
             {
               "VisualBlockProjectFieldId": "c46e5402-3532-e611-80ce-00155d0a322c",
@@ -149,7 +149,7 @@
               "Name": "Истребование ТС",
               "ColumnNumber": 19,
               "Type": "Custom",
-              "SpecialData": "0c47aff1-1139-e611-80ce-00155d0a322c"
+              "SpecialData": "Reserve32Dictionary"
             }
           ]
         },
