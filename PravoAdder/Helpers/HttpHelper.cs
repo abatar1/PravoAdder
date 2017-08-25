@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace PravoAdder.Helpers
             return JsonConvert.DeserializeObject(message);
         }
 
-        public static HttpRequestMessage CreateRequest(object content, string requestUri, HttpMethod method, Cookie cookie)
+        public static HttpRequestMessage CreateJsonRequest(object content, string requestUri, HttpMethod method, Cookie cookie)
         {
             var serializedContent = JsonConvert.SerializeObject(content);
             var request = new HttpRequestMessage(method, requestUri)
@@ -27,7 +28,21 @@ namespace PravoAdder.Helpers
             return request;
         }
 
-        public static async Task<string> GetContentIdAsync(HttpResponseMessage response)
+	    public static HttpRequestMessage CreateRequest(string requestUri, IDictionary<string, string> parameters, HttpMethod method, Cookie cookie)
+	    {
+			var parametersBuilder = new StringBuilder();
+		    foreach (var parameter in parameters)
+		    {
+			    parametersBuilder.Append($"{parameter.Key}={parameter.Value}&");
+		    }
+			var parametersString = parametersBuilder.ToString().Remove(parametersBuilder.Length - 1);
+			var request = new HttpRequestMessage(method, $"{requestUri}?{parametersString}");
+		    request.Headers.Add("Cookie", cookie.ToString());
+
+		    return request;
+	    }
+
+		public static async Task<string> GetContentIdAsync(HttpResponseMessage response)
         {
             var responseContent = await response.Content.ReadAsStringAsync();
             return JObject.Parse(responseContent)["Result"]["Id"].ToString();

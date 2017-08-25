@@ -14,20 +14,22 @@ namespace PravoAdder.DatabaseEnviroment
     {
         private readonly DatabaseGetter _databaseGetter;
         private readonly HttpAuthenticator _httpAuthenticator;
+	    private readonly IList<dynamic> _participants;
 
         public DatabaseFiller(HttpAuthenticator httpAuthenticator)
         {
             _databaseGetter = new DatabaseGetter(httpAuthenticator);
             _httpAuthenticator = httpAuthenticator;
+	        _participants = _databaseGetter.GetParticipants();
         }
 
         private async Task<EnviromentMessage> SendAddRequestAsync(object content, string uri, HttpMethod method)
         {
-            var request = HttpHelper.CreateRequest(content, $"api/{uri}", method, _httpAuthenticator.UserCookie);
+            var request = HttpHelper.CreateJsonRequest(content, $"api/{uri}", method, _httpAuthenticator.UserCookie);
 
-            var response = await _httpAuthenticator.Client.SendAsync(request);
-            response.EnsureSuccessStatusCode();
-
+		    var response = await _httpAuthenticator.Client.SendAsync(request);
+		    response.EnsureSuccessStatusCode();           
+          
             return new EnviromentMessage(await HttpHelper.GetContentIdAsync(response), "Added succefully.");
         }
 
@@ -73,7 +75,7 @@ namespace PravoAdder.DatabaseEnviroment
             return await SendAddRequestAsync(content, "projects/CreateProject", HttpMethod.Post);
         }
 
-        public async Task<EnviromentMessage> AddInformationAsync(string projectId, BlockInfo blockInfo, IDictionary<int, string> excelRow)
+        public async Task AddInformationAsync(string projectId, BlockInfo blockInfo, IDictionary<int, string> excelRow)
         {
             var contentLines = new List<BlockLineInfo>();
             foreach (var line in blockInfo.Lines)
@@ -98,7 +100,7 @@ namespace PravoAdder.DatabaseEnviroment
                 FrontOrder = 0
             };
 
-            return await SendAddRequestAsync(contentBlock, "ProjectCustomValues/Create", HttpMethod.Post);
+            await SendAddRequestAsync(contentBlock, "ProjectCustomValues/Create", HttpMethod.Post);
         }
 
 	    private object CreateFieldValueFromData(BlockFieldInfo fieldInfo, string fieldData)
@@ -114,18 +116,21 @@ namespace PravoAdder.DatabaseEnviroment
 					    Result = FormatFieldData(fieldData),
 					    CalculationFormulaId = calculationFormula.Id
 				    };
-			    case "Custom":				    
+			    case "Dictionary":				    
 					var correctName = $"{fieldData.First().ToString().ToUpper()}{fieldData.Substring(1)}";
 				    var dictionaryItem = _databaseGetter
 						.GetDictionary(fieldInfo.SpecialData)
-					    ?.First(item => item.Name == correctName);
+					    ?.First(item => item.Name == correctName);				
 				    return new
 				    {
 					    Name = correctName,
 					    dictionaryItem?.Id,
 						IsCustom = true
 				    };
-			    default:
+				case "Participant":
+					return _participants
+						.First(p => p.Name == fieldData);
+				default:
 				    throw new ArgumentException("Unknown type of value.");
 		    }
 		}

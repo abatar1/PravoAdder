@@ -2,9 +2,9 @@
 using Newtonsoft.Json;
 using PravoAdder.Domain;
 
-namespace PravoAdder.Reader
+namespace PravoAdder.Helpers
 {
-    public static class SettingsReader
+    public static class SettingsHelper
     {
         public static Settings Read(string filePath)
         {

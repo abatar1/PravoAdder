@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Linq;
+using System.Threading.Tasks;
+using PravoAdder.Controllers;
 using PravoAdder.DatabaseEnviroment;
-using PravoAdder.Reader;
 
 namespace PravoAdder
 {
@@ -20,29 +20,29 @@ namespace PravoAdder
 	    }
 
         public void Run()
-        {           
-			var consoleController = new WriterController(Console.Out);	      
-			
-            var settings = consoleController.LoadSettings(_configFilename);
-            var blocksInfo = consoleController.ReadBlockInfo(settings);
-            var excelTable = consoleController.ReadExcelFile(settings, new[] { "FF92D050", null });
-            var authenticator = consoleController.Authenticate(settings);
+        {
+			var settingsController = new SettingsController(Console.Out);
+			var settings = settingsController.LoadSettings(_configFilename);						
+		
+			var processController = new MigrationProcessController(Console.Out);
+			using (var authenticator = processController.Authenticate(settings))
+	        {
+		        var blockReaderController = new BlockReaderController(Console.Out, settings, authenticator);
+		        var blocksInfo = blockReaderController.ReadBlockInfo();
+		        var excelTable = blockReaderController.ExcelTable.TableContent;
 
-            var filler = new DatabaseFiller(authenticator);
+				var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 2 };
+		        var filler = new DatabaseFiller(authenticator);
+				Parallel.ForEach(excelTable, parallelOptions, (excelRow, state, index) =>
+		        {
+			        processController.ProcessCount((int)index, excelTable.Count - 1);		        
+			        var headerBlock = blockReaderController.ReadHeader(excelRow);
+			        var projectGroupId = processController.AddProjectGroup(headerBlock, filler, settings);
+			        var projectId = processController.AddProject(headerBlock, filler, settings, projectGroupId);
 
-            foreach (var excelContainer in excelTable.Select((row, count) => new {Row = row, Count = count}))
-            {
-				consoleController.ProcessCount(excelContainer.Count, excelTable.Count - 1);
-                var headerBlock = BlockInfoReader.ReadHeader(settings.IdComparerPath, excelContainer.Row);
-                var projectGroupId = consoleController.AddProjectGroup(headerBlock, filler, settings);
-                var projectId = consoleController.AddProject(headerBlock, filler, settings, projectGroupId);
-
-                foreach (var blockInfo in blocksInfo)
-                {
-                    consoleController.AddInformationAsync(blockInfo, filler, excelContainer.Row, projectId);
-                }     
-                consoleController.SplitLine();
-            }
+			        Parallel.ForEach(blocksInfo, parallelOptions, blockInfo => processController.AddInformationAsync(blockInfo, filler, excelRow, projectId));
+		        });
+			}				
         }
     }
 }

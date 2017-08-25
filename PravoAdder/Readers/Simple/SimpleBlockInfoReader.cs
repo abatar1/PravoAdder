@@ -2,17 +2,24 @@
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using PravoAdder.Domain;
 using PravoAdder.Domain.Info;
 
-namespace PravoAdder.Reader
+namespace PravoAdder.Readers
 {
-    public class BlockInfoReader
+    public class SimpleBlockInfoReader : BlockInfoReader
     {
-        public static IEnumerable<BlockInfo> Read(string filePath)
+		public SimpleBlockInfoReader(string filePath, ExcelTable excelInfo) : base(filePath, excelInfo)
+		{
+			
+		}
+
+        public override IEnumerable<BlockInfo> Read()
         {
-            var info = new FileInfo(filePath);
+            var info = new FileInfo(FilePath);
             if (!info.Exists) throw new FileNotFoundException("Blocks info file doesn't found.");
-            var jBlocks = JObject.Parse(File.ReadAllText(filePath));
+
+            var jBlocks = JObject.Parse(File.ReadAllText(FilePath));
 
             var blockObjects = AllChildren(jBlocks)
                 .First(c => c.Type == JTokenType.Array && c.Path.Contains("Blocks"))
@@ -47,23 +54,16 @@ namespace PravoAdder.Reader
             }
         }
 
-        public static HeaderBlockInfo ReadHeader(string filePath, IDictionary<int, string> excelRow)
-        {
-            var jBlocks = JObject.Parse(File.ReadAllText(filePath));
-
-            return new HeaderBlockInfo
-            {
-                ProjectName = excelRow[jBlocks["ProjectName"].ToObject<int>()],
-                ProjectGroupName = excelRow[jBlocks["ProjectGroupName"].ToObject<int>()],
-                ResponsibleName = excelRow[jBlocks["ResponsibleName"].ToObject<int>()]
-            };
-        }
-
-        public static BlockInfo GetByName(IEnumerable<BlockInfo> blocks, string name)
-        {
-            return blocks
-                .FirstOrDefault(block => block.Name == name);
-        }
+	    public override HeaderBlockInfo ReadHeaderBlock(IDictionary<int, string> excelRow)
+	    {
+		    var jBlocks = JObject.Parse(File.ReadAllText(FilePath));
+		    return new HeaderBlockInfo
+		    {
+			    ProjectName = excelRow[jBlocks["ProjectName"].ToObject<int>()],
+			    ProjectGroupName = excelRow[jBlocks["ProjectGroupName"].ToObject<int>()],
+			    ResponsibleName = excelRow[jBlocks["ResponsibleName"].ToObject<int>()]
+		    };
+	    }		
 
         private static IEnumerable<JToken> AllChildren(JToken json)
         {

@@ -22,13 +22,13 @@
               "Type": "Value",
               "ColumnNumber": 5
             },
-            {
-              "Name": "Статус дела",
-              "VisualBlockProjectFieldId": "9bdc36d0-3c8e-e511-80cb-00155d0a322c",
-              "Type": "Custom",
-              "ColumnNumber": 6,
-              "SpecialData": "Reserve14Dictionary"
-            }
+											{
+												"Name": "Статус дела",
+												"VisualBlockProjectFieldId": "9bdc36d0-3c8e-e511-80cb-00155d0a322c",
+												"Type": "Dictionary",
+												"ColumnNumber": 6,
+												"SpecialData": "Reserve14Dictionary"
+											}
           ]
         },
         {
@@ -69,13 +69,13 @@
         {
           "BlockLineId": "2ced6980-d153-e611-80ce-00155d0a322c",
           "Values": [
-            {
-              "VisualBlockProjectFieldId": "c36e5402-3532-e611-80ce-00155d0a322c",
-              "Name": "Истребование ТС",
-              "ColumnNumber": 11,
-              "Type": "Custom",
-              "SpecialData": "Reserve27Dictionary"
-            },
+											{
+												"VisualBlockProjectFieldId": "c36e5402-3532-e611-80ce-00155d0a322c",
+												"Name": "Истребование ТС",
+												"ColumnNumber": 11,
+												"Type": "Dictionary",
+												"SpecialData": "Reserve27Dictionary"
+											},
             {
               "VisualBlockProjectFieldId": "c46e5402-3532-e611-80ce-00155d0a322c",
               "Name": "Задолженность по платежам",
@@ -144,13 +144,13 @@
               "Type": "Formula",
               "SpecialData": "Сумма уст.треб. с ГП (в пользу Каркаде)"
             },
-            {
-              "VisualBlockProjectFieldId": "5a444f49-1339-e611-80ce-00155d0a322c",
-              "Name": "Истребование ТС",
-              "ColumnNumber": 19,
-              "Type": "Custom",
-              "SpecialData": "Reserve32Dictionary"
-            }
+											{
+												"VisualBlockProjectFieldId": "5a444f49-1339-e611-80ce-00155d0a322c",
+												"Name": "Истребование ТС",
+												"ColumnNumber": 19,
+												"Type": "Dictionary",
+												"SpecialData": "Reserve32Dictionary"
+											}
           ]
         },
         {

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using Newtonsoft.Json;
 
 namespace PravoAdder.Domain
@@ -35,5 +36,15 @@ namespace PravoAdder.Domain
 	    [JsonIgnore]
 	    [DisplayName("Write excel filename")]
 	    public string ExcelFileName { get; set; }
+
+	    [DisplayName("Enter block loading mode")]
+	    public string BlockLoadingMode { get; set; }
+
+	    [DisplayName("Enter list allowed column's colors separated by commas (format:FFRRGGBB)")]
+		public string[] AllowedColors { get; set; }
+
+	    [JsonIgnore]
+		[SettingsIgnore(true)]
+		public Dictionary<string, dynamic> AdditionalSettings { get; set; } 
 	}
 }

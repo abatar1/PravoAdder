@@ -58,11 +58,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="WriterController.cs" />
+    <Compile Include="Controllers\BlockReaderController.cs" />
+    <Compile Include="DatabaseEnviroment\RetryHandler.cs" />
+    <Compile Include="Domain\ExcelTable.cs" />
+    <Compile Include="Domain\FieldAddress.cs" />
+    <Compile Include="Domain\SettingsIgnoreAttribute.cs" />
+    <Compile Include="Readers\BlockInfoReader.cs" />
+    <Compile Include="Controllers\SettingsController.cs" />
+    <Compile Include="Controllers\MigrationProcessController.cs" />
     <Compile Include="DatabaseEnviroment\EnviromentMessage.cs" />
     <Compile Include="Domain\Info\HeaderBlockInfo.cs" />
     <Compile Include="PravoAdder.cs" />
-    <Compile Include="Reader\BlockInfoReader.cs" />
+    <Compile Include="Readers\Color\ColorBlockInfoReader.cs" />
+    <Compile Include="Readers\Color\ColorExcelReader.cs" />
+    <Compile Include="Readers\Simple\SimpleBlockInfoReader.cs" />
     <Compile Include="DatabaseEnviroment\HttpAuthenticator.cs" />
     <Compile Include="DatabaseEnviroment\DatabaseFiller.cs" />
     <Compile Include="DatabaseEnviroment\DatabaseGetter.cs" />
@@ -70,11 +79,12 @@
     <Compile Include="Domain\Info\BlockFieldInfo.cs" />
     <Compile Include="Domain\Info\BlockLineInfo.cs" />
     <Compile Include="Domain\Settings.cs" />
-    <Compile Include="Reader\ExcelReader.cs" />
+    <Compile Include="Readers\ExcelReader.cs" />
     <Compile Include="Helpers\HttpHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Reader\SettingsReader.cs" />
+    <Compile Include="Helpers\SettingsHelper.cs" />
+    <Compile Include="Readers\Simple\SimpleExcelReader.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

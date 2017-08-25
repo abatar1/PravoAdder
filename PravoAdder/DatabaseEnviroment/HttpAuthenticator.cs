@@ -8,7 +8,7 @@ using PravoAdder.Helpers;
 
 namespace PravoAdder.DatabaseEnviroment
 {
-    public class HttpAuthenticator
+    public class HttpAuthenticator : IDisposable
     {
         public HttpClient Client { get; }
         public Cookie UserCookie { get; private set; }       
@@ -19,12 +19,13 @@ namespace PravoAdder.DatabaseEnviroment
         {
             BaseAddress = new Uri(baseUri);
             CookieContainer = new CookieContainer();
-            var handler = new HttpClientHandler
+
+            var clientHandler = new HttpClientHandler
             {
                 CookieContainer = CookieContainer
             };
-
-            Client = new HttpClient(handler)
+	        var retryHandler = new RetryHandler(clientHandler);
+			Client = new HttpClient(retryHandler)
             {
                 BaseAddress = BaseAddress
             };
@@ -48,5 +49,10 @@ namespace PravoAdder.DatabaseEnviroment
             var message = HttpHelper.GetMessageFromResponceAsync(response).Result;
             if (!(bool)message.Succeeded) throw new AuthenticationException("Wrong login or password");
         }
+
+	    public void Dispose()
+	    {
+		    Client?.Dispose();
+	    }
     }
 }

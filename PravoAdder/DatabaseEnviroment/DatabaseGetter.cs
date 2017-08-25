@@ -14,63 +14,65 @@ namespace PravoAdder.DatabaseEnviroment
             _httpAuthenticator = authenticator;
         }
 
-        private IEnumerable<dynamic> GetPages(object content, string name, string uri)
+	    private IEnumerable<dynamic> GetMessageFromRequest(HttpRequestMessage request)
+	    {
+			var response = _httpAuthenticator.Client.SendAsync(request).Result;
+		    response.EnsureSuccessStatusCode();
+
+		    var messages = HttpHelper.GetMessageFromResponceAsync(response).Result;
+		    foreach (var message in messages.Result)
+		    {
+			    yield return message;
+		    }
+		}
+
+		private IEnumerable<dynamic> GetJsonPages(object content, string uri, HttpMethod httpMethod)
         {          
-            var request = HttpHelper.CreateRequest(content, $"api/{uri}", HttpMethod.Post, _httpAuthenticator.UserCookie);
+            var request = HttpHelper.CreateJsonRequest(content, $"api/{uri}", httpMethod, _httpAuthenticator.UserCookie);
 
-            var response = _httpAuthenticator.Client.SendAsync(request).Result;
-            response.EnsureSuccessStatusCode();
-
-            var jsonMessages = HttpHelper.GetMessageFromResponceAsync(response).Result;
-            foreach (var message in jsonMessages.Result)
-            {
-                yield return message;
-            }
+	        return GetMessageFromRequest(request).ToList();
         }
 
-        private object GetSimplePage(string name, string uri, int pageSize = int.MaxValue)
-        {
-            var content = new
-            {
-                Name = name,
-                PageSize = pageSize,
-                Page = 1
-            };
+	    private IEnumerable<dynamic> GetPages(IDictionary<string, string> parameters, string uri, HttpMethod httpMethod)
+	    {
+		    var request = HttpHelper.CreateRequest($"api/{uri}", parameters, httpMethod, _httpAuthenticator.UserCookie);
 
-            var message = GetPages(content, name, uri).FirstOrDefault();
+		    return GetMessageFromRequest(request).ToList();
+		}
 
-            return new
-            {
-                Id = (string) message?["Id"],
-                Name = (string) message?["Name"],
-            };
-        }
-
-	    private IEnumerable<dynamic> GetSimplePages(string name, string uri, int pageSize = int.MaxValue)
+	    private dynamic GetSimpleJsonPage(string name, string uri, HttpMethod httpMethod, int pageSize = int.MaxValue)
 	    {
 			var content = new
 		    {
-			    Name = name,
 			    PageSize = pageSize,
 			    Page = 1
 		    };
+			return GetJsonPages(content, uri, httpMethod)
+				.Single(p => p.Name == name);
+		}
 
-		    foreach (var page in GetPages(content, name, uri))
+	    private IEnumerable<dynamic> GetSimpleJsonPages(string uri, HttpMethod httpMethod, int pageSize = int.MaxValue)
+	    {
+		    var content = new
+		    {
+			    PageSize = pageSize,
+			    Page = 1
+		    };
+		    foreach (var page in GetJsonPages(content, uri, httpMethod))
 		    {
 			    yield return page;
 		    }
-		}
+	    }
 
 		public dynamic GetProjectGroup(string projectName, int pageSize = int.MaxValue)
         {
             var content = new
             {
-                Name = "",
                 PageSize = pageSize,
                 Page = 1
             };
 
-            var pages = GetPages(content, "", "ProjectGroups/PostProjectGroups");
+            var pages = GetJsonPages(content, "ProjectGroups/PostProjectGroups", HttpMethod.Post);
 
             foreach (var page in pages)
             {
@@ -90,13 +92,12 @@ namespace PravoAdder.DatabaseEnviroment
         {
             var content = new
             {
-                FullSearchString = "",
                 PageSize = pageSize,
                 Page = 1,
                 FolderId = GetProjectFolder(folderName).Id
             };
 
-            var projectGroup = GetPages(content, "", "Projects/GetGroupedProjects")
+            var projectGroup = GetJsonPages(content, "Projects/GetGroupedProjects", HttpMethod.Post)
                 .FirstOrDefault(pf => pf["ProjectGroupResponse"]["Id"] == projectGroupid);
 
             var projects = projectGroup?["Projects"];
@@ -116,35 +117,49 @@ namespace PravoAdder.DatabaseEnviroment
             }
             return null;
         }
-
-	    public IList<dynamic> GetDictionary(string dictionaryName)
-	    {
-		    return GetSimplePages("", $"dictionary/{dictionaryName}/getdictionaryitems").ToList();
-	    }
-
+	  
 		public dynamic GetProjectType(string projectTypeName)
-        {
-            return GetSimplePage(projectTypeName, "ProjectTypes/GetProjectTypes");
-        }
+		{
+			return GetSimpleJsonPage(projectTypeName, "ProjectTypes/GetProjectTypes", HttpMethod.Post);
+		}
 
-        public dynamic GetResponsible(string resposibleName)
+        public dynamic GetResponsible(string responsibleName)
         {
-            return GetSimplePage(resposibleName.Replace(".", ""), "CompanyUsersSuggest");
+	        return GetSimpleJsonPage(responsibleName.Replace(".", ""), "CompanyUsersSuggest", HttpMethod.Post);
         }
 
         public dynamic GetProjectFolder(string folderName)
         {
-            return GetSimplePage(folderName, "ProjectFolders/GetProjectFoldersForEdit");
+	        return GetSimpleJsonPage(folderName, "ProjectFolders/GetProjectFoldersForEdit", HttpMethod.Post);
         }
 
         public dynamic GetParticipant(string participantName)
         {
-            return GetSimplePage(participantName, "ParticipantsSuggest/GetParticipants");
+	        return GetSimpleJsonPage(participantName, "ParticipantsSuggest/GetParticipants", HttpMethod.Post);
         }
 
         public dynamic GetCalculationFormulas(string formulaName)
         {
-            return GetSimplePage(formulaName, "CalculationFormulasSuggest/GetCalculationFormulas");
-        }	    
+            return GetSimpleJsonPage(formulaName, "CalculationFormulasSuggest/GetCalculationFormulas", HttpMethod.Post);
+        }
+
+	    public IList<dynamic> GetDictionary(string dictionaryName)
+	    {
+		    return GetSimpleJsonPages($"dictionary/{dictionaryName}/getdictionaryitems", HttpMethod.Post).ToList();
+	    }
+
+	    public IList<dynamic> GetParticipants()
+	    {
+			return GetSimpleJsonPages("ParticipantsSuggest/GetParticipants", HttpMethod.Post).ToList();
+		}
+
+		public dynamic GetVisualBlocks(string projectTypeId)
+	    {
+		    var parameters = new Dictionary<string, string> {["projectTypeId"] = projectTypeId};
+		    var pages = GetPages(parameters, "ProjectTypes/GetProjectType", HttpMethod.Get)
+				.First(block => block.Name == "VisualBlocks").Value;
+
+			return pages;
+	    }
 	}
 }
