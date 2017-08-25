@@ -7,7 +7,7 @@ namespace PravoAdder.Domain
 	{
 		public string FieldName { get; }
 		public string BlockName { get; }
-		public int Repeat { get; }
+		public bool Repeat { get; }
 
 		public FieldAddress(string address)
 		{
@@ -15,7 +15,7 @@ namespace PravoAdder.Domain
 			BlockName = FormatMatch(matches, 0);
 			FieldName = FormatMatch(matches, 1);
 			if (address.Contains("Повтор"))
-				Repeat = int.Parse(FormatMatch(matches, 2));
+				Repeat = true;
 		}
 
 		public static FieldAddress Create(string address)
@@ -55,7 +55,7 @@ namespace PravoAdder.Domain
 			{
 				var hashCode = (FieldName != null ? FieldName.GetHashCode() : 0);
 				hashCode = (hashCode * 397) ^ (BlockName != null ? BlockName.GetHashCode() : 0);
-				hashCode = (hashCode * 397) ^ Repeat;
+				hashCode = (hashCode * 397) ^ Repeat.GetHashCode();
 				return hashCode;
 			}
 		}

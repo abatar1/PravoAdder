@@ -13,8 +13,8 @@ namespace PravoAdder.Domain
 		{
 			var tmp = info
 				.ToDictionary(i => i.Key, i => new FieldAddress(i.Value))
-				.GroupBy(i => i.Value.Repeat)
-				.ToDictionary(g => g.Key, g => g.Select(pp => new {Value = pp.Value, Position = pp.Key}).ToList());
+				.GroupBy(i => i.Value)
+				.ToDictionary(g => g.Key, g => g.Select(pp => pp.Key).ToList());
 			TableContent = table;
 			_infoRowContentSti = new Dictionary<FieldAddress, int>(info
 				.GroupBy(p => p.Value)
