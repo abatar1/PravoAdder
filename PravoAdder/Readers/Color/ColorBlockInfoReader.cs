@@ -12,7 +12,8 @@ namespace PravoAdder.Readers
 		private readonly DatabaseGetter _databaseGetter;
 		private readonly Settings _settings;
 
-		public ColorBlockInfoReader(ExcelTable excelTable, Settings settings, HttpAuthenticator authenticator) : base(settings, excelTable)
+		public ColorBlockInfoReader(ExcelTable excelTable, Settings settings, HttpAuthenticator authenticator) :
+			base(settings, excelTable)
 		{
 			_databaseGetter = new DatabaseGetter(authenticator);
 			_settings = settings;
@@ -76,14 +77,14 @@ namespace PravoAdder.Readers
 							{
 								if (!complexMultilines.ContainsKey(key))
 								{
-									complexMultilines.Add(key, new BlockLineInfo { Id = line.Id, Order = key - 1});
+									complexMultilines.Add(key, new BlockLineInfo {Id = line.Id, Order = key - 1});
 								}
 								complexMultilines[key].Fields.Add(ReadField(field.Id.ToString(), projectField, complexIndexes[key]));
 							}
 							continue;
-						}						
+						}
 
-						var indexes = ExcelTable.GetIndexes(fieldAddress);						
+						var indexes = ExcelTable.GetIndexes(fieldAddress);
 						if (indexes == null) continue;
 
 						if (indexes.Count > 1)
@@ -98,7 +99,7 @@ namespace PravoAdder.Readers
 										ReadField(field.Id.ToString(), projectField, i)
 									}
 								})
-								.ToList();						
+								.ToList();
 						}
 						else
 						{
@@ -111,12 +112,12 @@ namespace PravoAdder.Readers
 									.Cast<BlockFieldInfo>()
 									.ToList()
 							});
-						}					
+						}
 					}
-					tmpLines.AddRange(complexMultilines.Select(d => d.Value));					
-					lines.AddRange(tmpLines);					
+					tmpLines.AddRange(complexMultilines.Select(d => d.Value));
+					lines.AddRange(tmpLines);
 				}
-				
+
 				yield return new BlockInfo
 				{
 					Name = blockname,

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using PravoAdder.DatabaseEnviroment;
 using PravoAdder.Domain;
@@ -22,7 +21,7 @@ namespace PravoAdder.Controllers
 				case "Color":
 					excelReader = new ColorExcelReader();
 					ExcelTable = excelReader.Read(settings);
-					_blockInfoReader = new ColorBlockInfoReader(ExcelTable, settings, autentificator);					
+					_blockInfoReader = new ColorBlockInfoReader(ExcelTable, settings, autentificator);
 					break;
 				case "Simple":
 					excelReader = new SimpleExcelReader();

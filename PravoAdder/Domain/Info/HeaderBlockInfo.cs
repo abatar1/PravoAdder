@@ -1,11 +1,11 @@
 ﻿namespace PravoAdder.Domain.Info
 {
-    public class HeaderBlockInfo
-    {
+	public class HeaderBlockInfo
+	{
 		public string FolderName { get; set; }
-        public string ProjectGroupName { get; set; }
-        public string ProjectName { get; set; }
-        public string ResponsibleName { get; set; }
-        public string Description { get; set; } = "Created automatically";
-    }
+		public string ProjectGroupName { get; set; }
+		public string ProjectName { get; set; }
+		public string ResponsibleName { get; set; }
+		public string Description { get; set; } = "Created automatically";
+	}
 }

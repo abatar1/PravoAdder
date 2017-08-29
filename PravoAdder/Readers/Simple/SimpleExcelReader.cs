@@ -19,7 +19,7 @@ namespace PravoAdder.Readers
 				var worksheet = xlPackage.Workbook.Worksheets.First();
 				var totalRows = worksheet.Dimension.End.Row;
 				var totalColumns = worksheet.Dimension.End.Column;
-				
+
 				for (var rowNum = settings.DataRowPosition; rowNum <= totalRows; rowNum++)
 				{
 					table.Add(worksheet

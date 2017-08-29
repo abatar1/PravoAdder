@@ -11,32 +11,36 @@ using PravoAdder.Helpers;
 
 namespace PravoAdder.DatabaseEnviroment
 {
-    public class DatabaseFiller
-    {
-        private readonly DatabaseGetter _databaseGetter;
-        private readonly HttpAuthenticator _httpAuthenticator;
-	    private readonly IList<dynamic> _participants;
+	public class DatabaseFiller
+	{
+		private readonly DatabaseGetter _databaseGetter;
+		private readonly HttpAuthenticator _httpAuthenticator;
+		private readonly IList<dynamic> _participants;
 
-        public DatabaseFiller(HttpAuthenticator httpAuthenticator)
-        {
-            _databaseGetter = new DatabaseGetter(httpAuthenticator);
-            _httpAuthenticator = httpAuthenticator;
-	        _participants = _databaseGetter.GetParticipants();
-        }		
+		public DatabaseFiller(HttpAuthenticator httpAuthenticator)
+		{
+			_databaseGetter = new DatabaseGetter(httpAuthenticator);
+			_httpAuthenticator = httpAuthenticator;
+			_participants = _databaseGetter.GetParticipants();
+		}
 
-		private async Task<EnviromentMessage> SendAddRequestAsync(object content, string uri, HttpMethod method, string additionalMessage = null)
-	    {
-		    var request = HttpHelper.CreateJsonRequest(content, $"api/{uri}", method, _httpAuthenticator.UserCookie);		   
+		private async Task<EnviromentMessage> SendAddRequestAsync(object content, string uri, HttpMethod method,
+			string additionalMessage = null)
+		{
+			var request = HttpHelper.CreateJsonRequest(content, $"api/{uri}", method, _httpAuthenticator.UserCookie);
 
 			var response = await _httpAuthenticator.Client.SendAsync(request);
 
 			if (!string.IsNullOrEmpty(additionalMessage))
-				return new EnviromentMessage(await HttpHelper.GetContentIdAsync(response), additionalMessage.Remove(additionalMessage.Length - 2), EnviromentMessageType.Error);
+				return new EnviromentMessage(await HttpHelper.GetContentIdAsync(response),
+					additionalMessage.Remove(additionalMessage.Length - 2), EnviromentMessageType.Error);
 
-			return !response.IsSuccessStatusCode 
-				? new EnviromentMessage(null, $"Failed to send {uri}. Message: {response.ReasonPhrase}", EnviromentMessageType.Error) 
-				: new EnviromentMessage(await HttpHelper.GetContentIdAsync(response), "Added succefully.", EnviromentMessageType.Success);
-	    }
+			return !response.IsSuccessStatusCode
+				? new EnviromentMessage(null, $"Failed to send {uri}. Message: {response.ReasonPhrase}",
+					EnviromentMessageType.Error)
+				: new EnviromentMessage(await HttpHelper.GetContentIdAsync(response), "Added succefully.",
+					EnviromentMessageType.Success);
+		}
 
 		public async Task<EnviromentMessage> AddDictionaryItem(string itemName, string sysName)
 		{
@@ -50,10 +54,10 @@ namespace PravoAdder.DatabaseEnviroment
 			return await SendAddRequestAsync(content, "Dictionary/SaveDictionaryItem", HttpMethod.Put);
 		}
 
-	    public async Task<EnviromentMessage> AddParticipant(string organizationName)
-	    {
-		    var content = new
-		    {
+		public async Task<EnviromentMessage> AddParticipant(string organizationName)
+		{
+			var content = new
+			{
 				Organization = organizationName,
 				Type = new
 				{
@@ -62,180 +66,185 @@ namespace PravoAdder.DatabaseEnviroment
 					Name = "Организация",
 					NameEn = "company"
 				}
-		    };
+			};
 
-		    return await SendAddRequestAsync(content, "participants/PutParticipant", HttpMethod.Put);
+			return await SendAddRequestAsync(content, "participants/PutParticipant", HttpMethod.Put);
 		}
 
 		public async Task<EnviromentMessage> AddProjectGroupAsync(Settings settings, HeaderBlockInfo headerInfo)
-        {
-            if (settings.Overwrite)
-            {
-                var projectGroup = _databaseGetter.GetProjectGroup(headerInfo.ProjectGroupName);
-                if (projectGroup != null) return new EnviromentMessage(projectGroup.Id, "Group already exists.", EnviromentMessageType.Success);
-            }           
+		{
+			if (settings.Overwrite)
+			{
+				var projectGroup = _databaseGetter.GetProjectGroup(headerInfo.ProjectGroupName);
+				if (projectGroup != null)
+					return new EnviromentMessage(projectGroup.Id, "Group already exists.", EnviromentMessageType.Success);
+			}
 
-            var content = new
-            {
-                Name = headerInfo.ProjectGroupName,
-                ProjectFolder = _databaseGetter.GetProjectFolder(headerInfo.FolderName),
-	            headerInfo.Description
-            };
+			var content = new
+			{
+				Name = headerInfo.ProjectGroupName,
+				ProjectFolder = _databaseGetter.GetProjectFolder(headerInfo.FolderName),
+				headerInfo.Description
+			};
 
-		    return await SendAddRequestAsync(content, "ProjectGroups", HttpMethod.Put);    
-        }
+			return await SendAddRequestAsync(content, "ProjectGroups", HttpMethod.Put);
+		}
 
-        public async Task<EnviromentMessage> AddProjectAsync(Settings settings, HeaderBlockInfo headerInfo, string projectGroupId)
-        {
-            if (settings.Overwrite)
-            {
-                var project = _databaseGetter.GetProject(headerInfo.ProjectName, projectGroupId, headerInfo.FolderName);
-                if (project != null) return new EnviromentMessage(project.Id, "Project already exists.", EnviromentMessageType.Success);
-            }
+		public async Task<EnviromentMessage> AddProjectAsync(Settings settings, HeaderBlockInfo headerInfo,
+			string projectGroupId)
+		{
+			if (settings.Overwrite)
+			{
+				var project = _databaseGetter.GetProject(headerInfo.ProjectName, projectGroupId, headerInfo.FolderName);
+				if (project != null)
+					return new EnviromentMessage(project.Id, "Project already exists.", EnviromentMessageType.Success);
+			}
 
-            var content = new
-            {
-                ProjectFolder = _databaseGetter.GetProjectFolder(headerInfo.FolderName),
-                ProjectType = _databaseGetter.GetProjectType(settings.ProjectTypeName),
-                Responsible = _databaseGetter.GetResponsible(headerInfo.ResponsibleName),
-                ProjectGroup = new
-                {
-                    Name = headerInfo.ProjectGroupName,
-                    Id = projectGroupId
-                },
-                Name = headerInfo.ProjectName
-            };
+			var content = new
+			{
+				ProjectFolder = _databaseGetter.GetProjectFolder(headerInfo.FolderName),
+				ProjectType = _databaseGetter.GetProjectType(settings.ProjectTypeName),
+				Responsible = _databaseGetter.GetResponsible(headerInfo.ResponsibleName),
+				ProjectGroup = new
+				{
+					Name = headerInfo.ProjectGroupName,
+					Id = projectGroupId
+				},
+				Name = headerInfo.ProjectName
+			};
 
 			return await SendAddRequestAsync(content, "projects/CreateProject", HttpMethod.Post);
 		}
 
-        public async Task<EnviromentMessage> AddInformationAsync(string projectId, BlockInfo blockInfo, IDictionary<int, string> excelRow)
-        {
-            var contentLines = new List<BlockLineInfo>();
-	        if (blockInfo.Lines == null || !blockInfo.Lines.Any())
-	        {
-		        return new EnviromentMessage(null, "Block skipped.", EnviromentMessageType.Warning);
+		public async Task<EnviromentMessage> AddInformationAsync(string projectId, BlockInfo blockInfo,
+			IDictionary<int, string> excelRow)
+		{
+			var contentLines = new List<BlockLineInfo>();
+			if (blockInfo.Lines == null || !blockInfo.Lines.Any())
+			{
+				return new EnviromentMessage(null, "Block skipped.", EnviromentMessageType.Warning);
 			}
 
-	        var messageBuilder = new StringBuilder();
-            foreach (var line in blockInfo.Lines)
-            {
-                var contentFields = new List<BlockFieldInfo>();
-                foreach (var fieldInfo in line.Fields)
-                {
-	                var fieldData = excelRow[fieldInfo.ColumnNumber];
-                    if (string.IsNullOrEmpty(fieldData)) continue;
+			var messageBuilder = new StringBuilder();
+			foreach (var line in blockInfo.Lines)
+			{
+				var contentFields = new List<BlockFieldInfo>();
+				foreach (var fieldInfo in line.Fields)
+				{
+					var fieldData = excelRow[fieldInfo.ColumnNumber];
+					if (string.IsNullOrEmpty(fieldData)) continue;
 
-	                try
-	                {
-		                fieldInfo.Value = CreateFieldValueFromData(fieldInfo, fieldData);
-	                }
-	                catch (Exception e)
-	                {
-		                messageBuilder.AppendLine($"Error while reading value from table! Message: {e.Message}");
-	                }
-                    contentFields.Add(fieldInfo);
-                }
-	            if (!contentFields.Any()) continue;
-                line.Fields = new List<BlockFieldInfo>(contentFields);
-                contentLines.Add(line);
-            }
+					try
+					{
+						fieldInfo.Value = CreateFieldValueFromData(fieldInfo, fieldData);
+					}
+					catch (Exception e)
+					{
+						messageBuilder.AppendLine($"Error while reading value from table! Message: {e.Message}");
+					}
+					contentFields.Add(fieldInfo);
+				}
+				if (!contentFields.Any()) continue;
+				line.Fields = new List<BlockFieldInfo>(contentFields);
+				contentLines.Add(line);
+			}
 
-	        if (contentLines.All(c => !c.Fields.Any()))
-	        {
-		        return new EnviromentMessage(null, "Block skipped.", EnviromentMessageType.Warning);
-	        }
+			if (contentLines.All(c => !c.Fields.Any()))
+			{
+				return new EnviromentMessage(null, "Block skipped.", EnviromentMessageType.Warning);
+			}
 
-            var contentBlock = new
-            {
-                VisualBlockId = blockInfo.Id,
-                ProjectId = projectId,
-                Lines = contentLines,
-                FrontOrder = 0
-            };
+			var contentBlock = new
+			{
+				VisualBlockId = blockInfo.Id,
+				ProjectId = projectId,
+				Lines = contentLines,
+				FrontOrder = 0
+			};
 
-		    return await SendAddRequestAsync(contentBlock, "ProjectCustomValues/Create", HttpMethod.Post, messageBuilder.ToString());			          
-        }
+			return await SendAddRequestAsync(contentBlock, "ProjectCustomValues/Create", HttpMethod.Post,
+				messageBuilder.ToString());
+		}
 
-	    private object CreateFieldValueFromData(BlockFieldInfo fieldInfo, string fieldData)
-	    {
-		    if (string.IsNullOrEmpty(fieldData)) return null;
+		private object CreateFieldValueFromData(BlockFieldInfo fieldInfo, string fieldData)
+		{
+			if (string.IsNullOrEmpty(fieldData)) return null;
 
-		    fieldData = fieldData.Replace("\"", "");
+			fieldData = fieldData.Replace("\"", "");
 			switch (fieldInfo.Type)
-		    {				    
-			    case "Value":
-				    return FormatFieldData(fieldData);
+			{
+				case "Value":
+					return FormatFieldData(fieldData);
 				case "Text":
 					return fieldData;
-			    case "Formula":
-				    var calculationFormula = _databaseGetter.GetCalculationFormulas(fieldInfo.SpecialData);
-				    return new
-				    {
-					    Result = FormatFieldData(fieldData),
-					    CalculationFormulaId = calculationFormula.Id
-				    };
-			    case "Dictionary":				    
+				case "Formula":
+					var calculationFormula = _databaseGetter.GetCalculationFormulas(fieldInfo.SpecialData);
+					return new
+					{
+						Result = FormatFieldData(fieldData),
+						CalculationFormulaId = calculationFormula.Id
+					};
+				case "Dictionary":
 					var correctName = $"{fieldData.First().ToString().ToUpper()}{fieldData.Substring(1)}";
-				    var dictionaryItems = _databaseGetter
-					    .GetDictionary(fieldInfo.SpecialData);
-				    string id = dictionaryItems.All(item => item.Name != correctName) 
+					var dictionaryItems = _databaseGetter
+						.GetDictionary(fieldInfo.SpecialData);
+					string id = dictionaryItems.All(item => item.Name != correctName)
 						? AddDictionaryItem(correctName, fieldInfo.SpecialData).Result.Content
 						: dictionaryItems.First(item => item.Name == correctName).Id;
-				    return new
-				    {
-					    Name = correctName,
-					    Id = id
-				    };
+					return new
+					{
+						Name = correctName,
+						Id = id
+					};
 				case "Participant":
 					return GetParticipant(fieldData);
 				default:
-				    throw new ArgumentException("Unknown type of value.");
-		    }
+					throw new ArgumentException("Unknown type of value.");
+			}
 		}
 
-	    private dynamic GetParticipant(string fieldData)
-	    {
-		    if (_participants.All(p => p.Name != fieldData))
-		    {
+		private dynamic GetParticipant(string fieldData)
+		{
+			if (_participants.All(p => p.Name != fieldData))
+			{
 				var sender = AddParticipant(fieldData).Result.Content;
 			}
 
-		    var participant = _databaseGetter
+			var participant = _databaseGetter
 				.GetParticipants()
 				.First(p => p.Name == fieldData);
 
 			return new
-		    {
-			    participant.Name,
-			    participant.Id,
-			    participant.TypeName,
-			    participant.TypeId
-		    };
+			{
+				participant.Name,
+				participant.Id,
+				participant.TypeName,
+				participant.TypeId
+			};
 		}
 
-	    private static string FormatIntString(string value)
-	    {
-		    if (!value.Contains(',')) return value;
+		private static string FormatIntString(string value)
+		{
+			if (!value.Contains(',')) return value;
 
-		    var newValue = value.Replace(" ", "");
+			var newValue = value.Replace(" ", "");
 			var splitted = newValue.Split(',');
-		    return splitted[1].All(c => c == '0') ? splitted[0] : newValue;
-	    }
+			return splitted[1].All(c => c == '0') ? splitted[0] : newValue;
+		}
 
-        private static object FormatFieldData(string value)
-        {
-	        var correctIntValue = FormatIntString(value);
+		private static object FormatFieldData(string value)
+		{
+			var correctIntValue = FormatIntString(value);
 			if (TypeDescriptor.GetConverter(typeof(int)).IsValid(correctIntValue))
-            {
-                return int.Parse(correctIntValue);
-            }
+			{
+				return int.Parse(correctIntValue);
+			}
 
 			if (TypeDescriptor.GetConverter(typeof(double)).IsValid(value.Replace(',', '.')))
-            {
-                return double.Parse(value);
-            }
+			{
+				return double.Parse(value);
+			}
 			return value;
-        }
-    }  
+		}
+	}
 }

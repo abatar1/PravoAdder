@@ -14,14 +14,14 @@ namespace PravoAdder.Domain
 
 		public FieldAddress(string address)
 		{
-			var matches = new Regex("\".*?\"").Matches(address);		
+			var matches = new Regex("\".*?\"").Matches(address);
 			BlockName = FormatBlockName(FormatMatch(matches, 0));
 			FieldName = FormatMatch(matches, 1);
 			if (address.Contains("Повтор"))
 			{
 				Repeat = true;
 				RepeatNumber = int.Parse(FormatMatch(matches, 2));
-			}				
+			}
 		}
 
 		private static string FormatBlockName(string name)
@@ -69,7 +69,8 @@ namespace PravoAdder.Domain
 		{
 			unchecked
 			{
-				return ((FieldName != null ? FieldName.GetHashCode() : 0) * 397) ^ (BlockName != null ? BlockName.GetHashCode() : 0);
+				return ((FieldName != null ? FieldName.GetHashCode() : 0) * 397) ^
+				       (BlockName != null ? BlockName.GetHashCode() : 0);
 			}
 		}
 	}

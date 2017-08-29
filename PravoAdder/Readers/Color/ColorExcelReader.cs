@@ -13,7 +13,7 @@ namespace PravoAdder.Readers
 			return range
 				.Where(c => colorColumnsPositions.Contains(c.Start.Column))
 				.Select(c => FormatCell(c.Value) ?? string.Empty)
-				.Zip(colorColumnsPositions, (value, key) => new { value, key })
+				.Zip(colorColumnsPositions, (value, key) => new {value, key})
 				.ToDictionary(key => key.key, value => value.value);
 		}
 
@@ -42,7 +42,7 @@ namespace PravoAdder.Readers
 				for (var rowNum = settings.DataRowPosition; rowNum <= totalRows; rowNum++)
 				{
 					table.Add(ToColoredDictionary(worksheet
-						.Cells[rowNum, 1, rowNum, totalColumns], colorColumnsPositions));					
+						.Cells[rowNum, 1, rowNum, totalColumns], colorColumnsPositions));
 				}
 			}
 			return new ExcelTable(table, infoRowContent);

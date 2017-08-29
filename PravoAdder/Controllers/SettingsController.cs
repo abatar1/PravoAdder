@@ -17,25 +17,25 @@ namespace PravoAdder.Controllers
 
 			foreach (var property in settingsObject.GetType().GetProperties())
 			{
-//#if DEBUG
-//				switch (property.Name)
-//				{
-//					case "Password":
-//						property.SetValue(settingsObject, "123123");
-//						continue;
-//					case "Overwrite":
-//						property.SetValue(settingsObject, true);
-//						continue;
-//					case "ExcelFileName":
-//						property.SetValue(settingsObject, "test3cng.xlsx");
-//						continue;
-//				}
-//#endif
+#if DEBUG
+				switch (property.Name)
+				{
+					case "Password":
+						property.SetValue(settingsObject, "123123");
+						continue;
+					case "Overwrite":
+						property.SetValue(settingsObject, true);
+						continue;
+					case "ExcelFileName":
+						property.SetValue(settingsObject, "test3cng.xlsx");
+						continue;
+				}
+#endif
 				var ignoreAttibute = (SettingsIgnoreAttribute) property.GetCustomAttributes(typeof(SettingsIgnoreAttribute))
 					.FirstOrDefault();
 				if (ignoreAttibute != null && ignoreAttibute.Ignore) continue;
 
-				var nameAttribute = (DisplayNameAttribute)property.GetCustomAttributes(typeof(DisplayNameAttribute))
+				var nameAttribute = (DisplayNameAttribute) property.GetCustomAttributes(typeof(DisplayNameAttribute))
 					.FirstOrDefault();
 				var displayName = nameAttribute != null ? nameAttribute.DisplayName : property.Name;
 				var value = property.GetValue(settingsObject);
@@ -45,7 +45,8 @@ namespace PravoAdder.Controllers
 				var propertyValue = LoadValue(displayName, property.PropertyType, ',');
 				property.SetValue(settingsObject, propertyValue);
 			}
-			if (additionalSettings != null) settingsObject.AdditionalSettings = new Dictionary<string, dynamic>(additionalSettings);
+			if (additionalSettings != null)
+				settingsObject.AdditionalSettings = new Dictionary<string, dynamic>(additionalSettings);
 
 			settingsObject.Save(configFilename);
 			return settingsObject;

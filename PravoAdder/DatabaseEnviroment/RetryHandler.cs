@@ -11,7 +11,8 @@ namespace PravoAdder.DatabaseEnviroment
 
 		public RetryHandler(HttpMessageHandler innerHandler)
 			: base(innerHandler)
-		{ }
+		{
+		}
 
 		protected override async Task<HttpResponseMessage> SendAsync(
 			HttpRequestMessage request,
@@ -27,7 +28,7 @@ namespace PravoAdder.DatabaseEnviroment
 				catch (Exception)
 				{
 					Thread.Sleep(TimeSpan.FromSeconds(30));
-				}				
+				}
 			}
 			return null;
 		}

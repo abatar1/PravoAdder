@@ -45,13 +45,13 @@ namespace PravoAdder.Domain
 			foreach (var index in result)
 			{
 				var address = _info[index];
-				if (!address.Repeat) return new List<int> { index };
+				if (!address.Repeat) return new List<int> {index};
 
 				return _info
 					.Where(i => i.Value.RepeatNumber == address.RepeatNumber && i.Value.Equals(fieldAddress))
 					.Select(i => i.Key)
 					.ToList();
-			}			
+			}
 			return null;
 		}
 
