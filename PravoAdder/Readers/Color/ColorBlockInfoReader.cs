@@ -114,7 +114,7 @@ namespace PravoAdder.Readers
 							});
 						}
 					}
-					tmpLines.AddRange(complexMultilines.Select(d => d.Value));
+					tmpLines.AddRange(complexMultilines.Select(d => new BlockLineInfo{ Fields = d.Value.Fields, Id = d.Value.Id, Order = d.Value.Order }));
 					lines.AddRange(tmpLines);
 				}
 
