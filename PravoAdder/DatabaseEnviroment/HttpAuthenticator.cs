@@ -32,7 +32,7 @@ namespace PravoAdder.DatabaseEnviroment
             Client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));           
         }
 
-        public void Authentication(string login, string password)
+        public EnviromentMessage Authentication(string login, string password)
         {
             var authentication = new
             {
@@ -40,15 +40,19 @@ namespace PravoAdder.DatabaseEnviroment
                 Login = login
             };
 
-            var response = Client.PostAsJsonAsync("authentication/account/login", authentication).Result;
-            response.EnsureSuccessStatusCode();
+            var request = Client.PostAsJsonAsync("authentication/account/login", authentication).Result;
+            request.EnsureSuccessStatusCode();
+
+	        if (!request.IsSuccessStatusCode) return new EnviromentMessage(null, "Failed authentication request.", EnviromentMessageType.Error);
 
             UserCookie = CookieContainer.GetCookies(BaseAddress).Cast<Cookie>().FirstOrDefault();
-            if (UserCookie == null) throw new AuthenticationException("Cannot create new session");
+            if (UserCookie == null) return new EnviromentMessage(null, "Cannot create new session", EnviromentMessageType.Error);
 
-            var message = HttpHelper.GetMessageFromResponceAsync(response).Result;
-            if (!(bool)message.Succeeded) throw new AuthenticationException("Wrong login or password");
-        }
+            var message = HttpHelper.GetMessageFromResponceAsync(request).Result;
+            if (!(bool)message.Succeeded) return new EnviromentMessage(null, "Wrong login or password", EnviromentMessageType.Error);
+
+			return new EnviromentMessage(null, "Successful login", EnviromentMessageType.Success);
+		}
 
 	    public void Dispose()
 	    {

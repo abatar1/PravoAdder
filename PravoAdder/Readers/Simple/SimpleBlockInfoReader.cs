@@ -9,7 +9,7 @@ namespace PravoAdder.Readers
 {
     public class SimpleBlockInfoReader : BlockInfoReader
     {
-		public SimpleBlockInfoReader(string filePath, ExcelTable excelInfo) : base(filePath, excelInfo)
+		public SimpleBlockInfoReader(ExcelTable excelInfo, Settings settings) : base(settings, excelInfo)
 		{
 			
 		}
@@ -49,6 +49,7 @@ namespace PravoAdder.Readers
                                         field.SpecialData = (string)fieldObject["SpecialData"];
                                     return field;
                                 })
+								.ToList()
                         })
                 };
             }

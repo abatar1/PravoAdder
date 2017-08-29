@@ -9,7 +9,7 @@ namespace PravoAdder.Domain.Info
         public string Id { get; set; }
 
         [JsonProperty(PropertyName = "Values")]
-        public IEnumerable<BlockFieldInfo> Fields { get; set; }
+        public ICollection<BlockFieldInfo> Fields { get; set; } = new List<BlockFieldInfo>();
 
         [JsonProperty(PropertyName = "Order")]
         public int Order { get; set; }

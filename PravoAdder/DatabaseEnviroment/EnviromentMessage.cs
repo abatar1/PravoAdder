@@ -2,13 +2,20 @@
 {
     public class EnviromentMessage
     {
-        public string Content { get; }
+        public dynamic Content { get; }
         public string Message { get; }
+		public EnviromentMessageType Type { get; }	    
 
-        public EnviromentMessage(string content, string message)
+        public EnviromentMessage(string content, string message, EnviromentMessageType type)
         {
             Content = content;
             Message = message;
+	        Type = type;
         }
     }
+
+	public enum EnviromentMessageType
+	{
+		Success, Error, Warning
+	}
 }

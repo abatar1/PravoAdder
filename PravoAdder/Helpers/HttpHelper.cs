@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -13,12 +14,14 @@ namespace PravoAdder.Helpers
         public static async Task<dynamic> GetMessageFromResponceAsync(HttpResponseMessage response)
         {
             var message = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject(message);
+	        return message == null ? null : JsonConvert.DeserializeObject(message);
         }
 
         public static HttpRequestMessage CreateJsonRequest(object content, string requestUri, HttpMethod method, Cookie cookie)
         {
             var serializedContent = JsonConvert.SerializeObject(content);
+	        if (serializedContent == null) return null;
+
             var request = new HttpRequestMessage(method, requestUri)
             {
                 Content = new StringContent(serializedContent, Encoding.UTF8, "application/json")
@@ -28,7 +31,7 @@ namespace PravoAdder.Helpers
             return request;
         }
 
-	    public static HttpRequestMessage CreateRequest(string requestUri, IDictionary<string, string> parameters, HttpMethod method, Cookie cookie)
+	    public static HttpRequestMessage CreateRequest(IDictionary<string, string> parameters, string requestUri, HttpMethod method, Cookie cookie)
 	    {
 			var parametersBuilder = new StringBuilder();
 		    foreach (var parameter in parameters)
@@ -45,7 +48,7 @@ namespace PravoAdder.Helpers
 		public static async Task<string> GetContentIdAsync(HttpResponseMessage response)
         {
             var responseContent = await response.Content.ReadAsStringAsync();
-            return JObject.Parse(responseContent)["Result"]["Id"].ToString();
+	        return responseContent == null ? null : JObject.Parse(responseContent)["Result"]["Id"].ToString();
         }
     }
 }

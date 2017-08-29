@@ -19,6 +19,8 @@ namespace PravoAdder.DatabaseEnviroment
 			var response = _httpAuthenticator.Client.SendAsync(request).Result;
 		    response.EnsureSuccessStatusCode();
 
+		    if (!response.IsSuccessStatusCode) yield break;
+
 		    var messages = HttpHelper.GetMessageFromResponceAsync(response).Result;
 		    foreach (var message in messages.Result)
 		    {
@@ -35,7 +37,7 @@ namespace PravoAdder.DatabaseEnviroment
 
 	    private IEnumerable<dynamic> GetPages(IDictionary<string, string> parameters, string uri, HttpMethod httpMethod)
 	    {
-		    var request = HttpHelper.CreateRequest($"api/{uri}", parameters, httpMethod, _httpAuthenticator.UserCookie);
+		    var request = HttpHelper.CreateRequest(parameters, $"api/{uri}", httpMethod, _httpAuthenticator.UserCookie);
 
 		    return GetMessageFromRequest(request).ToList();
 		}

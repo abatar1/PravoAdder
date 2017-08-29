@@ -14,9 +14,6 @@ namespace PravoAdder.Domain
         [DisplayName("Base uri")]
         public string BaseUri { get; set; }
 
-        [DisplayName("Folder name")]
-        public string FolderName { get; set; }
-
         [DisplayName("Project type name")]
         public string ProjectTypeName { get; set; }
 
@@ -30,7 +27,7 @@ namespace PravoAdder.Domain
         public string IdComparerPath { get; set; }
 
 	    [JsonIgnore]
-	    [DisplayName("Overwrite project and project's folders?")]
+		[DisplayName("Overwrite project and project's folders?")]
 		public bool Overwrite { get; set; }
 
 	    [JsonIgnore]
@@ -43,7 +40,10 @@ namespace PravoAdder.Domain
 	    [DisplayName("Enter list allowed column's colors separated by commas (format:FFRRGGBB)")]
 		public string[] AllowedColors { get; set; }
 
-	    [JsonIgnore]
+	    [DisplayName("Number of threads")]
+	    public int MaxDegreeOfParallelism { get; set; }
+
+		[JsonIgnore]
 		[SettingsIgnore(true)]
 		public Dictionary<string, dynamic> AdditionalSettings { get; set; } 
 	}

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using PravoAdder.Controllers;
 using PravoAdder.DatabaseEnviroment;
 
@@ -21,26 +20,26 @@ namespace PravoAdder
 
         public void Run()
         {
-			var settingsController = new SettingsController(Console.Out);
+			var settingsController = new SettingsController();
 			var settings = settingsController.LoadSettings(_configFilename);						
 		
-			var processController = new MigrationProcessController(Console.Out);
+			var processController = new MigrationProcessController();
 			using (var authenticator = processController.Authenticate(settings))
 	        {
-		        var blockReaderController = new BlockReaderController(Console.Out, settings, authenticator);
+		        var blockReaderController = new BlockReaderController(settings, authenticator);
 		        var blocksInfo = blockReaderController.ReadBlockInfo();
 		        var excelTable = blockReaderController.ExcelTable.TableContent;
 
-				var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 2 };
+				var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = settings.MaxDegreeOfParallelism };
 		        var filler = new DatabaseFiller(authenticator);
 				Parallel.ForEach(excelTable, parallelOptions, (excelRow, state, index) =>
 		        {
-			        processController.ProcessCount((int)index, excelTable.Count - 1);		        
-			        var headerBlock = blockReaderController.ReadHeader(excelRow);
-			        var projectGroupId = processController.AddProjectGroup(headerBlock, filler, settings);
+			        var headerBlock = blockReaderController.ReadHeader(excelRow);			        
+					var projectGroupId = processController.AddProjectGroup(headerBlock, filler, settings);
 			        var projectId = processController.AddProject(headerBlock, filler, settings, projectGroupId);
 
-			        Parallel.ForEach(blocksInfo, parallelOptions, blockInfo => processController.AddInformationAsync(blockInfo, filler, excelRow, projectId));
+			        processController.ProcessCount((int)index + 1, excelTable.Count, headerBlock, projectId);
+					Parallel.ForEach(blocksInfo, parallelOptions, blockInfo => processController.AddInformationAsync(blockInfo, filler, excelRow, projectId));
 		        });
 			}				
         }

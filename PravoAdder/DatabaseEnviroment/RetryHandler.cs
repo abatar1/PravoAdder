@@ -7,7 +7,7 @@ namespace PravoAdder.DatabaseEnviroment
 {
 	public class RetryHandler : DelegatingHandler
 	{
-		private const int MaxRetries = 10;
+		private const int MaxRetries = 5;
 
 		public RetryHandler(HttpMessageHandler innerHandler)
 			: base(innerHandler)
@@ -17,20 +17,19 @@ namespace PravoAdder.DatabaseEnviroment
 			HttpRequestMessage request,
 			CancellationToken cancellationToken)
 		{
-			HttpResponseMessage response = null;
-
 			for (var i = 0; i < MaxRetries; i++)
 			{
-				response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-				if (response.IsSuccessStatusCode)
+				try
 				{
+					var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 					return response;
 				}
-
-				Thread.Sleep(TimeSpan.FromSeconds(30));
+				catch (Exception)
+				{
+					Thread.Sleep(TimeSpan.FromSeconds(30));
+				}				
 			}
-
-			return response;
+			return null;
 		}
 	}
 }

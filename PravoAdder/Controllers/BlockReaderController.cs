@@ -12,27 +12,25 @@ namespace PravoAdder.Controllers
 	public class BlockReaderController
 	{
 		private readonly BlockInfoReader _blockInfoReader;
-		public ExcelTable ExcelTable { get; private set; }
+		public ExcelTable ExcelTable { get; }
 
-		public BlockReaderController(TextWriter writer, Settings settings, HttpAuthenticator autentificator)
+		public BlockReaderController(Settings settings, HttpAuthenticator autentificator)
 		{
-			
-			Console.SetOut(writer);
 			ExcelReader excelReader;
 			switch (settings.BlockLoadingMode)
 			{
 				case "Color":
 					excelReader = new ColorExcelReader();
 					ExcelTable = excelReader.Read(settings);
-					_blockInfoReader = new ColorBlockInfoReader(ExcelTable, autentificator, settings);					
+					_blockInfoReader = new ColorBlockInfoReader(ExcelTable, settings, autentificator);					
 					break;
 				case "Simple":
 					excelReader = new SimpleExcelReader();
 					ExcelTable = excelReader.Read(settings);
-					_blockInfoReader = new SimpleBlockInfoReader(settings.IdComparerPath, ExcelTable);
+					_blockInfoReader = new SimpleBlockInfoReader(ExcelTable, settings);
 					break;
 				default:
-					throw new NotImplementedException();
+					throw new ArgumentException($"Типа блоков {settings.BlockLoadingMode} не существует.");
 			}
 		}
 

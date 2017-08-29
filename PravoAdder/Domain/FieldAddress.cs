@@ -8,14 +8,30 @@ namespace PravoAdder.Domain
 		public string FieldName { get; }
 		public string BlockName { get; }
 		public bool Repeat { get; }
+		public int RepeatNumber { get; } = -1;
+
+		public string FullName => $"{BlockName} {FieldName}";
 
 		public FieldAddress(string address)
 		{
 			var matches = new Regex("\".*?\"").Matches(address);		
-			BlockName = FormatMatch(matches, 0);
+			BlockName = FormatBlockName(FormatMatch(matches, 0));
 			FieldName = FormatMatch(matches, 1);
 			if (address.Contains("Повтор"))
+			{
 				Repeat = true;
+				RepeatNumber = int.Parse(FormatMatch(matches, 2));
+			}				
+		}
+
+		private static string FormatBlockName(string name)
+		{
+			return name.Split('-')[0].Trim();
+		}
+
+		public override string ToString()
+		{
+			return FullName;
 		}
 
 		public static FieldAddress Create(string address)
@@ -23,14 +39,14 @@ namespace PravoAdder.Domain
 			return new FieldAddress(address);
 		}
 
-		private string FormatMatch(MatchCollection matches, int i)
+		private static string FormatMatch(MatchCollection matches, int i)
 		{
 			return matches[i].Value.Replace("\"", "");
 		}
 
 		public FieldAddress(string blockName, string fieldName)
 		{
-			BlockName = blockName;
+			BlockName = FormatBlockName(blockName);
 			FieldName = fieldName;
 		}
 
@@ -38,7 +54,7 @@ namespace PravoAdder.Domain
 		{
 			if (ReferenceEquals(null, other)) return false;
 			if (ReferenceEquals(this, other)) return true;
-			return string.Equals(FieldName, other.FieldName) && string.Equals(BlockName, other.BlockName) && Repeat == other.Repeat;
+			return string.Equals(FieldName, other.FieldName) && string.Equals(BlockName, other.BlockName);
 		}
 
 		public override bool Equals(object obj)
@@ -53,10 +69,7 @@ namespace PravoAdder.Domain
 		{
 			unchecked
 			{
-				var hashCode = (FieldName != null ? FieldName.GetHashCode() : 0);
-				hashCode = (hashCode * 397) ^ (BlockName != null ? BlockName.GetHashCode() : 0);
-				hashCode = (hashCode * 397) ^ Repeat.GetHashCode();
-				return hashCode;
+				return ((FieldName != null ? FieldName.GetHashCode() : 0) * 397) ^ (BlockName != null ? BlockName.GetHashCode() : 0);
 			}
 		}
 	}

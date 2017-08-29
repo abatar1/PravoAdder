@@ -8,12 +8,12 @@ namespace PravoAdder.Readers
 	public abstract class BlockInfoReader
 	{
 		public readonly string FilePath;
-		public readonly ExcelTable ExcelInfo;
+		public readonly ExcelTable ExcelTable;
 
-		protected BlockInfoReader(string filePath, ExcelTable excelInfo)
+		protected BlockInfoReader(Settings settings, ExcelTable excelInfo)
 		{
-			FilePath = filePath;
-			ExcelInfo = excelInfo;
+			FilePath = settings.IdComparerPath;
+			ExcelTable = excelInfo;
 		}
 
 		public abstract IEnumerable<BlockInfo> Read();

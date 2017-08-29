@@ -2,6 +2,7 @@
 {
     public class HeaderBlockInfo
     {
+		public string FolderName { get; set; }
         public string ProjectGroupName { get; set; }
         public string ProjectName { get; set; }
         public string ResponsibleName { get; set; }

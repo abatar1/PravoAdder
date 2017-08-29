@@ -1,7 +1,6 @@
 {
 	"Login": "admin@pravo.ru",
 	"BaseUri": "http://testmkamos.casepro.pro",
-	"FolderName": "Отладка миграции",
 	"ProjectTypeName": "Судебное дело (Тех. задание)",
 	"DataRowPosition": 7,
 	"InformationRowPosition": 3,

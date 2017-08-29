@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using PravoAdder.DatabaseEnviroment;
 using PravoAdder.Domain;
 using PravoAdder.Domain.Info;
@@ -10,22 +11,20 @@ namespace PravoAdder.Readers
 	{
 		private readonly DatabaseGetter _databaseGetter;
 		private readonly Settings _settings;
-		private readonly ExcelTable _excelTable;
 
-		public ColorBlockInfoReader(ExcelTable excelTable, HttpAuthenticator authenticator, Settings settings) : base(settings.ExcelFileName, excelTable)
+		public ColorBlockInfoReader(ExcelTable excelTable, Settings settings, HttpAuthenticator authenticator) : base(settings, excelTable)
 		{
 			_databaseGetter = new DatabaseGetter(authenticator);
 			_settings = settings;
-			_excelTable = excelTable;
 		}
 
-		private BlockFieldInfo ReadField(dynamic projectField, FieldAddress fieldAddress)
+		private static BlockFieldInfo ReadField(string id, dynamic projectField, int index)
 		{
 			var blockfieldInfo = new BlockFieldInfo
 			{
-				Id = projectField.Id,
+				Id = id,
 				Name = projectField.Name,
-				ColumnNumber = _excelTable.GetIndex(fieldAddress)
+				ColumnNumber = index
 			};
 
 			var fieldType = projectField.ProjectFieldFormat.SysName.ToString();
@@ -35,9 +34,11 @@ namespace PravoAdder.Readers
 					blockfieldInfo.Type = projectField.ProjectFieldFormat.SysName;
 					blockfieldInfo.SpecialData = projectField.ProjectFieldFormat.Dictionary.SystemName;
 					break;
-				case "TextArea":
 				case "Text":
 				case "Date":
+				case "TextArea":
+					blockfieldInfo.Type = "Text";
+					break;
 				case "Number":
 					blockfieldInfo.Type = "Value";
 					break;
@@ -61,23 +62,61 @@ namespace PravoAdder.Readers
 				var lines = new List<BlockLineInfo>();
 				foreach (var line in visualBlock.Lines)
 				{
-					var fields = new List<BlockFieldInfo>();
+					var tmpLines = new List<BlockLineInfo>();
+					var complexMultilines = new Dictionary<int, BlockLineInfo>();
 					foreach (var field in line.Fields)
 					{
 						var projectField = field.ProjectField;
-						var fieldAddress = new FieldAddress(blockname, projectField.Name);
-						if (!_excelTable.Contains(fieldAddress)) continue;
+						var fieldAddress = new FieldAddress(blockname.ToString(), projectField.Name.ToString());
 
-						var blockfieldInfo = ReadField(projectField, fieldAddress);
-						fields.Add(blockfieldInfo);
+						if (ExcelTable.IsComplexRepeat(fieldAddress))
+						{
+							var complexIndexes = ExcelTable.GetComplexIndexes(fieldAddress);
+							foreach (var key in complexIndexes.Keys)
+							{
+								if (!complexMultilines.ContainsKey(key))
+								{
+									complexMultilines.Add(key, new BlockLineInfo { Id = line.Id, Order = key - 1});
+								}
+								complexMultilines[key].Fields.Add(ReadField(field.Id.ToString(), projectField, complexIndexes[key]));
+							}
+							continue;
+						}						
+
+						var indexes = ExcelTable.GetIndexes(fieldAddress);						
+						if (indexes == null) continue;
+
+						if (indexes.Count > 1)
+						{
+							tmpLines = indexes
+								.Select(i => new BlockLineInfo
+								{
+									Id = line.Id,
+									Order = 0,
+									Fields = new List<BlockFieldInfo>
+									{
+										ReadField(field.Id.ToString(), projectField, i)
+									}
+								})
+								.ToList();						
+						}
+						else
+						{
+							tmpLines.Add(new BlockLineInfo
+							{
+								Id = line.Id,
+								Order = 0,
+								Fields = indexes
+									.Select(index => ReadField(field.Id.ToString(), projectField, index))
+									.Cast<BlockFieldInfo>()
+									.ToList()
+							});
+						}					
 					}
-					lines.Add(new BlockLineInfo
-					{
-						Id = line.Id,
-						Order = 0,
-						Fields = fields
-					});
+					tmpLines.AddRange(complexMultilines.Select(d => d.Value));					
+					lines.AddRange(tmpLines);					
 				}
+				
 				yield return new BlockInfo
 				{
 					Name = blockname,
@@ -89,17 +128,20 @@ namespace PravoAdder.Readers
 
 		public override HeaderBlockInfo ReadHeaderBlock(IDictionary<int, string> excelRow)
 		{
-			var descriptionIndex = _excelTable.GetIndex(new FieldAddress("Системный", "Описание"));
-			var projectNameIndex = _excelTable.GetIndex(new FieldAddress("Системный", "Название дела"));
-			var projectGroupIndex = _excelTable.GetIndex(new FieldAddress("Системный", "Проект"));
-			var responsibleIndex = _excelTable.GetIndex(new FieldAddress("Системный", "Ответственный"));
+			const string systemName = "Системный";
+			var descriptionIndex = ExcelTable.TryGetIndex(new FieldAddress(systemName, "Описание"));
+			var projectNameIndex = ExcelTable.TryGetIndex(new FieldAddress(systemName, "Название дела"));
+			var projectGroupIndex = ExcelTable.TryGetIndex(new FieldAddress(systemName, "Название проекта"));
+			var responsibleIndex = ExcelTable.TryGetIndex(new FieldAddress(systemName, "Ответственный"));
+			var folderIndex = ExcelTable.TryGetIndex(new FieldAddress(systemName, "Название папки"));
 
 			return new HeaderBlockInfo
 			{
 				Description = excelRow[descriptionIndex],
 				ProjectGroupName = excelRow[projectGroupIndex],
 				ProjectName = excelRow[projectNameIndex],
-				ResponsibleName = excelRow[responsibleIndex]
+				ResponsibleName = excelRow[responsibleIndex],
+				FolderName = excelRow[folderIndex]
 			};
 		}
 	}
