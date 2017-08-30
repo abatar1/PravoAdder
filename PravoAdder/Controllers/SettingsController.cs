@@ -27,7 +27,13 @@ namespace PravoAdder.Controllers
 						property.SetValue(settingsObject, true);
 						continue;
 					case "ExcelFileName":
-						property.SetValue(settingsObject, "test3cng.xlsx");
+						property.SetValue(settingsObject, "test3.xlsx");
+						continue;
+					case "MaxDegreeOfParallelism":
+						property.SetValue(settingsObject, 1);
+						continue;
+					case "StartRow":
+						property.SetValue(settingsObject, 1);
 						continue;
 				}
 #endif

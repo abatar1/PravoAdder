@@ -24,23 +24,7 @@ namespace PravoAdder.DatabaseEnviroment
 			_participants = _databaseGetter.GetParticipants();
 		}
 
-		private async Task<EnviromentMessage> SendAddRequestAsync(object content, string uri, HttpMethod method,
-			string additionalMessage = null)
-		{
-			var request = HttpHelper.CreateJsonRequest(content, $"api/{uri}", method, _httpAuthenticator.UserCookie);
-
-			var response = await _httpAuthenticator.Client.SendAsync(request);
-
-			if (!string.IsNullOrEmpty(additionalMessage))
-				return new EnviromentMessage(await HttpHelper.GetContentIdAsync(response),
-					additionalMessage.Remove(additionalMessage.Length - 2), EnviromentMessageType.Error);
-
-			return !response.IsSuccessStatusCode
-				? new EnviromentMessage(null, $"Failed to send {uri}. Message: {response.ReasonPhrase}",
-					EnviromentMessageType.Error)
-				: new EnviromentMessage(await HttpHelper.GetContentIdAsync(response), "Added succefully.",
-					EnviromentMessageType.Success);
-		}
+		#region Add methods
 
 		public async Task<EnviromentMessage> AddDictionaryItem(string itemName, string sysName)
 		{
@@ -90,8 +74,7 @@ namespace PravoAdder.DatabaseEnviroment
 			return await SendAddRequestAsync(content, "ProjectGroups", HttpMethod.Put);
 		}
 
-		public async Task<EnviromentMessage> AddProjectAsync(Settings settings, HeaderBlockInfo headerInfo,
-			string projectGroupId)
+		public async Task<EnviromentMessage> AddProjectAsync(Settings settings, HeaderBlockInfo headerInfo, string projectGroupId)
 		{
 			if (settings.Overwrite)
 			{
@@ -116,8 +99,7 @@ namespace PravoAdder.DatabaseEnviroment
 			return await SendAddRequestAsync(content, "projects/CreateProject", HttpMethod.Post);
 		}
 
-		public async Task<EnviromentMessage> AddInformationAsync(string projectId, BlockInfo blockInfo,
-			IDictionary<int, string> excelRow)
+		public async Task<EnviromentMessage> AddInformationAsync(string projectId, BlockInfo blockInfo, IDictionary<int, string> excelRow)
 		{
 			var contentLines = new List<BlockLineInfo>();
 			if (blockInfo.Lines == null || !blockInfo.Lines.Any())
@@ -131,7 +113,13 @@ namespace PravoAdder.DatabaseEnviroment
 				var contentFields = new List<BlockFieldInfo>();
 				foreach (var fieldInfo in line.Fields)
 				{
+					if (!excelRow.ContainsKey(fieldInfo.ColumnNumber))
+					{
+						messageBuilder.AppendLine($"Excel row doesn't contain \"{fieldInfo.ColumnNumber}\" key.");
+						continue;
+					}
 					var fieldData = excelRow[fieldInfo.ColumnNumber];
+
 					if (string.IsNullOrEmpty(fieldData)) continue;
 
 					try
@@ -166,6 +154,10 @@ namespace PravoAdder.DatabaseEnviroment
 				messageBuilder.ToString());
 		}
 
+#endregion
+
+#region Field formatting
+
 		private object CreateFieldValueFromData(BlockFieldInfo fieldInfo, string fieldData)
 		{
 			if (string.IsNullOrEmpty(fieldData)) return null;
@@ -197,31 +189,11 @@ namespace PravoAdder.DatabaseEnviroment
 						Id = id
 					};
 				case "Participant":
-					return GetParticipant(fieldData);
+					return GetParticipantFromData(fieldData);
 				default:
 					throw new ArgumentException("Unknown type of value.");
 			}
-		}
-
-		private dynamic GetParticipant(string fieldData)
-		{
-			if (_participants.All(p => p.Name != fieldData))
-			{
-				var sender = AddParticipant(fieldData).Result.Content;
-			}
-
-			var participant = _databaseGetter
-				.GetParticipants()
-				.First(p => p.Name == fieldData);
-
-			return new
-			{
-				participant.Name,
-				participant.Id,
-				participant.TypeName,
-				participant.TypeId
-			};
-		}
+		}		
 
 		private static string FormatIntString(string value)
 		{
@@ -246,5 +218,44 @@ namespace PravoAdder.DatabaseEnviroment
 			}
 			return value;
 		}
+
+		private dynamic GetParticipantFromData(string fieldData)
+		{
+			if (_participants.All(p => p.Name != fieldData))
+			{
+				var sender = AddParticipant(fieldData).Result.Content;
+			}
+
+			var participant = _databaseGetter
+				.GetParticipants()
+				.First(p => p.Name == fieldData);
+
+			return new
+			{
+				participant.Name,
+				participant.Id,
+				participant.TypeName,
+				participant.TypeId
+			};
+		}
+
+#endregion
+
+		private async Task<EnviromentMessage> SendAddRequestAsync(object content, string uri, HttpMethod method, string additionalMessage = null)
+		{
+			var request = HttpHelper.CreateJsonRequest(content, $"api/{uri}", method, _httpAuthenticator.UserCookie);
+
+			var response = await _httpAuthenticator.Client.SendAsync(request);
+
+			if (!string.IsNullOrEmpty(additionalMessage))
+				return new EnviromentMessage(await HttpHelper.GetContentIdAsync(response),
+					additionalMessage.Remove(additionalMessage.Length - 2), EnviromentMessageType.Error);
+
+			return !response.IsSuccessStatusCode
+				? new EnviromentMessage(null, $"Failed to send {uri}. Message: {response.ReasonPhrase}",
+					EnviromentMessageType.Error)
+				: new EnviromentMessage(await HttpHelper.GetContentIdAsync(response), "Added succefully.",
+					EnviromentMessageType.Success);
+		}		
 	}
 }

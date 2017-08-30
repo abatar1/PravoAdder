@@ -38,7 +38,7 @@ namespace PravoAdder
 					var projectGroupId = processController.AddProjectGroup(headerBlock, filler, settings);
 					var projectId = processController.AddProject(headerBlock, filler, settings, projectGroupId);
 
-					processController.ProcessCount((int) index + 1, excelTable.Count, headerBlock, projectId);
+					processController.ProcessCount((int) index + settings.StartRow, excelTable.Count + 1, headerBlock, projectId);
 					Parallel.ForEach(blocksInfo, parallelOptions,
 						blockInfo => processController.AddInformationAsync(blockInfo, filler, excelRow, projectId));
 				});

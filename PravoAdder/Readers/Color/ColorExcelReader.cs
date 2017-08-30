@@ -8,15 +8,6 @@ namespace PravoAdder.Readers
 {
 	public class ColorExcelReader : ExcelReader
 	{
-		private static Dictionary<int, string> ToColoredDictionary(ExcelRange range, ICollection<int> colorColumnsPositions)
-		{
-			return range
-				.Where(c => colorColumnsPositions.Contains(c.Start.Column))
-				.Select(c => FormatCell(c.Value) ?? string.Empty)
-				.Zip(colorColumnsPositions, (value, key) => new {value, key})
-				.ToDictionary(key => key.key, value => value.value);
-		}
-
 		public override ExcelTable Read(Settings settings)
 		{
 			var info = new FileInfo(settings.ExcelFileName);
@@ -37,12 +28,25 @@ namespace PravoAdder.Readers
 					.Where(c => settings.AllowedColors.Contains(c.Style.Fill.BackgroundColor.Rgb))
 					.Select(c => c.Start.Column)
 					.ToList();
-				infoRowContent = ToColoredDictionary(infoRow, colorColumnsPositions);
+				infoRowContent = infoRow
+					.Where(c => colorColumnsPositions.Contains(c.Start.Column))
+					.Select(c => FormatCell(c.Value) ?? string.Empty)
+					.Zip(colorColumnsPositions, (value, key) => new { value, key })
+					.ToDictionary(key => key.key, value => value.value);
 
-				for (var rowNum = settings.DataRowPosition; rowNum <= totalRows; rowNum++)
+				for (var rowNum = settings.DataRowPosition + settings.StartRow - 1; rowNum <= totalRows; rowNum++)
 				{
-					table.Add(ToColoredDictionary(worksheet
-						.Cells[rowNum, 1, rowNum, totalColumns], colorColumnsPositions));
+					var row = new List<string>();
+					for (var columnNum = 1; columnNum <= totalColumns; columnNum++)
+					{
+						var cell = worksheet.Cells[rowNum, columnNum].Value?.ToString();
+						row.Add(cell);
+					}
+					var coloredRow = row
+						.Zip(Enumerable.Range(1, totalColumns), (value, index) => new {value, index})
+						.Where(z => colorColumnsPositions.Contains(z.index))
+						.ToDictionary(key => key.index, value => value.value);
+					table.Add(coloredRow);
 				}
 			}
 			return new ExcelTable(table, infoRowContent);

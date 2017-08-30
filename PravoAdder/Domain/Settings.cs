@@ -40,8 +40,13 @@ namespace PravoAdder.Domain
 		[DisplayName("Enter list allowed column's colors separated by commas (format:FFRRGGBB)")]
 		public string[] AllowedColors { get; set; }
 
+		[JsonIgnore]
 		[DisplayName("Number of threads")]
 		public int MaxDegreeOfParallelism { get; set; }
+
+		[JsonIgnore]
+		[DisplayName("Number of starting row")]
+		public int StartRow { get; set; }
 
 		[JsonIgnore]
 		[SettingsIgnore(true)]

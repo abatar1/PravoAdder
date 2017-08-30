@@ -63,7 +63,8 @@ namespace PravoAdder.Readers
 				var lines = new List<BlockLineInfo>();
 				foreach (var line in visualBlock.Lines)
 				{
-					var tmpLines = new List<BlockLineInfo>();
+					var simpleRepeatsLines = new List<BlockLineInfo>();
+					var simpleLine = new BlockLineInfo {Id = line.Id, Order = 0, Fields = new List<BlockFieldInfo>()};
 					var complexMultilines = new Dictionary<int, BlockLineInfo>();
 					foreach (var field in line.Fields)
 					{
@@ -89,7 +90,7 @@ namespace PravoAdder.Readers
 
 						if (indexes.Count > 1)
 						{
-							tmpLines = indexes
+							simpleRepeatsLines = indexes
 								.Select(i => new BlockLineInfo
 								{
 									Id = line.Id,
@@ -103,19 +104,13 @@ namespace PravoAdder.Readers
 						}
 						else
 						{
-							tmpLines.Add(new BlockLineInfo
-							{
-								Id = line.Id,
-								Order = 0,
-								Fields = indexes
-									.Select(index => ReadField(field.Id.ToString(), projectField, index))
-									.Cast<BlockFieldInfo>()
-									.ToList()
-							});
+							simpleLine.Fields.Add(ReadField(field.Id.ToString(), projectField, indexes.First()));
 						}
 					}
-					tmpLines.AddRange(complexMultilines.Select(d => new BlockLineInfo{ Fields = d.Value.Fields, Id = d.Value.Id, Order = d.Value.Order }));
-					lines.AddRange(tmpLines);
+					simpleRepeatsLines.AddRange(complexMultilines.Select(d => new BlockLineInfo{ Fields = d.Value.Fields, Id = d.Value.Id, Order = d.Value.Order }));
+					simpleRepeatsLines.Add(simpleLine);
+
+					lines.AddRange(simpleRepeatsLines);
 				}
 
 				yield return new BlockInfo
