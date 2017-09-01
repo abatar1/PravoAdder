@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using PravoAdder.Controllers;
 
 namespace PravoAdder
@@ -33,7 +32,7 @@ namespace PravoAdder
 					var projectGroupId = migrationProcessController.AddProjectGroup(headerBlock);
 					var projectId = migrationProcessController.AddProject(headerBlock, projectGroupId);
 					
-					migrationProcessController.ProcessCount((int) index + settings.StartRow, excelTable.Count + 1, headerBlock, projectId);
+					migrationProcessController.ProcessCount((int) index + settings.StartRow, excelTable.Count, headerBlock, projectId);
 
 					foreach (var blockInfo in blocksInfo)
 					{

@@ -6,7 +6,7 @@ namespace PravoAdder
 	{
 		private static void Main(string[] args)
 		{
-			Console.Title = "Pravo adder";
+			Console.Title = "Pravo.Add";
 			var adder = new PravoAdder("config.json");
 			adder.Run();
 		}

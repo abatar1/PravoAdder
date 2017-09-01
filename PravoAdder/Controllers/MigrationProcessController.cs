@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using PravoAdder.DatabaseEnviroment;
 using PravoAdder.Domain;
 using PravoAdder.Domain.Info;
@@ -11,6 +12,7 @@ namespace PravoAdder.Controllers
 	{
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 		private readonly Settings _settings;
+		private static int _count;
 
 		public MigrationProcessController(HttpAuthenticator httpAuthenticator, Settings settings) : base(httpAuthenticator)
 		{
@@ -40,7 +42,8 @@ namespace PravoAdder.Controllers
 
 		public void ProcessCount(int current, int total, HeaderBlockInfo headerInfo, string projectId)
 		{
-			Logger.Info($"{DateTime.Now} | Progress: {current}/{total} | Name: {headerInfo.ProjectName} | Id: {projectId}");
+			_count += 1;
+			Logger.Info($"{DateTime.Now} | Progress: {current}/{total} ({_count}) | Name: {headerInfo.ProjectName} | Id: {projectId}");
 		}
 	}
 }

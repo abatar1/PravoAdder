@@ -17,6 +17,7 @@ namespace PravoAdder.DatabaseEnviroment
 		private readonly HttpAuthenticator _httpAuthenticator;
 		private IList<Participant> _participants;
 		private readonly IDictionary<string, IList<DictionaryItem>> _dictionaries;
+		private readonly object _dictionariesLocker = new object();
 
 		public DatabaseFiller(HttpAuthenticator httpAuthenticator)
 		{
@@ -161,9 +162,7 @@ namespace PravoAdder.DatabaseEnviroment
 
 		#endregion
 
-		#region Field formatting
-
-		
+		#region Field formatting		
 
 		private static string FormatIntString(string value)
 		{
@@ -237,22 +236,28 @@ namespace PravoAdder.DatabaseEnviroment
 		{
 			var correctName = $"{fieldData.First().ToString().ToUpper()}{fieldData.Substring(1)}";
 			var dictionaryName = fieldInfo.SpecialData;
-			if (_dictionaries.ContainsKey(dictionaryName))
+
+			lock (_dictionariesLocker)
 			{
-				var dictionaryItems = new List<DictionaryItem>(_dictionaries[dictionaryName]);
-				if (dictionaryItems.All(d => d.Name != correctName))
+				if (_dictionaries.ContainsKey(dictionaryName))
 				{
-					var id = AddDictionaryItem(correctName, fieldInfo.SpecialData).Result.Content;
-					dictionaryItems.Add(new DictionaryItem(correctName, id));
+					var dictionaryItems = new List<DictionaryItem>(_dictionaries[dictionaryName]);
+					if (dictionaryItems.All(d => d.Name != correctName))
+					{
+						var id = AddDictionaryItem(correctName, fieldInfo.SpecialData).Result.Content;
+					
+						dictionaryItems.Add(new DictionaryItem(correctName, id));
+						_dictionaries.Add(dictionaryName, dictionaryItems);					
+					}				
+				}
+				else
+				{
+					var dictionaryItems = _databaseGetter
+						.GetDictionaryItems(fieldInfo.SpecialData);			
 					_dictionaries.Add(dictionaryName, dictionaryItems);
-				}				
-			}
-			else
-			{
-				var dictionaryItems = _databaseGetter
-					.GetDictionaryItems(fieldInfo.SpecialData);
-				_dictionaries.Add(dictionaryName, dictionaryItems);
-			}
+				}
+			}			
+			
 			return _dictionaries[dictionaryName].First(d => d.Name == correctName);
 		}
 

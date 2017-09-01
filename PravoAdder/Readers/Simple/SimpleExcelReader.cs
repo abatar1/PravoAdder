@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using OfficeOpenXml;
 using PravoAdder.Domain;
@@ -10,8 +9,7 @@ namespace PravoAdder.Readers
 	{
 		public override ExcelTable Read(Settings settings)
 		{
-			var info = new FileInfo(settings.ExcelFileName);
-			if (!info.Exists) throw new FileNotFoundException($"File {info.Name} not found!");
+			var info = GetFileInfo(settings.ExcelFileName);
 
 			var table = new List<IDictionary<int, string>>();
 			using (var xlPackage = new ExcelPackage(info))
