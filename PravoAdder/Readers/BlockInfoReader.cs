@@ -7,12 +7,12 @@ namespace PravoAdder.Readers
 {
 	public abstract class BlockInfoReader
 	{
-		public readonly string FilePath;
+		public readonly Settings Settings;
 		public readonly ExcelTable ExcelTable;
 
 		protected BlockInfoReader(Settings settings, ExcelTable excelInfo)
 		{
-			FilePath = settings.IdComparerPath;
+			Settings = settings;
 			ExcelTable = excelInfo;
 		}
 

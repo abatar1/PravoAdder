@@ -15,7 +15,7 @@ namespace PravoAdder.DatabaseEnviroment
 	{
 		private readonly DatabaseGetter _databaseGetter;
 		private readonly HttpAuthenticator _httpAuthenticator;
-		private readonly IList<dynamic> _participants;
+		private readonly IList<Participant> _participants;
 
 		public DatabaseFiller(HttpAuthenticator httpAuthenticator)
 		{
@@ -26,7 +26,7 @@ namespace PravoAdder.DatabaseEnviroment
 
 		#region Add methods
 
-		public async Task<EnviromentMessage> AddDictionaryItem(string itemName, string sysName)
+		protected async Task<EnviromentMessage> AddDictionaryItem(string itemName, string sysName)
 		{
 			var content = new
 			{
@@ -38,7 +38,7 @@ namespace PravoAdder.DatabaseEnviroment
 			return await SendAddRequestAsync(content, "Dictionary/SaveDictionaryItem", HttpMethod.Put);
 		}
 
-		public async Task<EnviromentMessage> AddParticipant(string organizationName)
+		protected async Task<EnviromentMessage> AddParticipant(string organizationName)
 		{
 			var content = new
 			{
@@ -55,7 +55,7 @@ namespace PravoAdder.DatabaseEnviroment
 			return await SendAddRequestAsync(content, "participants/PutParticipant", HttpMethod.Put);
 		}
 
-		public async Task<EnviromentMessage> AddProjectGroupAsync(Settings settings, HeaderBlockInfo headerInfo)
+		protected async Task<EnviromentMessage> AddProjectGroupAsync(Settings settings, HeaderBlockInfo headerInfo)
 		{
 			if (settings.Overwrite)
 			{
@@ -74,7 +74,8 @@ namespace PravoAdder.DatabaseEnviroment
 			return await SendAddRequestAsync(content, "ProjectGroups", HttpMethod.Put);
 		}
 
-		public async Task<EnviromentMessage> AddProjectAsync(Settings settings, HeaderBlockInfo headerInfo, string projectGroupId)
+		protected async Task<EnviromentMessage> AddProjectAsync(Settings settings, HeaderBlockInfo headerInfo, 
+			string projectGroupId)
 		{
 			if (settings.Overwrite)
 			{
@@ -99,7 +100,8 @@ namespace PravoAdder.DatabaseEnviroment
 			return await SendAddRequestAsync(content, "projects/CreateProject", HttpMethod.Post);
 		}
 
-		public async Task<EnviromentMessage> AddInformationAsync(string projectId, BlockInfo blockInfo, IDictionary<int, string> excelRow)
+		protected async Task<EnviromentMessage> AddInformationAsync(string projectId, BlockInfo blockInfo, 
+			IDictionary<int, string> excelRow)
 		{
 			var contentLines = new List<BlockLineInfo>();
 			if (blockInfo.Lines == null || !blockInfo.Lines.Any())
@@ -112,7 +114,7 @@ namespace PravoAdder.DatabaseEnviroment
 			{
 				var contentFields = new List<BlockFieldInfo>();
 				foreach (var fieldInfo in line.Fields)
-				{
+				{					
 					if (!excelRow.ContainsKey(fieldInfo.ColumnNumber))
 					{
 						messageBuilder.AppendLine($"Excel row doesn't contain \"{fieldInfo.ColumnNumber}\" key.");
@@ -124,17 +126,18 @@ namespace PravoAdder.DatabaseEnviroment
 
 					try
 					{
-						fieldInfo.Value = CreateFieldValueFromData(fieldInfo, fieldData);
+						var value = CreateFieldValueFromData(fieldInfo, fieldData);
+						var newFieldInfo = fieldInfo.CloneWithValue(value);
+						contentFields.Add(newFieldInfo);
 					}
 					catch (Exception e)
 					{
 						messageBuilder.AppendLine($"Error while reading value from table! Message: {e.Message}");
-					}
-					contentFields.Add(fieldInfo);
+					}					
 				}
 				if (!contentFields.Any()) continue;
-				line.Fields = new List<BlockFieldInfo>(contentFields);
-				contentLines.Add(line);
+				var newLine = line.CloneWithFields(contentFields);
+				contentLines.Add(newLine);
 			}
 
 			if (contentLines.All(c => !c.Fields.Any()))
@@ -154,9 +157,9 @@ namespace PravoAdder.DatabaseEnviroment
 				messageBuilder.ToString());
 		}
 
-#endregion
+		#endregion
 
-#region Field formatting
+		#region Field formatting
 
 		private object CreateFieldValueFromData(BlockFieldInfo fieldInfo, string fieldData)
 		{
@@ -219,7 +222,7 @@ namespace PravoAdder.DatabaseEnviroment
 			return value;
 		}
 
-		private dynamic GetParticipantFromData(string fieldData)
+		private Participant GetParticipantFromData(string fieldData)
 		{
 			if (_participants.All(p => p.Name != fieldData))
 			{
@@ -230,16 +233,10 @@ namespace PravoAdder.DatabaseEnviroment
 				.GetParticipants()
 				.First(p => p.Name == fieldData);
 
-			return new
-			{
-				participant.Name,
-				participant.Id,
-				participant.TypeName,
-				participant.TypeId
-			};
+			return Participant.TryParse(participant);
 		}
 
-#endregion
+		#endregion
 
 		private async Task<EnviromentMessage> SendAddRequestAsync(object content, string uri, HttpMethod method, string additionalMessage = null)
 		{
@@ -254,7 +251,7 @@ namespace PravoAdder.DatabaseEnviroment
 			return !response.IsSuccessStatusCode
 				? new EnviromentMessage(null, $"Failed to send {uri}. Message: {response.ReasonPhrase}",
 					EnviromentMessageType.Error)
-				: new EnviromentMessage(await HttpHelper.GetContentIdAsync(response), "Added succefully.",
+				: new EnviromentMessage(await HttpHelper.GetContentIdAsync(response), "Complete succefully.",
 					EnviromentMessageType.Success);
 		}		
 	}

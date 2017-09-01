@@ -10,13 +10,11 @@ namespace PravoAdder.Readers
 	public class ColorBlockInfoReader : BlockInfoReader
 	{
 		private readonly DatabaseGetter _databaseGetter;
-		private readonly Settings _settings;
 
 		public ColorBlockInfoReader(ExcelTable excelTable, Settings settings, HttpAuthenticator authenticator) :
 			base(settings, excelTable)
 		{
 			_databaseGetter = new DatabaseGetter(authenticator);
-			_settings = settings;
 		}
 
 		private static BlockFieldInfo ReadField(string id, dynamic projectField, int index)
@@ -55,7 +53,7 @@ namespace PravoAdder.Readers
 
 		public override IEnumerable<BlockInfo> Read()
 		{
-			var projectType = _databaseGetter.GetProjectType(_settings.ProjectTypeName);
+			var projectType = _databaseGetter.GetProjectType(Settings.ProjectTypeName);
 			var visualBlocks = _databaseGetter.GetVisualBlocks(projectType.Id.ToString());
 			foreach (var visualBlock in visualBlocks)
 			{
@@ -63,12 +61,15 @@ namespace PravoAdder.Readers
 				var lines = new List<BlockLineInfo>();
 				foreach (var line in visualBlock.Lines)
 				{
+					var lineId = line.Id.ToString();
 					var simpleRepeatsLines = new List<BlockLineInfo>();
-					var simpleLine = new BlockLineInfo {Id = line.Id, Order = 0, Fields = new List<BlockFieldInfo>()};
+					var simpleLine = new BlockLineInfo(lineId, 0);
 					var complexMultilines = new Dictionary<int, BlockLineInfo>();
+					
 					foreach (var field in line.Fields)
 					{
 						var projectField = field.ProjectField;
+						var fieldId = field.Id.ToString();
 						var fieldAddress = new FieldAddress(blockname.ToString(), projectField.Name.ToString());
 
 						if (ExcelTable.IsComplexRepeat(fieldAddress))
@@ -78,9 +79,9 @@ namespace PravoAdder.Readers
 							{
 								if (!complexMultilines.ContainsKey(key))
 								{
-									complexMultilines.Add(key, new BlockLineInfo {Id = line.Id, Order = key - 1});
+									complexMultilines.Add(key, new BlockLineInfo(lineId, key - 1));
 								}
-								complexMultilines[key].Fields.Add(ReadField(field.Id.ToString(), projectField, complexIndexes[key]));
+								complexMultilines[key].Fields.Add(ReadField(fieldId, projectField, complexIndexes[key]));
 							}
 							continue;
 						}
@@ -93,24 +94,24 @@ namespace PravoAdder.Readers
 							simpleRepeatsLines = indexes
 								.Select(i => new BlockLineInfo
 								{
-									Id = line.Id,
+									Id = lineId,
 									Order = 0,
 									Fields = new List<BlockFieldInfo>
 									{
-										ReadField(field.Id.ToString(), projectField, i)
+										ReadField(fieldId, projectField, i)
 									}
 								})
 								.ToList();
 						}
 						else
 						{
-							simpleLine.Fields.Add(ReadField(field.Id.ToString(), projectField, indexes.First()));
+							simpleLine.Fields.Add(ReadField(fieldId, projectField, indexes.First()));
 						}
 					}
-					simpleRepeatsLines.AddRange(complexMultilines.Select(d => new BlockLineInfo{ Fields = d.Value.Fields, Id = d.Value.Id, Order = d.Value.Order }));
-					simpleRepeatsLines.Add(simpleLine);
 
 					lines.AddRange(simpleRepeatsLines);
+					lines.AddRange(complexMultilines.Select(d => (BlockLineInfo) d.Value.Clone()));
+					lines.Add(simpleLine);
 				}
 
 				yield return new BlockInfo

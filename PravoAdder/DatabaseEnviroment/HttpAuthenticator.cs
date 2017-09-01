@@ -31,7 +31,7 @@ namespace PravoAdder.DatabaseEnviroment
 			Client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 		}
 
-		public EnviromentMessage Authentication(string login, string password)
+		protected EnviromentMessage Authentication(string login, string password)
 		{
 			var authentication = new
 			{

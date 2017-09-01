@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NLog;
 using PravoAdder.DatabaseEnviroment;
 using PravoAdder.Domain;
 using PravoAdder.Domain.Info;
@@ -12,6 +13,7 @@ namespace PravoAdder.Controllers
 	{
 		private readonly BlockInfoReader _blockInfoReader;
 		public ExcelTable ExcelTable { get; }
+		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
 		public BlockReaderController(Settings settings, HttpAuthenticator autentificator)
 		{
@@ -29,7 +31,9 @@ namespace PravoAdder.Controllers
 					_blockInfoReader = new SimpleBlockInfoReader(ExcelTable, settings);
 					break;
 				default:
-					throw new ArgumentException($"Типа блоков {settings.BlockLoadingMode} не существует.");
+					var message = $"Типа блоков {settings.BlockLoadingMode} не существует.";
+					Logger.Error(message);
+					throw new ArgumentException(message);
 			}
 		}
 

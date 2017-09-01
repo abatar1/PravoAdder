@@ -15,10 +15,10 @@ namespace PravoAdder.Readers
 
 		public override IEnumerable<BlockInfo> Read()
 		{
-			var info = new FileInfo(FilePath);
+			var info = new FileInfo(Settings.IdComparerPath);
 			if (!info.Exists) throw new FileNotFoundException("Blocks info file doesn't found.");
 
-			var jBlocks = JObject.Parse(File.ReadAllText(FilePath));
+			var jBlocks = JObject.Parse(File.ReadAllText(Settings.IdComparerPath));
 
 			var blockObjects = AllChildren(jBlocks)
 				.First(c => c.Type == JTokenType.Array && c.Path.Contains("Blocks"))
@@ -56,7 +56,7 @@ namespace PravoAdder.Readers
 
 		public override HeaderBlockInfo ReadHeaderBlock(IDictionary<int, string> excelRow)
 		{
-			var jBlocks = JObject.Parse(File.ReadAllText(FilePath));
+			var jBlocks = JObject.Parse(File.ReadAllText(Settings.IdComparerPath));
 			return new HeaderBlockInfo
 			{
 				ProjectName = excelRow[jBlocks["ProjectName"].ToObject<int>()],

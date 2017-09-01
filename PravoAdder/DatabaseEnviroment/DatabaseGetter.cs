@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using PravoAdder.Domain;
 using PravoAdder.Helpers;
 
 namespace PravoAdder.DatabaseEnviroment
@@ -149,9 +150,11 @@ namespace PravoAdder.DatabaseEnviroment
 			return GetSimpleJsonPages($"dictionary/{dictionaryName}/getdictionaryitems", HttpMethod.Post).ToList();
 		}
 
-		public IList<dynamic> GetParticipants()
+		public IList<Participant> GetParticipants()
 		{
-			return GetSimpleJsonPages("ParticipantsSuggest/GetParticipants", HttpMethod.Post).ToList();
+			return GetSimpleJsonPages("ParticipantsSuggest/GetParticipants", HttpMethod.Post)
+				.Select(p => (Participant) Participant.TryParse(p))
+				.ToList();
 		}
 
 		public dynamic GetVisualBlocks(string projectTypeId)
