@@ -15,13 +15,15 @@ namespace PravoAdder.DatabaseEnviroment
 	{
 		private readonly DatabaseGetter _databaseGetter;
 		private readonly HttpAuthenticator _httpAuthenticator;
-		private readonly IList<Participant> _participants;
+		private IList<Participant> _participants;
+		private readonly IDictionary<string, IList<DictionaryItem>> _dictionaries;
 
 		public DatabaseFiller(HttpAuthenticator httpAuthenticator)
 		{
 			_databaseGetter = new DatabaseGetter(httpAuthenticator);
 			_httpAuthenticator = httpAuthenticator;
 			_participants = _databaseGetter.GetParticipants();
+			_dictionaries = new Dictionary<string, IList<DictionaryItem>>();
 		}
 
 		#region Add methods
@@ -161,42 +163,7 @@ namespace PravoAdder.DatabaseEnviroment
 
 		#region Field formatting
 
-		private object CreateFieldValueFromData(BlockFieldInfo fieldInfo, string fieldData)
-		{
-			if (string.IsNullOrEmpty(fieldData)) return null;
-
-			fieldData = fieldData.Replace("\"", "");
-			switch (fieldInfo.Type)
-			{
-				case "Value":
-					return FormatFieldData(fieldData);
-				case "Text":
-					return fieldData;
-				case "Formula":
-					var calculationFormula = _databaseGetter.GetCalculationFormulas(fieldInfo.SpecialData);
-					return new
-					{
-						Result = FormatFieldData(fieldData),
-						CalculationFormulaId = calculationFormula.Id
-					};
-				case "Dictionary":
-					var correctName = $"{fieldData.First().ToString().ToUpper()}{fieldData.Substring(1)}";
-					var dictionaryItems = _databaseGetter
-						.GetDictionary(fieldInfo.SpecialData);
-					string id = dictionaryItems.All(item => item.Name != correctName)
-						? AddDictionaryItem(correctName, fieldInfo.SpecialData).Result.Content
-						: dictionaryItems.First(item => item.Name == correctName).Id;
-					return new
-					{
-						Name = correctName,
-						Id = id
-					};
-				case "Participant":
-					return GetParticipantFromData(fieldData);
-				default:
-					throw new ArgumentException("Unknown type of value.");
-			}
-		}		
+		
 
 		private static string FormatIntString(string value)
 		{
@@ -222,23 +189,75 @@ namespace PravoAdder.DatabaseEnviroment
 			return value;
 		}
 
+		#endregion
+
+		private object CreateFieldValueFromData(BlockFieldInfo fieldInfo, string fieldData)
+		{
+			if (string.IsNullOrEmpty(fieldData)) return null;
+
+			fieldData = fieldData.Replace("\"", "");
+			switch (fieldInfo.Type)
+			{
+				case "Value":
+					return FormatFieldData(fieldData);
+				case "Text":
+					return fieldData;
+				case "Formula":
+					var calculationFormula = _databaseGetter.GetCalculationFormulas(fieldInfo.SpecialData);
+					return new
+					{
+						Result = FormatFieldData(fieldData),
+						CalculationFormulaId = calculationFormula.Id
+					};
+				case "Dictionary":
+					return GetDictionaryFromData(fieldData, fieldInfo);
+				case "Participant":
+					return GetParticipantFromData(fieldData);
+				default:
+					throw new ArgumentException("Unknown type of value.");
+			}
+		}
+
 		private Participant GetParticipantFromData(string fieldData)
 		{
 			if (_participants.All(p => p.Name != fieldData))
 			{
 				var sender = AddParticipant(fieldData).Result.Content;
+				_participants = _databaseGetter
+					.GetParticipants();
 			}
 
-			var participant = _databaseGetter
-				.GetParticipants()
+			var participant = _participants
 				.First(p => p.Name == fieldData);
 
 			return Participant.TryParse(participant);
 		}
 
-		#endregion
+		private DictionaryItem GetDictionaryFromData(string fieldData, BlockFieldInfo fieldInfo)
+		{
+			var correctName = $"{fieldData.First().ToString().ToUpper()}{fieldData.Substring(1)}";
+			var dictionaryName = fieldInfo.SpecialData;
+			if (_dictionaries.ContainsKey(dictionaryName))
+			{
+				var dictionaryItems = new List<DictionaryItem>(_dictionaries[dictionaryName]);
+				if (dictionaryItems.All(d => d.Name != correctName))
+				{
+					var id = AddDictionaryItem(correctName, fieldInfo.SpecialData).Result.Content;
+					dictionaryItems.Add(new DictionaryItem(correctName, id));
+					_dictionaries.Add(dictionaryName, dictionaryItems);
+				}				
+			}
+			else
+			{
+				var dictionaryItems = _databaseGetter
+					.GetDictionaryItems(fieldInfo.SpecialData);
+				_dictionaries.Add(dictionaryName, dictionaryItems);
+			}
+			return _dictionaries[dictionaryName].First(d => d.Name == correctName);
+		}
 
-		private async Task<EnviromentMessage> SendAddRequestAsync(object content, string uri, HttpMethod method, string additionalMessage = null)
+		private async Task<EnviromentMessage> SendAddRequestAsync(object content, string uri, HttpMethod method, 
+			string additionalMessage = null)
 		{
 			var request = HttpHelper.CreateJsonRequest(content, $"api/{uri}", method, _httpAuthenticator.UserCookie);
 

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Sockets;
 using PravoAdder.Domain;
 using PravoAdder.Helpers;
 
@@ -145,9 +146,11 @@ namespace PravoAdder.DatabaseEnviroment
 			return GetSimpleJsonPage(formulaName, "CalculationFormulasSuggest/GetCalculationFormulas", HttpMethod.Post);
 		}
 
-		public IList<dynamic> GetDictionary(string dictionaryName)
+		public IList<DictionaryItem> GetDictionaryItems(string dictionaryName)
 		{
-			return GetSimpleJsonPages($"dictionary/{dictionaryName}/getdictionaryitems", HttpMethod.Post).ToList();
+			return GetSimpleJsonPages($"dictionary/{dictionaryName}/getdictionaryitems", HttpMethod.Post)
+				.Select(d => new DictionaryItem(d.Name.ToString(), d.Id.ToString()))
+				.ToList();
 		}
 
 		public IList<Participant> GetParticipants()
