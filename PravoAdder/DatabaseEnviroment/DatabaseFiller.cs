@@ -236,7 +236,9 @@ namespace PravoAdder.DatabaseEnviroment
 		    var correctFieldData = fieldData.Trim();
 			if (_participants.All(p => !p.Name.Equals(correctFieldData)))
 			{
-				var sender = AddParticipant(fieldData).Result.Content;
+				var sender = AddParticipant(fieldData).Result;
+			    if (sender.Type == EnviromentMessageType.Error) return null;
+
 				_participants = _databaseGetter
 					.GetParticipants();
 			}
@@ -250,29 +252,27 @@ namespace PravoAdder.DatabaseEnviroment
 		private DictionaryItem GetDictionaryFromData(string fieldData, BlockFieldInfo fieldInfo)
 		{
 			var dictionaryName = fieldInfo.SpecialData;      
-		    List<DictionaryItem> dictionaryItems;
 
-            if (_dictionaries.ContainsKey(dictionaryName))
+            if (!_dictionaries.ContainsKey(dictionaryName))
 			{
-				dictionaryItems = new List<DictionaryItem>(_dictionaries[dictionaryName]);			
-			}
-			else
-			{
-				dictionaryItems = _databaseGetter
+				var dictionaryItems = _databaseGetter
 					.GetDictionaryItems(fieldInfo.SpecialData)
                     .ToList();			
                 _dictionaries.Add(dictionaryName, dictionaryItems);
 			}
 
-            if (dictionaryItems.All(d => d.Name != fieldData))
+		    var correctName = $"{fieldData.First().ToString().ToUpper()}{fieldData.Substring(1)}";
+
+            if (_dictionaries[dictionaryName].All(d => !d.Name.Equals(correctName)))
             {
-                var id = AddDictionaryItem(fieldData, fieldInfo.SpecialData).Result.Content;
-                dictionaryItems.Add(new DictionaryItem(fieldData, id));
-                _dictionaries[dictionaryName] = dictionaryItems;
+                var sender = AddDictionaryItem(correctName, fieldInfo.SpecialData).Result;
+                if (sender.Type == EnviromentMessageType.Error) return null;
+
+                _dictionaries[dictionaryName].Add(new DictionaryItem(correctName, sender.Content));
             }
 
             return _dictionaries[dictionaryName]
-                .First(d => d.Name == fieldData);
+                .First(d => d.Name == correctName);
 		}
 
 		private async Task<EnviromentMessage> SendAddRequestAsync(dynamic content, string uri, HttpMethod method, 
