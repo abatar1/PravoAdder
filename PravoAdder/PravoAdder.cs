@@ -30,9 +30,11 @@ namespace PravoAdder
 				{
 					var headerBlock = blockReaderController.ReadHeader(excelRow);
 					var projectGroupId = migrationProcessController.AddProjectGroup(headerBlock);
-					var projectId = migrationProcessController.AddProject(headerBlock, projectGroupId);
+				    if (string.IsNullOrEmpty(projectGroupId)) return;
 
+                    var projectId = migrationProcessController.AddProject(headerBlock, projectGroupId);
 					if (string.IsNullOrEmpty(projectId)) return;
+
 					migrationProcessController.ProcessCount((int) index + settings.StartRow, excelTable.Count, headerBlock, projectId);
 
 					foreach (var blockInfo in blocksInfo)

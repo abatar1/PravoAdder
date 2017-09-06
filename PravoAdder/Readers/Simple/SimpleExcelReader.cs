@@ -23,7 +23,7 @@ namespace PravoAdder.Readers
 					table.Add(worksheet
 						.Cells[rowNum, 1, rowNum, totalColumns]
 						.Select(c => FormatCell(c.Value) ?? string.Empty)
-						.Zip(Enumerable.Range(1, totalColumns - 1), (value, key) => new {value, key})
+						.Zip(Enumerable.Range(1, totalColumns), (value, key) => new {value, key})
 						.ToDictionary(key => key.key, value => value.value));
 				}
 			}

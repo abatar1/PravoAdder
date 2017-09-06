@@ -19,6 +19,11 @@
 			TypeId = typeId;
 		}
 
+	    public Participant ChangeName(string newName)
+	    {
+	        return new Participant(newName, Id, TypeName, TypeId);
+	    }
+
 		public static Participant TryParse(dynamic participant)
 		{
 			return new Participant
@@ -29,5 +34,10 @@
 				TypeName = participant.TypeName.ToString()
 			};
 		}
+
+	    public override string ToString()
+	    {
+	        return Name;
+	    }
 	}
 }

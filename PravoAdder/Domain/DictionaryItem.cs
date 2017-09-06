@@ -10,5 +10,10 @@
 
 		public string Name { get; }
 		public string Id { get; }
+
+	    public override string ToString()
+	    {
+	        return Name;
+	    }
 	}
 }

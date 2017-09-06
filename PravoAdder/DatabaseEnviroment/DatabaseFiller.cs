@@ -22,7 +22,7 @@ namespace PravoAdder.DatabaseEnviroment
 		{
 			_databaseGetter = new DatabaseGetter(httpAuthenticator);
 			_httpAuthenticator = httpAuthenticator;
-			_participants = _databaseGetter.GetParticipants();
+		    _participants = _databaseGetter.GetParticipants();
 			_dictionaries = new Dictionary<string, IList<DictionaryItem>>();
 		}
 
@@ -225,7 +225,7 @@ namespace PravoAdder.DatabaseEnviroment
 				case "Dictionary":
 					return GetDictionaryFromData(fieldData, fieldInfo);
 				case "Participant":
-					return GetParticipantFromData(fieldData);
+                    return GetParticipantFromData(fieldData);
 				default:
 					throw new ArgumentException("Unknown type of value.");
 			}
@@ -233,7 +233,8 @@ namespace PravoAdder.DatabaseEnviroment
 
 		private Participant GetParticipantFromData(string fieldData)
 		{
-			if (_participants.All(p => p.Name != fieldData))
+		    var correctFieldData = fieldData.Trim();
+			if (_participants.All(p => !p.Name.Equals(correctFieldData)))
 			{
 				var sender = AddParticipant(fieldData).Result.Content;
 				_participants = _databaseGetter
@@ -241,35 +242,37 @@ namespace PravoAdder.DatabaseEnviroment
 			}
 
 			var participant = _participants
-				.First(p => p.Name == fieldData);
+				.First(p => p.Name == correctFieldData);
 
 			return Participant.TryParse(participant);
 		}
 
 		private DictionaryItem GetDictionaryFromData(string fieldData, BlockFieldInfo fieldInfo)
 		{
-			var correctName = $"{fieldData.First().ToString().ToUpper()}{fieldData.Substring(1)}";
-			var dictionaryName = fieldInfo.SpecialData;
+			var dictionaryName = fieldInfo.SpecialData;      
+		    List<DictionaryItem> dictionaryItems;
 
-			if (_dictionaries.ContainsKey(dictionaryName))
+            if (_dictionaries.ContainsKey(dictionaryName))
 			{
-				var dictionaryItems = new List<DictionaryItem>(_dictionaries[dictionaryName]);
-				if (dictionaryItems.All(d => d.Name != correctName))
-				{
-					var id = AddDictionaryItem(correctName, fieldInfo.SpecialData).Result.Content;
-					
-					dictionaryItems.Add(new DictionaryItem(correctName, id));
-					_dictionaries.Add(dictionaryName, dictionaryItems);					
-				}				
+				dictionaryItems = new List<DictionaryItem>(_dictionaries[dictionaryName]);			
 			}
 			else
 			{
-				var dictionaryItems = _databaseGetter
-					.GetDictionaryItems(fieldInfo.SpecialData);			
-				_dictionaries.Add(dictionaryName, dictionaryItems);
-			}						
-			
-			return _dictionaries[dictionaryName].First(d => d.Name == correctName);
+				dictionaryItems = _databaseGetter
+					.GetDictionaryItems(fieldInfo.SpecialData)
+                    .ToList();			
+                _dictionaries.Add(dictionaryName, dictionaryItems);
+			}
+
+            if (dictionaryItems.All(d => d.Name != fieldData))
+            {
+                var id = AddDictionaryItem(fieldData, fieldInfo.SpecialData).Result.Content;
+                dictionaryItems.Add(new DictionaryItem(fieldData, id));
+                _dictionaries[dictionaryName] = dictionaryItems;
+            }
+
+            return _dictionaries[dictionaryName]
+                .First(d => d.Name == fieldData);
 		}
 
 		private async Task<EnviromentMessage> SendAddRequestAsync(dynamic content, string uri, HttpMethod method, 
