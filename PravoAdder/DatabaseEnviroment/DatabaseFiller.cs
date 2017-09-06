@@ -17,7 +17,6 @@ namespace PravoAdder.DatabaseEnviroment
 		private readonly HttpAuthenticator _httpAuthenticator;
 		private IList<Participant> _participants;
 		private readonly IDictionary<string, IList<DictionaryItem>> _dictionaries;
-		private readonly object _dictionariesLocker = new object();
 
 		public DatabaseFiller(HttpAuthenticator httpAuthenticator)
 		{
@@ -67,10 +66,13 @@ namespace PravoAdder.DatabaseEnviroment
 					return new EnviromentMessage(projectGroup.Id, "Group already exists.", EnviromentMessageType.Success);
 			}
 
+			var projectFolder = _databaseGetter.GetProjectFolder(headerInfo.FolderName);
+			if (projectFolder == null) return new EnviromentMessage("", "Project folder doesn't exist.", EnviromentMessageType.Error);
+
 			var content = new
 			{
 				Name = headerInfo.ProjectGroupName,
-				ProjectFolder = _databaseGetter.GetProjectFolder(headerInfo.FolderName),
+				ProjectFolder = projectFolder,
 				headerInfo.Description
 			};
 
@@ -87,11 +89,23 @@ namespace PravoAdder.DatabaseEnviroment
 					return new EnviromentMessage(project.Id, "Project already exists.", EnviromentMessageType.Success);
 			}
 
+			var projectFolder = _databaseGetter.GetProjectFolder(headerInfo.FolderName);
+			if (projectFolder == null)
+				return new EnviromentMessage("", $"Project folder {headerInfo.FolderName} doesn't exist. Project name: {headerInfo.ProjectName}", EnviromentMessageType.Error);
+
+			var projectType = _databaseGetter.GetProjectType(settings.ProjectTypeName);
+			if (projectType == null)
+				return new EnviromentMessage("", $"Project type {settings.ProjectTypeName} doesn't exist. Project name: {headerInfo.ProjectName}", EnviromentMessageType.Error);
+
+			var responsible = _databaseGetter.GetResponsible(headerInfo.ResponsibleName);
+			if (responsible == null)
+				return new EnviromentMessage("", $"Responsible {headerInfo.ResponsibleName} doesn't exist. Project name: {headerInfo.ProjectName}", EnviromentMessageType.Error);
+
 			var content = new
 			{
-				ProjectFolder = _databaseGetter.GetProjectFolder(headerInfo.FolderName),
-				ProjectType = _databaseGetter.GetProjectType(settings.ProjectTypeName),
-				Responsible = _databaseGetter.GetResponsible(headerInfo.ResponsibleName),
+				ProjectFolder = projectFolder,
+				ProjectType = projectType,
+				Responsible = responsible,
 				ProjectGroup = new
 				{
 					Name = headerInfo.ProjectGroupName,
@@ -157,7 +171,7 @@ namespace PravoAdder.DatabaseEnviroment
 			};
 
 			return await SendAddRequestAsync(contentBlock, "ProjectCustomValues/Create", HttpMethod.Post,
-				messageBuilder.ToString());
+				messageBuilder.ToString());						
 		}
 
 		#endregion
@@ -237,31 +251,28 @@ namespace PravoAdder.DatabaseEnviroment
 			var correctName = $"{fieldData.First().ToString().ToUpper()}{fieldData.Substring(1)}";
 			var dictionaryName = fieldInfo.SpecialData;
 
-			lock (_dictionariesLocker)
+			if (_dictionaries.ContainsKey(dictionaryName))
 			{
-				if (_dictionaries.ContainsKey(dictionaryName))
+				var dictionaryItems = new List<DictionaryItem>(_dictionaries[dictionaryName]);
+				if (dictionaryItems.All(d => d.Name != correctName))
 				{
-					var dictionaryItems = new List<DictionaryItem>(_dictionaries[dictionaryName]);
-					if (dictionaryItems.All(d => d.Name != correctName))
-					{
-						var id = AddDictionaryItem(correctName, fieldInfo.SpecialData).Result.Content;
+					var id = AddDictionaryItem(correctName, fieldInfo.SpecialData).Result.Content;
 					
-						dictionaryItems.Add(new DictionaryItem(correctName, id));
-						_dictionaries.Add(dictionaryName, dictionaryItems);					
-					}				
-				}
-				else
-				{
-					var dictionaryItems = _databaseGetter
-						.GetDictionaryItems(fieldInfo.SpecialData);			
-					_dictionaries.Add(dictionaryName, dictionaryItems);
-				}
-			}			
+					dictionaryItems.Add(new DictionaryItem(correctName, id));
+					_dictionaries.Add(dictionaryName, dictionaryItems);					
+				}				
+			}
+			else
+			{
+				var dictionaryItems = _databaseGetter
+					.GetDictionaryItems(fieldInfo.SpecialData);			
+				_dictionaries.Add(dictionaryName, dictionaryItems);
+			}						
 			
 			return _dictionaries[dictionaryName].First(d => d.Name == correctName);
 		}
 
-		private async Task<EnviromentMessage> SendAddRequestAsync(object content, string uri, HttpMethod method, 
+		private async Task<EnviromentMessage> SendAddRequestAsync(dynamic content, string uri, HttpMethod method, 
 			string additionalMessage = null)
 		{
 			var request = HttpHelper.CreateJsonRequest(content, $"api/{uri}", method, _httpAuthenticator.UserCookie);
@@ -273,7 +284,7 @@ namespace PravoAdder.DatabaseEnviroment
 					additionalMessage.Remove(additionalMessage.Length - 2), EnviromentMessageType.Error);
 
 			return !response.IsSuccessStatusCode
-				? new EnviromentMessage(null, $"Failed to send {uri}. Message: {response.ReasonPhrase}",
+				? new EnviromentMessage(null, $"Failed to send {uri}. Message: {response.ReasonPhrase}. Id: {content.ProjectId}",
 					EnviromentMessageType.Error)
 				: new EnviromentMessage(await HttpHelper.GetContentIdAsync(response), "Complete succefully.",
 					EnviromentMessageType.Success);

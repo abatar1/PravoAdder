@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using PravoAdder.DatabaseEnviroment;
 using PravoAdder.Domain;
 using PravoAdder.Domain.Info;
@@ -13,6 +12,7 @@ namespace PravoAdder.Controllers
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 		private readonly Settings _settings;
 		private static int _count;
+		private readonly object _informationLocker = new object();
 
 		public MigrationProcessController(HttpAuthenticator httpAuthenticator, Settings settings) : base(httpAuthenticator)
 		{
@@ -36,8 +36,11 @@ namespace PravoAdder.Controllers
 		public void AddInformationAsync(BlockInfo blockInfo, IDictionary<int, string> excelRow,
 			string projectId)
 		{
-			var informationSender = AddInformationAsync(projectId, blockInfo, excelRow).Result;
-			if (informationSender.Type == EnviromentMessageType.Error) Logger.Error($"{informationSender.Message}");
+			lock (_informationLocker)
+			{
+				var informationSender = AddInformationAsync(projectId, blockInfo, excelRow).Result;
+				if (informationSender.Type == EnviromentMessageType.Error) Logger.Error($"{informationSender.Message}");
+			}			
 		}
 
 		public void ProcessCount(int current, int total, HeaderBlockInfo headerInfo, string projectId)

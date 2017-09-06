@@ -61,7 +61,8 @@ namespace PravoAdder.Readers
 			{
 				ProjectName = excelRow[jBlocks["ProjectName"].ToObject<int>()],
 				ProjectGroupName = excelRow[jBlocks["ProjectGroupName"].ToObject<int>()],
-				ResponsibleName = excelRow[jBlocks["ResponsibleName"].ToObject<int>()]
+				ResponsibleName = excelRow[jBlocks["ResponsibleName"].ToObject<int>()],
+				FolderName = jBlocks["ProjectFolderName"].ToObject<string>()
 			};
 		}
 

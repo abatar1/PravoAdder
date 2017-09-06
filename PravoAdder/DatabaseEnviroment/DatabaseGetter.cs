@@ -51,8 +51,9 @@ namespace PravoAdder.DatabaseEnviroment
 				PageSize = pageSize,
 				Page = 1
 			};
+
 			return GetJsonPages(content, uri, httpMethod)
-				.Single(p => p.Name == name);
+				.FirstOrDefault(p => p.Name == name);
 		}
 
 		private IEnumerable<dynamic> GetSimpleJsonPages(string uri, HttpMethod httpMethod, int pageSize = int.MaxValue)
