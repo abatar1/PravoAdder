@@ -70,8 +70,12 @@ namespace PravoAdder.Controllers
 		{
 			while (true)
 			{
-				Console.WriteLine($"{message}: ");
+                var additionalMessage = type == typeof(bool) ? "(y/n)" : "";
+				Console.WriteLine($"{message}{additionalMessage}: ");
 				var data = Console.ReadLine();
+
+			    if (type == typeof(bool)) return data == "y";
+
 				if (!string.IsNullOrEmpty(data))
 				{
 					if (type.IsArray)

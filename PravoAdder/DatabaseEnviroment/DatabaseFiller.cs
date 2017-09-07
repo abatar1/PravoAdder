@@ -149,7 +149,7 @@ namespace PravoAdder.DatabaseEnviroment
 					}
 					catch (Exception e)
 					{
-						messageBuilder.AppendLine($"Error while reading value from table! Message: {e.Message}");
+						messageBuilder.AppendLine($"Error while reading value from table! Message: {e.Message} Id: {projectId} Data: {fieldData} Type: {fieldInfo.Type}");
 					}					
 				}
 				if (!contentFields.Any()) continue;
@@ -174,22 +174,69 @@ namespace PravoAdder.DatabaseEnviroment
 				messageBuilder.ToString());						
 		}
 
-		#endregion
+	    private async Task<EnviromentMessage> SendAddRequestAsync(dynamic content, string uri, HttpMethod method,
+	        string additionalMessage = null)
+	    {
+	        var request = HttpHelper.CreateJsonRequest(content, $"api/{uri}", method, _httpAuthenticator.UserCookie);
 
-		#region Field formatting		
+	        var response = await _httpAuthenticator.Client.SendAsync(request);
 
-		private static string FormatIntString(string value)
-		{
-			if (!value.Contains(',')) return value;
+	        if (!string.IsNullOrEmpty(additionalMessage))
+	            return new EnviromentMessage(await HttpHelper.GetContentIdAsync(response),
+	                additionalMessage.Remove(additionalMessage.Length - 2), EnviromentMessageType.Error);
 
-			var newValue = value.Replace(" ", "");
-			var splitted = newValue.Split(',');
-			return splitted[1].All(c => c == '0') ? splitted[0] : newValue;
-		}
+	        return !response.IsSuccessStatusCode
+	            ? new EnviromentMessage(null, $"Failed to send {uri}. Message: {response.ReasonPhrase}. Id: {content.ProjectId}",
+	                EnviromentMessageType.Error)
+	            : new EnviromentMessage(await HttpHelper.GetContentIdAsync(response), "Complete succefully.",
+	                EnviromentMessageType.Success);
+	    }
 
-		private static object FormatFieldData(string value)
-		{
-			var correctIntValue = FormatIntString(value);
+        #endregion
+
+	    private object CreateFieldValueFromData(BlockFieldInfo fieldInfo, string fieldData)
+	    {
+	        if (string.IsNullOrEmpty(fieldData)) return null;
+
+	        fieldData = fieldData.Replace("\"", "");
+	        switch (fieldInfo.Type)
+	        {
+	            case "Value":
+	                return FormatFieldData(fieldData);
+	            case "Text":
+	                return fieldData;
+	            case "Formula":
+	                var calculationFormula = _databaseGetter.GetCalculationFormulas(fieldInfo.SpecialData);
+	                return new
+	                {
+	                    Result = FormatFieldData(fieldData),
+	                    CalculationFormulaId = calculationFormula.Id
+	                };
+	            case "Dictionary":
+	                return GetDictionaryFromData(fieldData, fieldInfo);
+	            case "Participant":
+	                return GetParticipantFromData(fieldData);
+	            default:
+	                throw new ArgumentException("Unknown type of value.");
+	        }
+	    }
+
+        #region Additional methods		
+
+        private static object FormatFieldData(string value)
+        {
+            string correctIntValue;
+            if (!value.Contains(','))
+            {
+                correctIntValue =  value;
+            }
+            else
+            {
+                var newValue = value.Replace(" ", "");
+                var splitted = newValue.Split(',');
+                correctIntValue = splitted[1].All(c => c == '0') ? splitted[0] : newValue;
+            }		    
+
 			if (TypeDescriptor.GetConverter(typeof(int)).IsValid(correctIntValue))
 			{
 				return int.Parse(correctIntValue);
@@ -202,34 +249,10 @@ namespace PravoAdder.DatabaseEnviroment
 			return value;
 		}
 
-		#endregion
-
-		private object CreateFieldValueFromData(BlockFieldInfo fieldInfo, string fieldData)
-		{
-			if (string.IsNullOrEmpty(fieldData)) return null;
-
-			fieldData = fieldData.Replace("\"", "");
-			switch (fieldInfo.Type)
-			{
-				case "Value":
-					return FormatFieldData(fieldData);
-				case "Text":
-					return fieldData;
-				case "Formula":
-					var calculationFormula = _databaseGetter.GetCalculationFormulas(fieldInfo.SpecialData);
-					return new
-					{
-						Result = FormatFieldData(fieldData),
-						CalculationFormulaId = calculationFormula.Id
-					};
-				case "Dictionary":
-					return GetDictionaryFromData(fieldData, fieldInfo);
-				case "Participant":
-                    return GetParticipantFromData(fieldData);
-				default:
-					throw new ArgumentException("Unknown type of value.");
-			}
-		}
+	    private static string FormatDictionaryItemName(string item)
+	    {
+	        return $"{item.First().ToString().ToUpper()}{item.Substring(1)}";
+	    }
 
 		private Participant GetParticipantFromData(string fieldData)
 		{
@@ -247,21 +270,21 @@ namespace PravoAdder.DatabaseEnviroment
 				.First(p => p.Name == correctFieldData);
 
 			return Participant.TryParse(participant);
-		}
+		}    
 
 		private DictionaryItem GetDictionaryFromData(string fieldData, BlockFieldInfo fieldInfo)
 		{
-			var dictionaryName = fieldInfo.SpecialData;      
+			var dictionaryName = fieldInfo.SpecialData;
+		    var correctName = FormatDictionaryItemName(fieldData);
 
             if (!_dictionaries.ContainsKey(dictionaryName))
 			{
 				var dictionaryItems = _databaseGetter
 					.GetDictionaryItems(fieldInfo.SpecialData)
+                    .Select(d => new DictionaryItem(FormatDictionaryItemName(d.Name), d.Id))
                     .ToList();			
                 _dictionaries.Add(dictionaryName, dictionaryItems);
-			}
-
-		    var correctName = $"{fieldData.First().ToString().ToUpper()}{fieldData.Substring(1)}";
+			}		    
 
             if (_dictionaries[dictionaryName].All(d => !d.Name.Equals(correctName)))
             {
@@ -275,22 +298,6 @@ namespace PravoAdder.DatabaseEnviroment
                 .First(d => d.Name == correctName);
 		}
 
-		private async Task<EnviromentMessage> SendAddRequestAsync(dynamic content, string uri, HttpMethod method, 
-			string additionalMessage = null)
-		{
-			var request = HttpHelper.CreateJsonRequest(content, $"api/{uri}", method, _httpAuthenticator.UserCookie);
-
-			var response = await _httpAuthenticator.Client.SendAsync(request);
-
-			if (!string.IsNullOrEmpty(additionalMessage))
-				return new EnviromentMessage(await HttpHelper.GetContentIdAsync(response),
-					additionalMessage.Remove(additionalMessage.Length - 2), EnviromentMessageType.Error);
-
-			return !response.IsSuccessStatusCode
-				? new EnviromentMessage(null, $"Failed to send {uri}. Message: {response.ReasonPhrase}. Id: {content.ProjectId}",
-					EnviromentMessageType.Error)
-				: new EnviromentMessage(await HttpHelper.GetContentIdAsync(response), "Complete succefully.",
-					EnviromentMessageType.Success);
-		}		
+	    #endregion	
 	}
 }
