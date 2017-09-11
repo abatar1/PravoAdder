@@ -1,9 +1,8 @@
 {
 	"Login": "admin@pravo.ru",
-	"BaseUri": "http://testmkamos.casepro.pro",
-	"ProjectTypeName": "Судебное дело (Тех. задание)",
-	"DataRowPosition": 7,
-	"InformationRowPosition": 3,
+	"BaseUri": "https://sberbankcapital.casepro.pro",
+	"DataRowPosition": 3,
+	"InformationRowPosition": 1,
 	"IdComparerPath": "blocksinfo.json",
 	"BlockLoadingMode": "Color",
 	"AllowedColors": [

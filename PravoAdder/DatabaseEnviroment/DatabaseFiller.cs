@@ -14,17 +14,18 @@ namespace PravoAdder.DatabaseEnviroment
 {
     public class DatabaseFiller
     {
-        private readonly DatabaseGetter _databaseGetter;
+        protected readonly DatabaseGetter DatabaseGetter;
+
         private readonly IDictionary<string, ConcurrentBag<DictionaryItem>> _dictionaries;
-        private readonly HttpAuthenticator _httpAuthenticator;
+		private readonly HttpAuthenticator _httpAuthenticator;
         private IList<Participant> _participants;
 	    private readonly object _dictionaryContainsKeyLock = new object();
 
         public DatabaseFiller(HttpAuthenticator httpAuthenticator)
         {
-            _databaseGetter = new DatabaseGetter(httpAuthenticator);
+            DatabaseGetter = new DatabaseGetter(httpAuthenticator);
             _httpAuthenticator = httpAuthenticator;
-            _participants = _databaseGetter.GetParticipants();
+            _participants = DatabaseGetter.GetParticipants();
 			_dictionaries = new ConcurrentDictionary<string, ConcurrentBag<DictionaryItem>>();
         }
 
@@ -40,7 +41,7 @@ namespace PravoAdder.DatabaseEnviroment
                 case "Text":
                     return fieldData;
                 case "Formula":
-                    var calculationFormula = _databaseGetter.GetCalculationFormulas(fieldInfo.SpecialData);
+                    var calculationFormula = DatabaseGetter.GetCalculationFormulas(fieldInfo.SpecialData);
                     return new
                     {
                         Result = FormatFieldData(fieldData),
@@ -55,9 +56,29 @@ namespace PravoAdder.DatabaseEnviroment
             }
         }
 
-        #region Add methods
+	    protected async Task<EnviromentMessage> SynchronizeWithKad(string id, string syncNumber)
+	    {
+			var content = new
+			{
+				ProjectId = id,
+				CasebookNumber = syncNumber
+			};
+		    const string uri = "Casebook/CheckCasebookCase";
 
-        protected async Task<EnviromentMessage> AddDictionaryItem(string itemName, string sysName)
+			var request = HttpHelper.CreateJsonRequest(content, $"api/{uri}", HttpMethod.Put, _httpAuthenticator.UserCookie);
+		    var response = await _httpAuthenticator.Client.SendAsync(request);
+
+		    return !response.IsSuccessStatusCode
+			    ? new EnviromentMessage(null,
+				    $"Failed to send {uri}. Message: {response.ReasonPhrase}. Id: {content.ProjectId}",
+				    EnviromentMessageType.Error)
+			    : new EnviromentMessage(null, "Complete succefully.",
+				    EnviromentMessageType.Success);
+		}
+
+		#region Add methods
+
+		protected async Task<EnviromentMessage> AddDictionaryItem(string itemName, string sysName)
         {
             var content = new
             {
@@ -66,7 +87,7 @@ namespace PravoAdder.DatabaseEnviroment
                 IsCustom = true
             };
 
-            return await SendAddRequestAsync(content, "Dictionary/SaveDictionaryItem", HttpMethod.Put);
+            return await SendRequestWithResponseAsync(content, "Dictionary/SaveDictionaryItem", HttpMethod.Put);
         }
 
         protected async Task<EnviromentMessage> AddParticipant(string organizationName)
@@ -83,20 +104,23 @@ namespace PravoAdder.DatabaseEnviroment
                 }
             };
 
-            return await SendAddRequestAsync(content, "participants/PutParticipant", HttpMethod.Put);
+            return await SendRequestWithResponseAsync(content, "participants/PutParticipant", HttpMethod.Put);
         }
 
         protected async Task<EnviromentMessage> AddProjectGroupAsync(Settings settings, HeaderBlockInfo headerInfo)
         {
-            if (settings.Overwrite)
+			if (headerInfo.ProjectGroupName == null)
+				return new EnviromentMessage(null, "Using default project.", EnviromentMessageType.Warning);
+
+			if (settings.Overwrite)
             {
-                var projectGroup = _databaseGetter.GetProjectGroup(headerInfo.ProjectGroupName);
+	            var projectGroup = DatabaseGetter.GetProjectGroup(headerInfo.ProjectGroupName);
                 if (projectGroup != null)
                     return new EnviromentMessage(projectGroup.Id, "Group already exists.",
                         EnviromentMessageType.Success);
             }
 
-            var projectFolder = _databaseGetter.GetProjectFolder(headerInfo.FolderName);
+            var projectFolder = DatabaseGetter.GetProjectFolder(headerInfo.FolderName);
             if (projectFolder == null)
                 return new EnviromentMessage("", "Project folder doesn't exist.", EnviromentMessageType.Error);
 
@@ -107,7 +131,7 @@ namespace PravoAdder.DatabaseEnviroment
                 headerInfo.Description
             };
 
-            return await SendAddRequestAsync(content, "ProjectGroups", HttpMethod.Put);
+            return await SendRequestWithResponseAsync(content, "ProjectGroups", HttpMethod.Put);
         }
 
         protected async Task<EnviromentMessage> AddProjectAsync(Settings settings, HeaderBlockInfo headerInfo,
@@ -115,43 +139,43 @@ namespace PravoAdder.DatabaseEnviroment
         {
             if (settings.Overwrite)
             {
-                var project = _databaseGetter.GetProject(headerInfo.ProjectName, projectGroupId, headerInfo.FolderName);
+	            var project = DatabaseGetter.GetProject(headerInfo, projectGroupId);
                 if (project != null)
                     return new EnviromentMessage(project.Id, "Project already exists.", EnviromentMessageType.Success);
             }
 
-            var projectFolder = _databaseGetter.GetProjectFolder(headerInfo.FolderName);
+            var projectFolder = DatabaseGetter.GetProjectFolder(headerInfo.FolderName);
             if (projectFolder == null)
                 return new EnviromentMessage("",
                     $"Project folder {headerInfo.FolderName} doesn't exist. Project name: {headerInfo.ProjectName}",
                     EnviromentMessageType.Error);
 
-            var projectType = _databaseGetter.GetProjectType(settings.ProjectTypeName);
+            var projectType = DatabaseGetter.GetProjectType(headerInfo.ProjectTypeName);
             if (projectType == null)
                 return new EnviromentMessage("",
-                    $"Project type {settings.ProjectTypeName} doesn't exist. Project name: {headerInfo.ProjectName}",
+                    $"Project type {headerInfo.ProjectTypeName} doesn't exist. Project name: {headerInfo.ProjectName}",
                     EnviromentMessageType.Error);
 
-            var responsible = _databaseGetter.GetResponsible(headerInfo.ResponsibleName);
+            var responsible = DatabaseGetter.GetResponsible(headerInfo.ResponsibleName);
             if (responsible == null)
                 return new EnviromentMessage("",
                     $"Responsible {headerInfo.ResponsibleName} doesn't exist. Project name: {headerInfo.ProjectName}",
                     EnviromentMessageType.Error);
 
-            var content = new
+	        var projectGroup = headerInfo.ProjectGroupName == null && projectGroupId == null
+		        ? null
+		        : new ProjectGroup(headerInfo.ProjectGroupName, projectGroupId);
+
+			var content = new
             {
                 ProjectFolder = projectFolder,
                 ProjectType = projectType,
                 Responsible = responsible,
-                ProjectGroup = new
-                {
-                    Name = headerInfo.ProjectGroupName,
-                    Id = projectGroupId
-                },
+                ProjectGroup = projectGroup,
                 Name = headerInfo.ProjectName
             };
 
-            return await SendAddRequestAsync(content, "projects/CreateProject", HttpMethod.Post);
+            return await SendRequestWithResponseAsync(content, "projects/CreateProject", HttpMethod.Post);
         }
 
         protected async Task<EnviromentMessage> AddInformationAsync(string projectId, BlockInfo blockInfo,
@@ -204,20 +228,22 @@ namespace PravoAdder.DatabaseEnviroment
                 FrontOrder = 0
             };
 
-            return await SendAddRequestAsync(contentBlock, "ProjectCustomValues/Create", HttpMethod.Post,
+            return await SendRequestWithResponseAsync(contentBlock, "ProjectCustomValues/Create", HttpMethod.Post,
                 messageBuilder.ToString());
         }
 
-        private async Task<EnviromentMessage> SendAddRequestAsync(dynamic content, string uri, HttpMethod method,
+        private async Task<EnviromentMessage> SendRequestWithResponseAsync(dynamic content, string uri, HttpMethod method,
             string additionalMessage = null)
         {
             var request = HttpHelper.CreateJsonRequest(content, $"api/{uri}", method, _httpAuthenticator.UserCookie);
 
             var response = await _httpAuthenticator.Client.SendAsync(request);
 
-            if (!string.IsNullOrEmpty(additionalMessage))
-                return new EnviromentMessage(await HttpHelper.GetContentIdAsync(response),
-                    additionalMessage.Remove(additionalMessage.Length - 2), EnviromentMessageType.Error);
+	        if (!string.IsNullOrEmpty(additionalMessage))
+	        {
+				return new EnviromentMessage(await HttpHelper.GetContentIdAsync(response),
+					additionalMessage.Remove(additionalMessage.Length - 2), EnviromentMessageType.Error);
+			}             
 
             return !response.IsSuccessStatusCode
                 ? new EnviromentMessage(null,
@@ -266,7 +292,7 @@ namespace PravoAdder.DatabaseEnviroment
                 var sender = AddParticipant(fieldData).Result;
                 if (sender.Type == EnviromentMessageType.Error) return null;
 
-                _participants = _databaseGetter
+                _participants = DatabaseGetter
                     .GetParticipants();
             }
 
@@ -285,7 +311,7 @@ namespace PravoAdder.DatabaseEnviroment
 	        {
 				if (!_dictionaries.ContainsKey(dictionaryName))
 				{
-					var dictionaryItems = _databaseGetter
+					var dictionaryItems = DatabaseGetter
 						.GetDictionaryItems(fieldInfo.SpecialData)
 						.Select(d => new DictionaryItem(FormatDictionaryItemName(d.Name), d.Id))						
 						.ToList();

@@ -2,9 +2,9 @@
 
 namespace PravoAdder.Domain
 {
-    public class SettingsIgnoreAttribute : Attribute
+    public class IgnoreAttribute : Attribute
     {
-        public SettingsIgnoreAttribute(bool needToIgnore)
+        public IgnoreAttribute(bool needToIgnore)
         {
             Ignore = needToIgnore;
         }

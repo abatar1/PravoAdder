@@ -66,11 +66,14 @@
     <Compile Include="Controllers\DeletingProcessController.cs" />
     <Compile Include="DatabaseEnviroment\DatabaseCleaner.cs" />
     <Compile Include="DatabaseEnviroment\RetryHandler.cs" />
-    <Compile Include="Domain\DictionaryItem.cs" />
+    <Compile Include="Domain\DatabaseEntity\DictionaryItem.cs" />
+    <Compile Include="Domain\FieldNameAttribute.cs" />
+    <Compile Include="Domain\DatabaseEntity\ProjectGroup.cs" />
     <Compile Include="Domain\ExcelTable.cs" />
     <Compile Include="Domain\FieldAddress.cs" />
-    <Compile Include="Domain\Participant.cs" />
-    <Compile Include="Domain\SettingsIgnoreAttribute.cs" />
+    <Compile Include="Domain\DatabaseEntity\Participant.cs" />
+    <Compile Include="Domain\DatabaseEntity\Project.cs" />
+    <Compile Include="Domain\IgnoreAttribute.cs" />
     <Compile Include="IEngine.cs" />
     <Compile Include="ProjectCleaner.cs" />
     <Compile Include="Readers\BlockInfoReader.cs" />

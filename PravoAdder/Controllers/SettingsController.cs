@@ -24,21 +24,21 @@ namespace PravoAdder.Controllers
 						property.SetValue(settingsObject, "123123");
 						continue;
 					case "Overwrite":
-						property.SetValue(settingsObject, false);
+						property.SetValue(settingsObject, true);
 						continue;
 					case "ExcelFileName":
-						property.SetValue(settingsObject, "prod.xlsx");
+						property.SetValue(settingsObject, "test4.xlsx");
 						continue;
 					case "MaxDegreeOfParallelism":
-						property.SetValue(settingsObject, 2);
+						property.SetValue(settingsObject, 1);
 						continue;
 					case "StartRow":
 						property.SetValue(settingsObject, 1);
 						continue;
 				}
 #endif
-                var ignoreAttibute = (SettingsIgnoreAttribute) property
-                    .GetCustomAttributes(typeof(SettingsIgnoreAttribute))
+                var ignoreAttibute = (IgnoreAttribute) property
+                    .GetCustomAttributes(typeof(IgnoreAttribute))
                     .FirstOrDefault();
                 if (ignoreAttibute != null && ignoreAttibute.Ignore) continue;
 

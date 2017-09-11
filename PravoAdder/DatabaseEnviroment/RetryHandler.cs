@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,17 +19,24 @@ namespace PravoAdder.DatabaseEnviroment
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
-            for (var i = 0; i < MaxRetries; i++)
-                try
-                {
-                    var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                    return response;
-                }
-                catch (Exception)
-                {
-                    Thread.Sleep(TimeSpan.FromSeconds(30));
-                }
-            return null;
+	        for (var i = 0; i < MaxRetries; i++)
+	        {
+				try
+		        {
+			        var response = await base.SendAsync(request, CancellationToken.None).ConfigureAwait(false);
+			        if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound)
+			        {
+				        return response;
+			        }
+		        }
+		        catch (Exception)
+		        {
+
+		        }
+		        Thread.Sleep(TimeSpan.FromSeconds(10));
+			}
+                
+	        throw new Exception("API Error");
         }
     }
 }

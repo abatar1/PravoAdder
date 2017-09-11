@@ -60,7 +60,7 @@ namespace PravoAdder.Domain
         {
             _infoRowContentSti.TryGetValue(fieldAddress, out List<int> result);
             if (result != null && result.Count == 1) return result.First();
-            return default(int);
+            return 0;
         }
 
         public bool Contains(FieldAddress fieldAddress)

@@ -8,6 +8,8 @@ namespace PravoAdder.Domain
         public FieldAddress(string address)
         {
             var matches = new Regex("\".*?\"").Matches(address);
+	        if (matches.Count == 0) return;
+
             BlockName = FormatBlockName(FormatMatch(matches, 0));
             FieldName = FormatMatch(matches, 1);
             if (address.Contains("Повтор"))

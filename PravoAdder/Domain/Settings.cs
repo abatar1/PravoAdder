@@ -14,9 +14,6 @@ namespace PravoAdder.Domain
         [DisplayName("Base uri")]
         public string BaseUri { get; set; }
 
-        [DisplayName("Project type name")]
-        public string ProjectTypeName { get; set; }
-
         [DisplayName("Line number from which the data begins")]
         public int DataRowPosition { get; set; }
 
@@ -49,7 +46,7 @@ namespace PravoAdder.Domain
         public int StartRow { get; set; }
 
         [JsonIgnore]
-        [SettingsIgnore(true)]
+        [Ignore(true)]
         public Dictionary<string, dynamic> AdditionalSettings { get; set; }
     }
 }

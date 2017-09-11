@@ -9,6 +9,7 @@ namespace PravoAdder.Readers
     {
         public readonly ExcelTable ExcelTable;
         public readonly Settings Settings;
+	    public HeaderBlockInfo HeaderBlockInfo;
 
         protected BlockInfoReader(Settings settings, ExcelTable excelInfo)
         {

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net.Http;
 using PravoAdder.Domain;
+using PravoAdder.Domain.Info;
 using PravoAdder.Helpers;
 
 namespace PravoAdder.DatabaseEnviroment
@@ -88,31 +89,40 @@ namespace PravoAdder.DatabaseEnviroment
             return null;
         }
 
-        public dynamic GetProject(string projectName, string projectGroupid, string folderName,
-            int pageSize = int.MaxValue)
+	    private dynamic CreateFolderByName(string name)
+	    {
+			var content = new
+			{
+				Name = name
+			};
+
+		    var pages = GetJsonPages(content, "ProjectFolders/InsertProjectFolder", HttpMethod.Post);
+
+		    return new { Id = pages.FirstOrDefault(page => page.Name == "Id")?.Value };
+	    }
+
+        public Project GetProject(HeaderBlockInfo header, string projectGroupid, int pageSize = int.MaxValue)
         {
-            var content = new
+	        var projectFolder = GetProjectFolder(header.FolderName) ?? CreateFolderByName(header.FolderName);
+
+	        var content = new
             {
                 PageSize = pageSize,
                 Page = 1,
-                FolderId = GetProjectFolder(folderName).Id
+                FolderId = projectFolder.Id
             };
 
-            var projectGroup = GetJsonPages(content, "Projects/GetGroupedProjects", HttpMethod.Post)
+            var groupedProjects = GetJsonPages(content, "Projects/GetGroupedProjects", HttpMethod.Post)
                 .FirstOrDefault(pf => pf["ProjectGroupResponse"]["Id"] == projectGroupid);
 
-            var projects = projectGroup?["Projects"];
+            var projects = groupedProjects?["Projects"];
             if (projects == null) return null;
 
             foreach (var project in projects)
             {
                 var name = (string) project?["Name"];
-                if (name == projectName)
-                    return new
-                    {
-                        Name = (string) project?["Name"],
-                        Id = (string) project?["Id"]
-                    };
+	            if (name == header.ProjectName)
+		            return new Project(name, (string) project?["Id"]);
             }
             return null;
         }

@@ -40,7 +40,14 @@ namespace PravoAdder.Controllers
             if (informationSender.Type == EnviromentMessageType.Error) Logger.Error($"{informationSender.Message}");        
         }
 
-        public void ProcessCount(int current, int total, HeaderBlockInfo headerInfo, string projectId)
+	    public void Synchronize(string projectId, string syncNum)
+	    {
+		    var syncSender = SynchronizeWithKad(projectId, syncNum).Result;
+			if (syncSender.Type == EnviromentMessageType.Error) Logger.Error($"{syncSender.Message}");
+		}
+
+
+		public void ProcessCount(int current, int total, HeaderBlockInfo headerInfo, string projectId)
         {
             _count += 1;
             Logger.Info(

@@ -53,7 +53,7 @@ namespace PravoAdder.Readers
 
         public override IEnumerable<BlockInfo> Read()
         {
-            var projectType = _databaseGetter.GetProjectType(Settings.ProjectTypeName);
+            var projectType = _databaseGetter.GetProjectType(HeaderBlockInfo.ProjectTypeName);
             var visualBlocks = _databaseGetter.GetVisualBlocks(projectType.Id.ToString());
             foreach (var visualBlock in visualBlocks)
             {
@@ -121,20 +121,20 @@ namespace PravoAdder.Readers
         public override HeaderBlockInfo ReadHeaderBlock(IDictionary<int, string> excelRow)
         {
             const string systemName = "Системный";
-            var descriptionIndex = ExcelTable.TryGetIndex(new FieldAddress(systemName, "Описание"));
-            var projectNameIndex = ExcelTable.TryGetIndex(new FieldAddress(systemName, "Название дела"));
-            var projectGroupIndex = ExcelTable.TryGetIndex(new FieldAddress(systemName, "Название проекта"));
-            var responsibleIndex = ExcelTable.TryGetIndex(new FieldAddress(systemName, "Ответственный"));
-            var folderIndex = ExcelTable.TryGetIndex(new FieldAddress(systemName, "Название папки"));
+	        var headerObject = new HeaderBlockInfo();
+	        foreach (var property in headerObject.GetType().GetProperties())
+	        {
+		        var fieldnameAttibute = (FieldNameAttribute) property
+			        .GetCustomAttributes(typeof(FieldNameAttribute), true)
+			        .FirstOrDefault();
 
-            return new HeaderBlockInfo
-            {
-                Description = excelRow[descriptionIndex],
-                ProjectGroupName = excelRow[projectGroupIndex],
-                ProjectName = excelRow[projectNameIndex],
-                ResponsibleName = excelRow[responsibleIndex],
-                FolderName = excelRow[folderIndex]
-            };
+		        var index = ExcelTable.TryGetIndex(new FieldAddress(systemName, fieldnameAttibute?.FieldName));
+		        if (index == 0) continue;
+
+				property.SetValue(headerObject, excelRow[index]);
+	        }
+	        HeaderBlockInfo = headerObject;
+	        return headerObject;
         }
     }
 }
