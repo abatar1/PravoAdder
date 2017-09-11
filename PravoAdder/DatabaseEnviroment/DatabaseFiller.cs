@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -14,16 +15,17 @@ namespace PravoAdder.DatabaseEnviroment
     public class DatabaseFiller
     {
         private readonly DatabaseGetter _databaseGetter;
-        private readonly IDictionary<string, IList<DictionaryItem>> _dictionaries;
+        private readonly IDictionary<string, ConcurrentBag<DictionaryItem>> _dictionaries;
         private readonly HttpAuthenticator _httpAuthenticator;
         private IList<Participant> _participants;
+	    private readonly object _dictionaryContainsKeyLock = new object();
 
         public DatabaseFiller(HttpAuthenticator httpAuthenticator)
         {
             _databaseGetter = new DatabaseGetter(httpAuthenticator);
             _httpAuthenticator = httpAuthenticator;
             _participants = _databaseGetter.GetParticipants();
-            _dictionaries = new Dictionary<string, IList<DictionaryItem>>();
+			_dictionaries = new ConcurrentDictionary<string, ConcurrentBag<DictionaryItem>>();
         }
 
         private object CreateFieldValueFromData(BlockFieldInfo fieldInfo, string fieldData)
@@ -279,14 +281,17 @@ namespace PravoAdder.DatabaseEnviroment
             var dictionaryName = fieldInfo.SpecialData;
             var correctName = FormatDictionaryItemName(fieldData);
 
-            if (!_dictionaries.ContainsKey(dictionaryName))
-            {
-                var dictionaryItems = _databaseGetter
-                    .GetDictionaryItems(fieldInfo.SpecialData)
-                    .Select(d => new DictionaryItem(FormatDictionaryItemName(d.Name), d.Id))
-                    .ToList();
-                _dictionaries.Add(dictionaryName, dictionaryItems);
-            }
+	        lock (_dictionaryContainsKeyLock)
+	        {
+				if (!_dictionaries.ContainsKey(dictionaryName))
+				{
+					var dictionaryItems = _databaseGetter
+						.GetDictionaryItems(fieldInfo.SpecialData)
+						.Select(d => new DictionaryItem(FormatDictionaryItemName(d.Name), d.Id))						
+						.ToList();
+					_dictionaries.Add(dictionaryName, new ConcurrentBag<DictionaryItem>(dictionaryItems));
+				}
+			}            
 
             if (_dictionaries[dictionaryName].All(d => !d.Name.Equals(correctName)))
             {

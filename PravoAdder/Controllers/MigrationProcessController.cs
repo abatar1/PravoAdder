@@ -11,7 +11,6 @@ namespace PravoAdder.Controllers
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private static int _count;
-        private readonly object _informationLocker = new object();
         private readonly Settings _settings;
 
         public MigrationProcessController(HttpAuthenticator httpAuthenticator, Settings settings) :
@@ -37,11 +36,8 @@ namespace PravoAdder.Controllers
         public void AddInformationAsync(BlockInfo blockInfo, IDictionary<int, string> excelRow,
             string projectId)
         {
-            lock (_informationLocker)
-            {
-                var informationSender = AddInformationAsync(projectId, blockInfo, excelRow).Result;
-                if (informationSender.Type == EnviromentMessageType.Error) Logger.Error($"{informationSender.Message}");
-            }
+            var informationSender = AddInformationAsync(projectId, blockInfo, excelRow).Result;
+            if (informationSender.Type == EnviromentMessageType.Error) Logger.Error($"{informationSender.Message}");        
         }
 
         public void ProcessCount(int current, int total, HeaderBlockInfo headerInfo, string projectId)
