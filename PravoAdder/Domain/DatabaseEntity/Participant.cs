@@ -1,22 +1,25 @@
 ﻿namespace PravoAdder.Domain
 {
-    public class Participant
-    {
+    public class Participant : DatabaseEntityItem
+	{
         public Participant()
         {
         }
 
-        public Participant(string name, string id, string typeName, string typeId)
+		public Participant(string name, string id, string typeName, string typeId) : base(name, id)
         {
-            Name = name;
-            Id = id;
             TypeName = typeName;
             TypeId = typeId;
         }
 
-        public string Name { get; private set; }
-        public string Id { get; private set; }
-        public string TypeName { get; private set; }
+		public Participant(object data) : base(data)
+		{
+			var dynamicData = data as dynamic;
+			TypeId = dynamicData.TypeId.ToString();
+			TypeName = dynamicData.TypeName.ToString();
+		}
+
+		public string TypeName { get; private set; }
         public string TypeId { get; private set; }
 
         public Participant ChangeName(string newName)
@@ -33,11 +36,6 @@
                 TypeId = participant.TypeId.ToString(),
                 TypeName = participant.TypeName.ToString()
             };
-        }
-
-        public override string ToString()
-        {
-            return Name;
         }
     }
 }

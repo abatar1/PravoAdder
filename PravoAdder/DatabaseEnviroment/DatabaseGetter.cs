@@ -30,7 +30,7 @@ namespace PravoAdder.DatabaseEnviroment
 
         private IEnumerable<dynamic> GetJsonPages(object content, string uri, HttpMethod httpMethod)
         {
-            var request = HttpHelper.CreateJsonRequest(content, $"api/{uri}", httpMethod,
+            var request = HttpHelper.CreateRequest(content, $"api/{uri}", httpMethod,
                 _httpAuthenticator.UserCookie);
 
             return GetMessageFromRequest(request).ToList();

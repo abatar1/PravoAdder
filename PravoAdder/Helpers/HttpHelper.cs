@@ -16,30 +16,33 @@ namespace PravoAdder.Helpers
             return message == null ? null : JsonConvert.DeserializeObject(message);
         }
 
-        public static HttpRequestMessage CreateJsonRequest(object content, string requestUri, HttpMethod method,
+        public static HttpRequestMessage CreateRequest(object content, string requestUri, HttpMethod method,
             Cookie cookie)
         {
-            var serializedContent = JsonConvert.SerializeObject(content);
-            if (serializedContent == null) return null;
+	        HttpRequestMessage request;
+			if (content is IDictionary<string, string> dictionary)
+			{
+				var parametersBuilder = new StringBuilder();
+				foreach (var parameter in dictionary)
+				{
+					parametersBuilder.Append($"{parameter.Key}={parameter.Value}&");
+				}		
+				
+				var parametersString = parametersBuilder.ToString().Remove(parametersBuilder.Length - 1);
+				request = new HttpRequestMessage(method, $"{requestUri}?{parametersString}");
+			}
+			else
+			{
+				var serializedContent = JsonConvert.SerializeObject(content);
+				if (serializedContent == null) return null;
 
-            var request = new HttpRequestMessage(method, requestUri)
-            {
-                Content = new StringContent(serializedContent, Encoding.UTF8, "application/json")
-            };
-            request.Headers.Add("Cookie", cookie.ToString());
+				request = new HttpRequestMessage(method, requestUri)
+				{
+					Content = new StringContent(serializedContent, Encoding.UTF8, "application/json")
+				};
+			}
 
-            return request;
-        }
-
-        public static HttpRequestMessage CreateRequest(IDictionary<string, string> parameters, string requestUri,
-            HttpMethod method, Cookie cookie)
-        {
-            var parametersBuilder = new StringBuilder();
-            foreach (var parameter in parameters)
-                parametersBuilder.Append($"{parameter.Key}={parameter.Value}&");
-            var parametersString = parametersBuilder.ToString().Remove(parametersBuilder.Length - 1);
-            var request = new HttpRequestMessage(method, $"{requestUri}?{parametersString}");
-            request.Headers.Add("Cookie", cookie.ToString());
+			request.Headers.Add("Cookie", cookie.ToString());
 
             return request;
         }

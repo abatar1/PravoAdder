@@ -61,12 +61,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Api\Api.cs" />
+    <Compile Include="Helpers\ApiHelper.cs" />
+    <Compile Include="Api\CalculationFormulasApi.cs" />
+    <Compile Include="Api\CasebookApi.cs" />
+    <Compile Include="Api\DictionaryApi.cs" />
+    <Compile Include="Api\ParticipantsApi.cs" />
+    <Compile Include="Api\ProjectCustomValuesApi.cs" />
+    <Compile Include="Api\ProjectFoldersApi.cs" />
+    <Compile Include="Api\ProjectGroupsApi.cs" />
+    <Compile Include="Api\ProjectsApi.cs" />
+    <Compile Include="Api\ProjectTypesApi.cs" />
+    <Compile Include="Api\ResponsiblesApi.cs" />
     <Compile Include="Controllers\AuthentificatorController.cs" />
     <Compile Include="Controllers\BlockReaderController.cs" />
     <Compile Include="Controllers\DeletingProcessController.cs" />
     <Compile Include="DatabaseEnviroment\DatabaseCleaner.cs" />
     <Compile Include="DatabaseEnviroment\RetryHandler.cs" />
+    <Compile Include="Domain\DatabaseEntity\CalculationFormula.cs" />
+    <Compile Include="Domain\DatabaseEntity\DatabaseEntityItem.cs" />
     <Compile Include="Domain\DatabaseEntity\DictionaryItem.cs" />
+    <Compile Include="Domain\DatabaseEntity\ProjectFolder.cs" />
+    <Compile Include="Domain\DatabaseEntity\ProjectType.cs" />
+    <Compile Include="Domain\DatabaseEntity\Responsible.cs" />
     <Compile Include="Domain\FieldNameAttribute.cs" />
     <Compile Include="Domain\DatabaseEntity\ProjectGroup.cs" />
     <Compile Include="Domain\ExcelTable.cs" />
@@ -74,6 +91,7 @@
     <Compile Include="Domain\DatabaseEntity\Participant.cs" />
     <Compile Include="Domain\DatabaseEntity\Project.cs" />
     <Compile Include="Domain\IgnoreAttribute.cs" />
+    <Compile Include="Helpers\DatabaseEntityItemHelper.cs" />
     <Compile Include="IEngine.cs" />
     <Compile Include="ProjectCleaner.cs" />
     <Compile Include="Readers\BlockInfoReader.cs" />

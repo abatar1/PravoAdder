@@ -18,7 +18,7 @@ namespace PravoAdder.DatabaseEnviroment
             {
                 CookieContainer = CookieContainer
             };
-            var retryHandler = new RetryHandler(clientHandler);
+            var retryHandler = new RetryHandler(clientHandler, 5);
             Client = new HttpClient(retryHandler)
             {
                 BaseAddress = BaseAddress

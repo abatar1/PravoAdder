@@ -65,15 +65,18 @@ namespace PravoAdder.DatabaseEnviroment
 			};
 		    const string uri = "Casebook/CheckCasebookCase";
 
-			var request = HttpHelper.CreateJsonRequest(content, $"api/{uri}", HttpMethod.Put, _httpAuthenticator.UserCookie);
-		    var response = await _httpAuthenticator.Client.SendAsync(request);
-
-		    return !response.IsSuccessStatusCode
-			    ? new EnviromentMessage(null,
-				    $"Failed to send {uri}. Message: {response.ReasonPhrase}. Id: {content.ProjectId}",
-				    EnviromentMessageType.Error)
-			    : new EnviromentMessage(null, "Complete succefully.",
-				    EnviromentMessageType.Success);
+			var request = HttpHelper.CreateRequest(content, $"api/{uri}", HttpMethod.Put, _httpAuthenticator.UserCookie);
+			var response = await _httpAuthenticator.Client.SendAsync(request);
+		    if (response == null)
+			    return new EnviromentMessage(null,
+				    $"Failed to send {uri}. Message: Bad gateway. Id: {content.ProjectId}",
+				    EnviromentMessageType.Error);
+			return !response.IsSuccessStatusCode
+				? new EnviromentMessage(null,
+					$"Failed to send {uri}. Message: {response.ReasonPhrase}. Id: {content.ProjectId}",
+					EnviromentMessageType.Error)
+				: new EnviromentMessage(null, "Complete succefully.",
+					EnviromentMessageType.Success);			
 		}
 
 		#region Add methods
@@ -140,27 +143,35 @@ namespace PravoAdder.DatabaseEnviroment
             if (settings.Overwrite)
             {
 	            var project = DatabaseGetter.GetProject(headerInfo, projectGroupId);
-                if (project != null)
-                    return new EnviromentMessage(project.Id, "Project already exists.", EnviromentMessageType.Success);
+	            if (project != null)
+	            {
+					return new EnviromentMessage(project.Id, "Project already exists.", EnviromentMessageType.Success);
+				}                  
             }
 
             var projectFolder = DatabaseGetter.GetProjectFolder(headerInfo.FolderName);
-            if (projectFolder == null)
-                return new EnviromentMessage("",
-                    $"Project folder {headerInfo.FolderName} doesn't exist. Project name: {headerInfo.ProjectName}",
-                    EnviromentMessageType.Error);
+	        if (projectFolder == null)
+	        {
+				return new EnviromentMessage("",
+					$"Project folder {headerInfo.FolderName} doesn't exist. Project name: {headerInfo.ProjectName}",
+					EnviromentMessageType.Error);
+			}              
 
             var projectType = DatabaseGetter.GetProjectType(headerInfo.ProjectTypeName);
-            if (projectType == null)
-                return new EnviromentMessage("",
-                    $"Project type {headerInfo.ProjectTypeName} doesn't exist. Project name: {headerInfo.ProjectName}",
-                    EnviromentMessageType.Error);
+	        if (projectType == null)
+	        {
+				return new EnviromentMessage("",
+					$"Project type {headerInfo.ProjectTypeName} doesn't exist. Project name: {headerInfo.ProjectName}",
+					EnviromentMessageType.Error);
+			}              
 
-            var responsible = DatabaseGetter.GetResponsible(headerInfo.ResponsibleName);
-            if (responsible == null)
-                return new EnviromentMessage("",
-                    $"Responsible {headerInfo.ResponsibleName} doesn't exist. Project name: {headerInfo.ProjectName}",
-                    EnviromentMessageType.Error);
+            var responsible = DatabaseGetter.GetResponsible(headerInfo.ResponsibleName.Replace(".", ""));
+	        if (responsible == null)
+	        {
+		        return new EnviromentMessage("",
+			        $"Responsible {headerInfo.ResponsibleName} doesn't exist. Project name: {headerInfo.ProjectName}",
+			        EnviromentMessageType.Error);
+	        }
 
 	        var projectGroup = headerInfo.ProjectGroupName == null && projectGroupId == null
 		        ? null
@@ -235,7 +246,7 @@ namespace PravoAdder.DatabaseEnviroment
         private async Task<EnviromentMessage> SendRequestWithResponseAsync(dynamic content, string uri, HttpMethod method,
             string additionalMessage = null)
         {
-            var request = HttpHelper.CreateJsonRequest(content, $"api/{uri}", method, _httpAuthenticator.UserCookie);
+            var request = HttpHelper.CreateRequest((object) content, $"api/{uri}", method, _httpAuthenticator.UserCookie);
 
             var response = await _httpAuthenticator.Client.SendAsync(request);
 

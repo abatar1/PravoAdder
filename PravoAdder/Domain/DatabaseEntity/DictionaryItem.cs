@@ -1,19 +1,17 @@
 ﻿namespace PravoAdder.Domain
 {
-    public class DictionaryItem
-    {
-        public DictionaryItem(string name, string id)
+    public class DictionaryItem : DatabaseEntityItem
+	{
+        public DictionaryItem(string name, string id) : base(name, id)
         {
-            Name = name;
-            Id = id;
         }
 
-        public string Name { get; }
-        public string Id { get; }
+	    public DictionaryItem(object data) : base(data)
+	    {
+	    }
 
-        public override string ToString()
-        {
-            return Name;
-        }
-    }
+		public DictionaryItem()
+		{
+		}
+	}
 }

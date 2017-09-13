@@ -1,14 +1,17 @@
 ﻿namespace PravoAdder.Domain
 {
-	public class Project
+	public class Project : DatabaseEntityItem
 	{
-		public Project(string name, string id)
+		public Project(string name, string id) : base(name, id)
 		{
-			Name = name;
-			Id = id;
 		}
 
-		public string Name { get; }
-		public string Id { get; }
+		public Project(object data) : base(data)
+		{
+		}
+
+		public Project()
+		{
+		}
 	}
 }

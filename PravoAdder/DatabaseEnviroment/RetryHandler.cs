@@ -8,18 +8,19 @@ namespace PravoAdder.DatabaseEnviroment
 {
     public class RetryHandler : DelegatingHandler
     {
-        private const int MaxRetries = 5;
+        private static int _maxRetries;
 
-        public RetryHandler(HttpMessageHandler innerHandler)
+        public RetryHandler(HttpMessageHandler innerHandler, int maxRetries)
             : base(innerHandler)
         {
+	        _maxRetries = maxRetries;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
-	        for (var i = 0; i < MaxRetries; i++)
+	        for (var i = 0; i < _maxRetries; i++)
 	        {
 				try
 		        {
@@ -31,12 +32,11 @@ namespace PravoAdder.DatabaseEnviroment
 		        }
 		        catch (Exception)
 		        {
-
+			        return null;
 		        }
 		        Thread.Sleep(TimeSpan.FromSeconds(10));
 			}
-                
-	        throw new Exception("API Error");
+	        return null;
         }
     }
 }
