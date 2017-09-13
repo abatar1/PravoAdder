@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using NLog;
 using PravoAdder.DatabaseEnviroment;
 using PravoAdder.Domain;
@@ -46,12 +47,18 @@ namespace PravoAdder.Controllers
 			if (syncSender.Type == EnviromentMessageType.Error) Logger.Error($"{syncSender.Message}");
 		}
 
-
 		public void ProcessCount(int current, int total, HeaderBlockInfo headerInfo, string projectId)
-        {
-            _count += 1;
+		{
+			var projectName = headerInfo.ProjectName;
+			if (projectName.Length > 50)
+			{
+				var lastSpacePosition = projectName.LastIndexOf(" ", 0, 50, StringComparison.Ordinal);
+				projectName = $"{projectName.Remove(0, lastSpacePosition)}...";
+			}
+
+			_count += 1;
             Logger.Info(
-                $"{DateTime.Now} | Progress: {current}/{total} ({_count}) | Name: {headerInfo.ProjectName} | Id: {projectId}");
+                $"{DateTime.Now} | Progress: {current}/{total} ({_count}) | Name: {projectName} | Id: {projectId}");
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using PravoAdder.DatabaseEnviroment;
@@ -10,11 +11,14 @@ namespace PravoAdder.Readers
     public class ColorBlockInfoReader : BlockInfoReader
     {
         private readonly DatabaseGetter _databaseGetter;
+	    private readonly IDictionary<string, dynamic> _visualBlocks;
+		private readonly object _visualBlocksLocker = new object();
 
         public ColorBlockInfoReader(ExcelTable excelTable, Settings settings, HttpAuthenticator authenticator) :
             base(settings, excelTable)
         {
             _databaseGetter = new DatabaseGetter(authenticator);
+			_visualBlocks = new ConcurrentDictionary<string, dynamic>();
         }
 
         private static BlockFieldInfo ReadField(string id, dynamic projectField, int index)
@@ -51,11 +55,23 @@ namespace PravoAdder.Readers
             return blockfieldInfo;
         }
 
-        public override IEnumerable<BlockInfo> Read()
-        {
-            var projectType = _databaseGetter.GetProjectType(HeaderBlockInfo.ProjectTypeName);
-            var visualBlocks = _databaseGetter.GetVisualBlocks(projectType.Id.ToString());
-            foreach (var visualBlock in visualBlocks)
+	    public override IEnumerable<BlockInfo> Read()
+	    {
+		    if (HeaderBlockInfo.ProjectTypeName == null) yield break;
+
+		    var projectType = _databaseGetter.GetProjectType(HeaderBlockInfo.ProjectTypeName);
+			var projectTypeId = projectType.Id.ToString();
+		    
+		    lock (_visualBlocksLocker)
+		    {
+				if (!_visualBlocks.ContainsKey(projectTypeId))
+				{
+					var visualBlocks = _databaseGetter.GetVisualBlocks(projectType.Id.ToString());
+					_visualBlocks.Add(projectTypeId, visualBlocks);
+				}
+			}		    
+	    
+            foreach (var visualBlock in _visualBlocks[projectTypeId])
             {
                 var blockname = visualBlock.Name;
                 var lines = new List<BlockLineInfo>();

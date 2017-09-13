@@ -45,7 +45,9 @@ namespace PravoAdder.Controllers
 
         public HeaderBlockInfo ReadHeader(IDictionary<int, string> excelRow)
         {
-            return _blockInfoReader.ReadHeaderBlock(excelRow);
+            var headerBlock = _blockInfoReader.ReadHeaderBlock(excelRow);
+	        if (string.IsNullOrEmpty(headerBlock.ProjectName) || string.IsNullOrEmpty(headerBlock.ProjectTypeName)) return null;
+	        return headerBlock;
         }
     }
 }

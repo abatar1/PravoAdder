@@ -22,7 +22,7 @@ namespace PravoAdder.Controllers
                 var message = Authentication(_settings.Login, _settings.Password);
                 if (message.Type != EnviromentMessageType.Error) return this;
 
-                Logger.Error($"Failed to login in. Message: {message.Message}");
+                Logger.Error($"Failed to login in. Message: {message.Message}");				
             }
         }
     }

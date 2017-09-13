@@ -27,24 +27,28 @@ namespace PravoAdder
                 var parallelOptions = new ParallelOptions {MaxDegreeOfParallelism = settings.MaxDegreeOfParallelism};
                 Parallel.ForEach(excelTable, parallelOptions, (excelRow, state, index) =>
                 {
-                    var headerBlock = blockReaderController.ReadHeader(excelRow);
-	                if (headerBlock.ProjectName == null) return;
+	                var headerBlock = blockReaderController.ReadHeader(excelRow);
+	                if (headerBlock == null) return;
+
+	                var projectGroupId = migrationProcessController.AddProjectGroup(headerBlock);
+
+	                var projectId = migrationProcessController.AddProject(headerBlock, projectGroupId);
+	                if (string.IsNullOrEmpty(projectId)) return;
 
 	                var blocksInfo = blockReaderController.ReadBlockInfo();
-					var projectGroupId = migrationProcessController.AddProjectGroup(headerBlock);
+	                foreach (var blockInfo in blocksInfo)
+	                {
+						migrationProcessController.AddInformationAsync(blockInfo, excelRow, projectId);
+					}                       
 
-                    var projectId = migrationProcessController.AddProject(headerBlock, projectGroupId);
-                    if (string.IsNullOrEmpty(projectId)) return;
-
-                    migrationProcessController.ProcessCount((int) index + settings.StartRow, excelTable.Count,
-                        headerBlock, projectId);
-
-                    foreach (var blockInfo in blocksInfo)
-                        migrationProcessController.AddInformationAsync(blockInfo, excelRow, projectId);
-
-					if (headerBlock.SynchronizationNumber != null) 
+	                if (string.IsNullOrEmpty(headerBlock.SynchronizationNumber))
+	                {
 						migrationProcessController.Synchronize(projectId, headerBlock.SynchronizationNumber);
-                });
+					}					
+
+	                migrationProcessController.ProcessCount((int)index + settings.StartRow, excelTable.Count,
+		                headerBlock, projectId);
+				});
             }
         }
     }
