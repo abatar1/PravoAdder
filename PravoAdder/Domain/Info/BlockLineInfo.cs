@@ -45,5 +45,12 @@ namespace PravoAdder.Domain.Info
 			Id = id;
 			Order = order;
 		}
+
+		public BlockLineInfo(string id, int order, ICollection<BlockFieldInfo> fields)
+		{
+			Id = id;
+			Order = order;
+			Fields = new List<BlockFieldInfo>(fields);
+		}
 	}
 }

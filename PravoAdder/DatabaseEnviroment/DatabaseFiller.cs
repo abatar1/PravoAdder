@@ -1,131 +1,63 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using PravoAdder.Domain;
 using PravoAdder.Domain.Info;
-using PravoAdder.Helpers;
+using PravoAdder.Api;
+using PravoAdder.Api.Domain;
+using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.DatabaseEnviroment
 {
     public class DatabaseFiller
     {
-        protected readonly DatabaseGetter DatabaseGetter;
-
-        private readonly IDictionary<string, ConcurrentBag<DictionaryItem>> _dictionaries;
 		private readonly HttpAuthenticator _httpAuthenticator;
-        private IList<Participant> _participants;
-	    private readonly object _dictionaryContainsKeyLock = new object();
+	    private readonly FieldBuilder _fieldBuilder;
 
         public DatabaseFiller(HttpAuthenticator httpAuthenticator)
         {
-            DatabaseGetter = new DatabaseGetter(httpAuthenticator);
             _httpAuthenticator = httpAuthenticator;
-            _participants = DatabaseGetter.GetParticipants();
-			_dictionaries = new ConcurrentDictionary<string, ConcurrentBag<DictionaryItem>>();
-        }
+	        _fieldBuilder = new FieldBuilder(httpAuthenticator);
+        }      
 
-        private object CreateFieldValueFromData(BlockFieldInfo fieldInfo, string fieldData)
-        {
-            if (string.IsNullOrEmpty(fieldData)) return null;
-
-            fieldData = fieldData.Replace("\"", "");
-            switch (fieldInfo.Type)
-            {
-                case "Value":
-                    return FormatFieldData(fieldData);
-                case "Text":
-                    return fieldData;
-                case "Formula":
-                    var calculationFormula = DatabaseGetter.GetCalculationFormulas(fieldInfo.SpecialData);
-                    return new
-                    {
-                        Result = FormatFieldData(fieldData),
-                        CalculationFormulaId = calculationFormula.Id
-                    };
-                case "Dictionary":
-                    return GetDictionaryFromData(fieldData, fieldInfo);
-                case "Participant":
-                    return GetParticipantFromData(fieldData);
-                default:
-                    throw new ArgumentException("Unknown type of value.");
-            }
-        }
-
-	    protected async Task<EnviromentMessage> SynchronizeWithKad(string id, string syncNumber)
+	    protected async Task<EnviromentMessage> SynchronizeCase(string projectId, string syncNumber)
 	    {
-			var content = new
-			{
-				ProjectId = id,
-				CasebookNumber = syncNumber
-			};
-		    const string uri = "Casebook/CheckCasebookCase";
-
-			var request = HttpHelper.CreateRequest(content, $"api/{uri}", HttpMethod.Put, _httpAuthenticator.UserCookie);
-			var response = await _httpAuthenticator.Client.SendAsync(request);
-		    if (response == null)
-			    return new EnviromentMessage(null,
-				    $"Failed to send {uri}. Message: Bad gateway. Id: {content.ProjectId}",
-				    EnviromentMessageType.Error);
-			return !response.IsSuccessStatusCode
-				? new EnviromentMessage(null,
-					$"Failed to send {uri}. Message: {response.ReasonPhrase}. Id: {content.ProjectId}",
+		    var isSuccessResponse = await ApiRouter.Casebook.CheckCasebookCaseAsync(_httpAuthenticator, projectId, syncNumber);
+			return !isSuccessResponse
+				? new EnviromentMessage(null, 
+					$"Failed to synchronize case {projectId}",
 					EnviromentMessageType.Error)
 				: new EnviromentMessage(null, "Complete succefully.",
 					EnviromentMessageType.Success);			
 		}
 
-		#region Add methods
-
-		protected async Task<EnviromentMessage> AddDictionaryItem(string itemName, string sysName)
+        protected EnviromentMessage AddProjectGroup(Settings settings, HeaderBlockInfo headerInfo)
         {
-            var content = new
-            {
-                SystemName = sysName,
-                Name = itemName,
-                IsCustom = true
-            };
-
-            return await SendRequestWithResponseAsync(content, "Dictionary/SaveDictionaryItem", HttpMethod.Put);
-        }
-
-        protected async Task<EnviromentMessage> AddParticipant(string organizationName)
-        {
-            var content = new
-            {
-                Organization = organizationName,
-                Type = new
-                {
-                    Id = "92ffb67f-fac0-e611-8b3a-902b343a9588",
-                    action = "add",
-                    Name = "Организация",
-                    NameEn = "company"
-                }
-            };
-
-            return await SendRequestWithResponseAsync(content, "participants/PutParticipant", HttpMethod.Put);
-        }
-
-        protected async Task<EnviromentMessage> AddProjectGroupAsync(Settings settings, HeaderBlockInfo headerInfo)
-        {
-			if (headerInfo.ProjectGroupName == null)
+	        if (headerInfo.ProjectGroupName == null)
+	        {
 				return new EnviromentMessage(null, "Using default project.", EnviromentMessageType.Warning);
+			}				
 
+	        ProjectGroup projectGroup;
 			if (settings.Overwrite)
-            {
-	            var projectGroup = DatabaseGetter.GetProjectGroup(headerInfo.ProjectGroupName);
-                if (projectGroup != null)
-                    return new EnviromentMessage(projectGroup.Id, "Group already exists.",
-                        EnviromentMessageType.Success);
+			{
+				projectGroup = ApiRouter.ProjectGroups.GetProjectGroups(_httpAuthenticator)
+					.GetByName(headerInfo.ProjectGroupName);
+				if (projectGroup != null)
+				{
+					return new EnviromentMessage(projectGroup, "Group already exists.",
+						EnviromentMessageType.Success);
+				}                   
             }
 
-            var projectFolder = DatabaseGetter.GetProjectFolder(headerInfo.FolderName);
-            if (projectFolder == null)
-                return new EnviromentMessage("", "Project folder doesn't exist.", EnviromentMessageType.Error);
+	        var projectFolder = ApiRouter.ProjectFolders.GetProjectFolders(_httpAuthenticator)
+		        .GetByName(headerInfo.FolderName);
+	        if (projectFolder == null)
+	        {
+				return new EnviromentMessage(null, "Project folder doesn't exist.", EnviromentMessageType.Error);
+			}               
 
             var content = new
             {
@@ -134,41 +66,51 @@ namespace PravoAdder.DatabaseEnviroment
                 headerInfo.Description
             };
 
-            return await SendRequestWithResponseAsync(content, "ProjectGroups", HttpMethod.Put);
-        }
+	        projectGroup = ApiRouter.ProjectGroups.ProjectGroups(_httpAuthenticator, content);
+			return projectGroup == null
+				? new EnviromentMessage(null, $"Failed to add {headerInfo.ProjectGroupName} project group", EnviromentMessageType.Error)
+				: new EnviromentMessage(projectGroup, $"Project group {projectGroup.Name} added.", EnviromentMessageType.Success);
+		}
 
-        protected async Task<EnviromentMessage> AddProjectAsync(Settings settings, HeaderBlockInfo headerInfo,
+        protected EnviromentMessage AddProject(Settings settings, HeaderBlockInfo headerInfo,
             string projectGroupId)
         {
+	        Project project;
             if (settings.Overwrite)
             {
-	            var project = DatabaseGetter.GetProject(headerInfo, projectGroupId);
+	            project = ApiRouter.Projects.GetProjects(_httpAuthenticator, headerInfo.FolderName, projectGroupId)
+		            .GetByName(headerInfo.ProjectName);
 	            if (project != null)
 	            {
-					return new EnviromentMessage(project.Id, "Project already exists.", EnviromentMessageType.Success);
+					return new EnviromentMessage(project, "Project already exists.", EnviromentMessageType.Success);
 				}                  
             }
 
-            var projectFolder = DatabaseGetter.GetProjectFolder(headerInfo.FolderName);
+	        if (string.IsNullOrEmpty(headerInfo.ProjectName)) headerInfo.ProjectName = "Название проекта по-умолчанию";
+
+			var projectFolder = ApiRouter.ProjectFolders.GetProjectFolders(_httpAuthenticator)
+		        .GetByName(headerInfo.FolderName);
 	        if (projectFolder == null)
 	        {
-				return new EnviromentMessage("",
+				return new EnviromentMessage(null,
 					$"Project folder {headerInfo.FolderName} doesn't exist. Project name: {headerInfo.ProjectName}",
 					EnviromentMessageType.Error);
-			}              
+			}
 
-            var projectType = DatabaseGetter.GetProjectType(headerInfo.ProjectTypeName);
+	        var projectType = ApiRouter.ProjectTypes.GetProjectTypes(_httpAuthenticator)
+		        .GetByName(headerInfo.ProjectTypeName);
 	        if (projectType == null)
 	        {
-				return new EnviromentMessage("",
+				return new EnviromentMessage(null,
 					$"Project type {headerInfo.ProjectTypeName} doesn't exist. Project name: {headerInfo.ProjectName}",
 					EnviromentMessageType.Error);
-			}              
+			}
 
-            var responsible = DatabaseGetter.GetResponsible(headerInfo.ResponsibleName.Replace(".", ""));
+	        var responsible = ApiRouter.Responsibles.GetResponsibles(_httpAuthenticator)
+		        .GetByName(headerInfo.ResponsibleName.Replace(".", ""));
 	        if (responsible == null)
 	        {
-		        return new EnviromentMessage("",
+		        return new EnviromentMessage(null,
 			        $"Responsible {headerInfo.ResponsibleName} doesn't exist. Project name: {headerInfo.ProjectName}",
 			        EnviromentMessageType.Error);
 	        }
@@ -186,18 +128,24 @@ namespace PravoAdder.DatabaseEnviroment
                 Name = headerInfo.ProjectName
             };
 
-            return await SendRequestWithResponseAsync(content, "projects/CreateProject", HttpMethod.Post);
-        }
+	        project = ApiRouter.Projects.CreateProject(_httpAuthenticator, content);
+			return project == null
+				? new EnviromentMessage(null, $"Failed to add {headerInfo.ProjectName} project", EnviromentMessageType.Error)
+				: new EnviromentMessage(project, $"Project {project.Name} added.", EnviromentMessageType.Success);
+
+		}
 
         protected async Task<EnviromentMessage> AddInformationAsync(string projectId, BlockInfo blockInfo,
-            IDictionary<int, string> excelRow)
+            IDictionary<int, string> excelRow, int order)
         {
             var contentLines = new List<BlockLineInfo>();
             if (blockInfo.Lines == null || !blockInfo.Lines.Any())
                 return new EnviromentMessage(null, "Block skipped.", EnviromentMessageType.Warning);
 
             var messageBuilder = new StringBuilder();
-            foreach (var line in blockInfo.Lines)
+	        var resultMessageType = EnviromentMessageType.Success;
+	        
+			foreach (var line in blockInfo.Lines)
             {
                 var contentFields = new List<BlockFieldInfo>();
                 foreach (var fieldInfo in line.Fields)
@@ -213,7 +161,7 @@ namespace PravoAdder.DatabaseEnviroment
 
                     try
                     {
-                        var value = CreateFieldValueFromData(fieldInfo, fieldData);
+                        var value = _fieldBuilder.CreateFieldValueFromData(fieldInfo, fieldData);
                         var newFieldInfo = fieldInfo.CloneWithValue(value);
                         contentFields.Add(newFieldInfo);
                     }
@@ -221,7 +169,8 @@ namespace PravoAdder.DatabaseEnviroment
                     {
                         messageBuilder.AppendLine(
                             $"Error while reading value from table! Message: {e.Message} Id: {projectId} Data: {fieldData} Type: {fieldInfo.Type}");
-                    }
+	                    resultMessageType = EnviromentMessageType.Error;
+					}
                 }
                 if (!contentFields.Any()) continue;
                 var newLine = line.CloneWithFields(contentFields);
@@ -236,112 +185,23 @@ namespace PravoAdder.DatabaseEnviroment
                 VisualBlockId = blockInfo.Id,
                 ProjectId = projectId,
                 Lines = contentLines,
-                FrontOrder = 0
-            };
+                FrontOrder = order,
+				Order = order
+			};
 
-            return await SendRequestWithResponseAsync(contentBlock, "ProjectCustomValues/Create", HttpMethod.Post,
-                messageBuilder.ToString());
-        }
+	        var isSuccessResponse = await ApiRouter.ProjectCustomValues.Create(_httpAuthenticator, contentBlock);
 
-        private async Task<EnviromentMessage> SendRequestWithResponseAsync(dynamic content, string uri, HttpMethod method,
-            string additionalMessage = null)
-        {
-            var request = HttpHelper.CreateRequest((object) content, $"api/{uri}", method, _httpAuthenticator.UserCookie);
-
-            var response = await _httpAuthenticator.Client.SendAsync(request);
-
-	        if (!string.IsNullOrEmpty(additionalMessage))
+	        string message;
+	        if (isSuccessResponse)
 	        {
-				return new EnviromentMessage(await HttpHelper.GetContentIdAsync(response),
-					additionalMessage.Remove(additionalMessage.Length - 2), EnviromentMessageType.Error);
-			}             
-
-            return !response.IsSuccessStatusCode
-                ? new EnviromentMessage(null,
-                    $"Failed to send {uri}. Message: {response.ReasonPhrase}. Id: {content.ProjectId}",
-                    EnviromentMessageType.Error)
-                : new EnviromentMessage(await HttpHelper.GetContentIdAsync(response), "Complete succefully.",
-                    EnviromentMessageType.Success);
-        }
-
-        #endregion
-
-        #region Additional methods		
-
-        private static object FormatFieldData(string value)
-        {
-            string correctIntValue;
-            if (!value.Contains(','))
-            {
-                correctIntValue = value;
-            }
-            else
-            {
-                var newValue = value.Replace(" ", "");
-                var splitted = newValue.Split(',');
-                correctIntValue = splitted[1].All(c => c == '0') ? splitted[0] : newValue;
-            }
-
-            if (TypeDescriptor.GetConverter(typeof(int)).IsValid(correctIntValue))
-                return int.Parse(correctIntValue);
-
-            if (TypeDescriptor.GetConverter(typeof(double)).IsValid(value.Replace(',', '.')))
-                return double.Parse(value);
-            return value;
-        }
-
-        private static string FormatDictionaryItemName(string item)
-        {
-            return $"{item.First().ToString().ToUpper()}{item.Substring(1)}";
-        }
-
-        private Participant GetParticipantFromData(string fieldData)
-        {
-            var correctFieldData = fieldData.Trim();
-            if (_participants.All(p => !p.Name.Equals(correctFieldData)))
-            {
-                var sender = AddParticipant(fieldData).Result;
-                if (sender.Type == EnviromentMessageType.Error) return null;
-
-                _participants = DatabaseGetter
-                    .GetParticipants();
-            }
-
-            var participant = _participants
-                .First(p => p.Name == correctFieldData);
-
-            return Participant.TryParse(participant);
-        }
-
-        private DictionaryItem GetDictionaryFromData(string fieldData, BlockFieldInfo fieldInfo)
-        {
-            var dictionaryName = fieldInfo.SpecialData;
-            var correctName = FormatDictionaryItemName(fieldData);
-
-	        lock (_dictionaryContainsKeyLock)
+		        message = $"Block created. {messageBuilder}";
+	        }
+	        else
 	        {
-				if (!_dictionaries.ContainsKey(dictionaryName))
-				{
-					var dictionaryItems = DatabaseGetter
-						.GetDictionaryItems(fieldInfo.SpecialData)
-						.Select(d => new DictionaryItem(FormatDictionaryItemName(d.Name), d.Id))						
-						.ToList();
-					_dictionaries.Add(dictionaryName, new ConcurrentBag<DictionaryItem>(dictionaryItems));
-				}
-			}            
-
-            if (_dictionaries[dictionaryName].All(d => !d.Name.Equals(correctName)))
-            {
-                var sender = AddDictionaryItem(correctName, fieldInfo.SpecialData).Result;
-                if (sender.Type == EnviromentMessageType.Error) return null;
-
-                _dictionaries[dictionaryName].Add(new DictionaryItem(correctName, sender.Content));
-            }
-
-            return _dictionaries[dictionaryName]
-                .First(d => d.Name == correctName);
+		        message = $"Failed to add information block {blockInfo.Name}. {messageBuilder}";
+		        resultMessageType = EnviromentMessageType.Error;
+			}
+	        return new EnviromentMessage(null, message, resultMessageType);
         }
-
-        #endregion
     }
 }

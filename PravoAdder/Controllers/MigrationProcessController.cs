@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using NLog;
 using PravoAdder.DatabaseEnviroment;
 using PravoAdder.Domain;
 using PravoAdder.Domain.Info;
+using PravoAdder.Api;
+using PravoAdder.Api.Domain;
 
 namespace PravoAdder.Controllers
 {
@@ -20,45 +21,45 @@ namespace PravoAdder.Controllers
             _settings = settings;
         }
 
-        public string AddProjectGroup(HeaderBlockInfo headerBlock)
+        public DatabaseEntityItem AddProjectGroup(HeaderBlockInfo headerBlock)
         {
-            var projectGroupSender = AddProjectGroupAsync(_settings, headerBlock).Result;
+            var projectGroupSender = AddProjectGroup(_settings, headerBlock);
             if (projectGroupSender.Type == EnviromentMessageType.Error) Logger.Error($"{projectGroupSender.Message}");
             return projectGroupSender.Content;
         }
 
-        public string AddProject(HeaderBlockInfo headerBlock, string projectGroupId)
+        public DatabaseEntityItem AddProject(HeaderBlockInfo headerBlock, string projectGroupId)
         {
-            var projectSender = AddProjectAsync(_settings, headerBlock, projectGroupId).Result;
+            var projectSender = AddProject(_settings, headerBlock, projectGroupId);
             if (projectSender.Type == EnviromentMessageType.Error) Logger.Error($"{projectSender.Message}");
             return projectSender.Content;
         }
 
-        public void AddInformationAsync(BlockInfo blockInfo, IDictionary<int, string> excelRow,
-            string projectId)
+        public void AddInformationAsync(BlockInfo blockInfo, IDictionary<int, string> tableRow,
+            string projectId, int order)
         {
-            var informationSender = AddInformationAsync(projectId, blockInfo, excelRow).Result;
+            var informationSender = AddInformationAsync(projectId, blockInfo, tableRow, order).Result;
             if (informationSender.Type == EnviromentMessageType.Error) Logger.Error($"{informationSender.Message}");        
         }
 
 	    public void Synchronize(string projectId, string syncNum)
 	    {
-		    var syncSender = SynchronizeWithKad(projectId, syncNum).Result;
+		    var syncSender = SynchronizeCase(projectId, syncNum).Result;
 			if (syncSender.Type == EnviromentMessageType.Error) Logger.Error($"{syncSender.Message}");
 		}
 
-		public void ProcessCount(int current, int total, HeaderBlockInfo headerInfo, string projectId)
+		public void ProcessCount(int current, int total, DatabaseEntityItem project, int sliceNum = int.MaxValue)
 		{
-			var projectName = headerInfo.ProjectName;
-			if (projectName.Length > 50)
+			var projectName = project.Name;
+			if (projectName.Length > sliceNum)
 			{
-				var lastSpacePosition = projectName.LastIndexOf(" ", 0, 50, StringComparison.Ordinal);
-				projectName = $"{projectName.Remove(0, lastSpacePosition)}...";
+				var lastSpacePosition = projectName.LastIndexOf(' ', sliceNum);
+				projectName = $"{projectName.Remove(lastSpacePosition)}...";
 			}
 
 			_count += 1;
             Logger.Info(
-                $"{DateTime.Now} | Progress: {current}/{total} ({_count}) | Name: {projectName} | Id: {projectId}");
+                $"{DateTime.Now} | Progress: {current}/{total} ({_count}) | Name: {projectName} | Id: {project.Id}");
         }
     }
 }

@@ -3,13 +3,13 @@ using System.Linq;
 using OfficeOpenXml;
 using PravoAdder.Domain;
 
-namespace PravoAdder.Readers
+namespace PravoAdder.Readers.Simple
 {
-    public class SimpleExcelReader : ExcelReader
+    public class SimpleExcelReader : TableReader
     {
-        public override ExcelTable Read(Settings settings)
+        public override Table Read(Settings settings)
         {
-            var info = GetFileInfo(settings.ExcelFileName);
+            var info = GetFileInfo(settings.SourceFileName, ".xlsx");
 
             var table = new List<IDictionary<int, string>>();
             using (var xlPackage = new ExcelPackage(info))
@@ -25,7 +25,7 @@ namespace PravoAdder.Readers
                         .Zip(Enumerable.Range(1, totalColumns), (value, key) => new {value, key})
                         .ToDictionary(key => key.key, value => value.value));
             }
-            return new ExcelTable(table, new Dictionary<int, string>());
+            return new Table(table, new Dictionary<int, string>());
         }
     }
 }

@@ -23,30 +23,28 @@ namespace PravoAdder.Domain
         [DisplayName("Path to the Id file with the table")]
         public string IdComparerPath { get; set; }
 
-        [JsonIgnore]
-        [DisplayName("Overwrite project and project's folders?")]
+	    [DisplayName("Enter block loading mode")]
+	    public string BlockLoadingMode { get; set; }
+
+		[DisplayName("Path to xml mapping file")]
+		public string XmlMappingPath { get; set; }
+
+        [DisplayName("Overwrite project and project's folders?"), JsonIgnore]
         public bool Overwrite { get; set; }
 
-        [JsonIgnore]
-        [DisplayName("Write excel filename")]
-        public string ExcelFileName { get; set; }
-
-        [DisplayName("Enter block loading mode")]
-        public string BlockLoadingMode { get; set; }
+        [DisplayName("Write source filename"), JsonIgnore]
+        public string SourceFileName { get; set; }       
 
         [DisplayName("Enter list allowed column's colors separated by commas (format:FFRRGGBB)")]
         public string[] AllowedColors { get; set; }
 
-        [JsonIgnore]
-        [DisplayName("Number of threads")]
+        [DisplayName("Number of threads"), JsonIgnore]
         public int MaxDegreeOfParallelism { get; set; }
 
-        [JsonIgnore]
-        [DisplayName("Number of starting row")]
+        [DisplayName("Number of starting row"), JsonIgnore]
         public int StartRow { get; set; }
 
-        [JsonIgnore]
-        [Ignore(true)]
+        [Ignore(true), JsonIgnore]
         public Dictionary<string, dynamic> AdditionalSettings { get; set; }
     }
 }

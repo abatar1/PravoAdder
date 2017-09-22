@@ -7,17 +7,17 @@ namespace PravoAdder.Readers
 {
     public abstract class BlockInfoReader
     {
-        public readonly ExcelTable ExcelTable;
+        public readonly Table Table;
         public readonly Settings Settings;
 	    public HeaderBlockInfo HeaderBlockInfo;
 
-        protected BlockInfoReader(Settings settings, ExcelTable excelInfo)
+        protected BlockInfoReader(Settings settings, Table excelInfo)
         {
             Settings = settings;
-            ExcelTable = excelInfo;
+            Table = excelInfo;
         }
 
-        public abstract IEnumerable<BlockInfo> Read();
+        public abstract IEnumerable<CaseInfo> Read();
 
         public abstract HeaderBlockInfo ReadHeaderBlock(IDictionary<int, string> excelRow);
 

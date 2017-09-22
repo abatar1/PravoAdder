@@ -21,6 +21,9 @@
 		public string ProjectTypeName { get; set; }
 
 		[FieldName("Описание")]
-		public string Description { get; set; } = "Created automatically";
+		public string Description { get; set; }
+
+		[FieldName("Номер дела")]
+		public string ProjectNumber { get; set; }
 	}
 }

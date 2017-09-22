@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
+using PravoAdder.Api.Domain;
 
 namespace PravoAdder.Domain.Info
 {
@@ -33,6 +35,40 @@ namespace PravoAdder.Domain.Info
 				Type = Type,
 				Value = value
 			};
+		}
+
+		public static BlockFieldInfo Create(VisualBlockField field, int index)
+		{
+			var blockfieldInfo = new BlockFieldInfo
+			{
+				Id = field.Id,
+				Name = field.ProjectField.Name,
+				ColumnNumber = index
+			};
+			var projectField = field.ProjectField;
+			var fieldType = projectField.ProjectFieldFormat.SysName;
+			switch (fieldType)
+			{
+				case "Dictionary":
+					blockfieldInfo.Type = projectField.ProjectFieldFormat.SysName;
+					blockfieldInfo.SpecialData = projectField.ProjectFieldFormat.Dictionary.SystemName;
+					break;
+				case "Text":
+				case "Date":
+				case "TextArea":
+					blockfieldInfo.Type = "Text";
+					break;
+				case "Number":
+					blockfieldInfo.Type = "Value";
+					break;
+				case "Participant":
+					blockfieldInfo.Type = fieldType;
+					break;
+				default:
+					throw new ArgumentException("Field type doesn't supported.");
+			}
+
+			return blockfieldInfo;
 		}
 	}
 }

@@ -8,9 +8,10 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>PravoAdder</RootNamespace>
     <AssemblyName>PravoAdder</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -35,6 +36,9 @@
     <Reference Include="EPPlus, Version=4.1.0.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
       <HintPath>..\packages\EPPlus.4.1.0\lib\net40\EPPlus.dll</HintPath>
     </Reference>
+    <Reference Include="FluentCommandLineParser, Version=1.4.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\FluentCommandLineParser.1.4.3\lib\net35\FluentCommandLineParser.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -44,15 +48,20 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Net.Http.Extensions, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Net.Http.Formatting.Extension.5.2.3.0\lib\System.Net.Http.Extensions.dll</HintPath>
+    <Reference Include="System.Net.Http, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Net.Http.4.3.2\lib\net46\System.Net.Http.dll</HintPath>
     </Reference>
-    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Net.Http.Formatting.Extension.5.2.3.0\lib\System.Net.Http.Formatting.dll</HintPath>
+    <Reference Include="System.Security.Cryptography.Algorithms, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.Algorithms.4.3.0\lib\net461\System.Security.Cryptography.Algorithms.dll</HintPath>
     </Reference>
-    <Reference Include="System.Net.Http.Primitives, Version=4.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Net.Http.Formatting.Extension.5.2.3.0\lib\System.Net.Http.Primitives.dll</HintPath>
+    <Reference Include="System.Security.Cryptography.Encoding, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.Encoding.4.3.0\lib\net46\System.Security.Cryptography.Encoding.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.Primitives.4.3.0\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -61,61 +70,41 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Api\Api.cs" />
-    <Compile Include="Helpers\ApiHelper.cs" />
-    <Compile Include="Api\CalculationFormulasApi.cs" />
-    <Compile Include="Api\CasebookApi.cs" />
-    <Compile Include="Api\DictionaryApi.cs" />
-    <Compile Include="Api\ParticipantsApi.cs" />
-    <Compile Include="Api\ProjectCustomValuesApi.cs" />
-    <Compile Include="Api\ProjectFoldersApi.cs" />
-    <Compile Include="Api\ProjectGroupsApi.cs" />
-    <Compile Include="Api\ProjectsApi.cs" />
-    <Compile Include="Api\ProjectTypesApi.cs" />
-    <Compile Include="Api\ResponsiblesApi.cs" />
+    <Compile Include="Domain\ApplicationArguments.cs" />
+    <Compile Include="Domain\Info\CaseInfo.cs" />
+    <Compile Include="Domain\XmlAddress.cs" />
+    <Compile Include="Engine.cs" />
+    <Compile Include="DatabaseEnviroment\FieldBuilder.cs" />
     <Compile Include="Controllers\AuthentificatorController.cs" />
     <Compile Include="Controllers\BlockReaderController.cs" />
-    <Compile Include="Controllers\DeletingProcessController.cs" />
     <Compile Include="DatabaseEnviroment\DatabaseCleaner.cs" />
-    <Compile Include="DatabaseEnviroment\RetryHandler.cs" />
-    <Compile Include="Domain\DatabaseEntity\CalculationFormula.cs" />
-    <Compile Include="Domain\DatabaseEntity\DatabaseEntityItem.cs" />
-    <Compile Include="Domain\DatabaseEntity\DictionaryItem.cs" />
-    <Compile Include="Domain\DatabaseEntity\ProjectFolder.cs" />
-    <Compile Include="Domain\DatabaseEntity\ProjectType.cs" />
-    <Compile Include="Domain\DatabaseEntity\Responsible.cs" />
     <Compile Include="Domain\FieldNameAttribute.cs" />
-    <Compile Include="Domain\DatabaseEntity\ProjectGroup.cs" />
-    <Compile Include="Domain\ExcelTable.cs" />
+    <Compile Include="Domain\Table.cs" />
     <Compile Include="Domain\FieldAddress.cs" />
-    <Compile Include="Domain\DatabaseEntity\Participant.cs" />
-    <Compile Include="Domain\DatabaseEntity\Project.cs" />
     <Compile Include="Domain\IgnoreAttribute.cs" />
-    <Compile Include="Helpers\DatabaseEntityItemHelper.cs" />
-    <Compile Include="IEngine.cs" />
-    <Compile Include="ProjectCleaner.cs" />
+    <Compile Include="EngineRequest.cs" />
+    <Compile Include="EngineResponse.cs" />
+    <Compile Include="Helpers\CollectionHelper.cs" />
+    <Compile Include="Helpers\JsonHelper.cs" />
+    <Compile Include="ProjectProcessor.cs" />
     <Compile Include="Readers\BlockInfoReader.cs" />
     <Compile Include="Controllers\SettingsController.cs" />
     <Compile Include="Controllers\MigrationProcessController.cs" />
-    <Compile Include="DatabaseEnviroment\EnviromentMessage.cs" />
     <Compile Include="Domain\Info\HeaderBlockInfo.cs" />
-    <Compile Include="PravoAdder.cs" />
     <Compile Include="Readers\Color\ColorBlockInfoReader.cs" />
     <Compile Include="Readers\Color\ColorExcelReader.cs" />
     <Compile Include="Readers\Simple\SimpleBlockInfoReader.cs" />
-    <Compile Include="DatabaseEnviroment\HttpAuthenticator.cs" />
     <Compile Include="DatabaseEnviroment\DatabaseFiller.cs" />
-    <Compile Include="DatabaseEnviroment\DatabaseGetter.cs" />
     <Compile Include="Domain\Info\BlockInfo.cs" />
     <Compile Include="Domain\Info\BlockFieldInfo.cs" />
     <Compile Include="Domain\Info\BlockLineInfo.cs" />
     <Compile Include="Domain\Settings.cs" />
-    <Compile Include="Readers\ExcelReader.cs" />
-    <Compile Include="Helpers\HttpHelper.cs" />
+    <Compile Include="Readers\TableReader.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Helpers\SettingsHelper.cs" />
     <Compile Include="Readers\Simple\SimpleExcelReader.cs" />
+    <Compile Include="Readers\Xml\XmlWithMappingReader.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -130,6 +119,11 @@
     </None>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\PravoAdder.Api\PravoAdder.Api.csproj">
+      <Project>{4c25db5d-3370-4b9d-9722-beb210beeb08}</Project>
+      <Name>PravoAdder.Api</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

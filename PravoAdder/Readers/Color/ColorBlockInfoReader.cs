@@ -1,138 +1,114 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using PravoAdder.DatabaseEnviroment;
+using PravoAdder.Api;
+using PravoAdder.Api.Domain;
+using PravoAdder.Api.Helpers;
 using PravoAdder.Domain;
 using PravoAdder.Domain.Info;
 
-namespace PravoAdder.Readers
+namespace PravoAdder.Readers.Color
 {
     public class ColorBlockInfoReader : BlockInfoReader
     {
-        private readonly DatabaseGetter _databaseGetter;
-	    private readonly IDictionary<string, dynamic> _visualBlocks;
+	    private readonly IDictionary<string, List<VisualBlock>> _visualBlocks;
 		private readonly object _visualBlocksLocker = new object();
+	    private readonly HttpAuthenticator _httpAuthenticator;
 
-        public ColorBlockInfoReader(ExcelTable excelTable, Settings settings, HttpAuthenticator authenticator) :
+        public ColorBlockInfoReader(Table excelTable, Settings settings, HttpAuthenticator httpAuthenticator) :
             base(settings, excelTable)
         {
-            _databaseGetter = new DatabaseGetter(authenticator);
-			_visualBlocks = new ConcurrentDictionary<string, dynamic>();
+			_visualBlocks = new ConcurrentDictionary<string, List<VisualBlock>>();
+	        _httpAuthenticator = httpAuthenticator;
         }
 
-        private static BlockFieldInfo ReadField(string id, dynamic projectField, int index)
-        {
-            var blockfieldInfo = new BlockFieldInfo
-            {
-                Id = id,
-                Name = projectField.Name,
-                ColumnNumber = index
-            };
-
-            var fieldType = projectField.ProjectFieldFormat.SysName.ToString();
-            switch (fieldType)
-            {
-                case "Dictionary":
-                    blockfieldInfo.Type = projectField.ProjectFieldFormat.SysName;
-                    blockfieldInfo.SpecialData = projectField.ProjectFieldFormat.Dictionary.SystemName;
-                    break;
-                case "Text":
-                case "Date":
-                case "TextArea":
-                    blockfieldInfo.Type = "Text";
-                    break;
-                case "Number":
-                    blockfieldInfo.Type = "Value";
-                    break;
-                case "Participant":
-                    blockfieldInfo.Type = fieldType;
-                    break;
-                default:
-                    throw new ArgumentException("Field type doesn't supported.");
-            }
-
-            return blockfieldInfo;
-        }
-
-	    public override IEnumerable<BlockInfo> Read()
+	    private IEnumerable<VisualBlock> GetVisualBlocks(string projectTypeId)
 	    {
-		    if (HeaderBlockInfo.ProjectTypeName == null) yield break;
-
-		    var projectType = _databaseGetter.GetProjectType(HeaderBlockInfo.ProjectTypeName);
-			var projectTypeId = projectType.Id.ToString();
-		    
+			List<VisualBlock> visualBlocks;
 		    lock (_visualBlocksLocker)
 		    {
-				if (!_visualBlocks.ContainsKey(projectTypeId))
-				{
-					var visualBlocks = _databaseGetter.GetVisualBlocks(projectType.Id.ToString());
-					_visualBlocks.Add(projectTypeId, visualBlocks);
-				}
-			}		    
-	    
-            foreach (var visualBlock in _visualBlocks[projectTypeId])
-            {
-                var blockname = visualBlock.Name;
-                var lines = new List<BlockLineInfo>();
-                foreach (var line in visualBlock.Lines)
-                {
-                    var lineId = line.Id.ToString();
-                    var simpleRepeatsLines = new List<BlockLineInfo>();
-                    var simpleLine = new BlockLineInfo(lineId, 0);
-                    var complexMultilines = new Dictionary<int, BlockLineInfo>();
+			    if (!_visualBlocks.ContainsKey(projectTypeId))
+			    {
+				    var newVisualBlocks = ApiRouter.ProjectTypes.GetVisualBlocks(_httpAuthenticator, projectTypeId);
+				    _visualBlocks.Add(projectTypeId, newVisualBlocks);
+			    }
+			    visualBlocks = _visualBlocks[projectTypeId];
+		    }
+		    return visualBlocks;
+	    }
 
-                    foreach (var field in line.Fields)
-                    {
-                        var projectField = field.ProjectField;
-                        var fieldId = field.Id.ToString();
-                        var fieldAddress = new FieldAddress(blockname.ToString(), projectField.Name.ToString());
+	    public override IEnumerable<CaseInfo> Read()
+	    {
+		    if (HeaderBlockInfo.ProjectTypeName == null) return null;
 
-                        if (ExcelTable.IsComplexRepeat(fieldAddress))
-                        {
-                            var complexIndexes = ExcelTable.GetComplexIndexes(fieldAddress);
-                            foreach (var key in complexIndexes.Keys)
-                            {
-                                if (!complexMultilines.ContainsKey(key))
-                                    complexMultilines.Add(key, new BlockLineInfo(lineId, key - 1));
-                                complexMultilines[key].Fields
-                                    .Add(ReadField(fieldId, projectField, complexIndexes[key]));
-                            }
-                            continue;
-                        }
+		    var projectType = ApiRouter.ProjectTypes.GetProjectTypes(_httpAuthenticator)
+			    .GetByName(HeaderBlockInfo.ProjectTypeName);
+		    var visualBlocks = GetVisualBlocks(projectType.Id);
 
-                        var indexes = ExcelTable.GetIndexes(fieldAddress);
-                        if (indexes == null) continue;
+		    var result = new Dictionary<int, List<BlockInfo>>();
+		    foreach (var block in visualBlocks)
+		    {
+			    var blockNumbers = block.IsRepeatable
+				    ? Table.GetRepeatBlockNumber(block.Name)
+				    : new List<int> {0};
+			    foreach (var blockNumber in blockNumbers)
+			    {
+				    var lines = new List<BlockLineInfo>();
+				    foreach (var line in block.Lines)
+				    {
+					    var simpleRepeatsLines = new List<BlockLineInfo>();
+					    var complexMultilines = new Dictionary<int, BlockLineInfo>();
 
-                        if (indexes.Count > 1)
-                            simpleRepeatsLines = indexes
-                                .Select(i => new BlockLineInfo
-                                {
-                                    Id = lineId,
-                                    Order = 0,
-                                    Fields = new List<BlockFieldInfo>
-                                    {
-                                        ReadField(fieldId, projectField, i)
-                                    }
-                                })
-                                .ToList();
-                        else
-                            simpleLine.Fields.Add(ReadField(fieldId, projectField, indexes.First()));
-                    }
+					    foreach (var field in line.Fields)
+					    {
+						    var fieldAddress = new FieldAddress(block.Name, field.ProjectField.Name);
+						    var fieldCount = line.Fields.Count;
 
-                    lines.AddRange(simpleRepeatsLines);
-                    lines.AddRange(complexMultilines.Select(d => (BlockLineInfo) d.Value.Clone()));
-                    lines.Add(simpleLine);
-                }
+						    if (line.LineType.SysName == "Repeated" && fieldCount > 1)
+						    {
+							    var complexIndexes = Table.GetComplexIndexes(fieldAddress, blockNumber);
+							    foreach (var key in complexIndexes.Keys)
+							    {
+								    if (!complexMultilines.ContainsKey(key))
+								    {
+									    complexMultilines.Add(key, new BlockLineInfo(line.Id, key - 1));
+								    }
+								    complexMultilines[key].Fields
+									    .Add(BlockFieldInfo.Create(field, complexIndexes[key]));
+							    }
+							    continue;
+						    }
 
-                yield return new BlockInfo
-                {
-                    Name = blockname,
-                    Id = visualBlock.Id,
-                    Lines = lines
-                };
-            }
-        }
+						    var indexes = Table.GetIndexes(fieldAddress, blockNumber);
+						    if (indexes == null || indexes.Count == 0) continue;
+						    if (line.LineType.SysName == "Repeated" && fieldCount == 1)
+						    {
+							    simpleRepeatsLines = indexes
+								    .Select(i => new BlockLineInfo
+								    {
+									    Id = line.Id,
+									    Order = 0,
+									    Fields = new List<BlockFieldInfo> {BlockFieldInfo.Create(field, i)}
+								    })
+								    .ToList();
+						    }
+						    if (line.LineType.SysName == "Simple")
+						    {
+							    if (simpleRepeatsLines.Count == 0) simpleRepeatsLines.Add(new BlockLineInfo(line.Id, 0));
+							    simpleRepeatsLines[0].Fields.Add(BlockFieldInfo.Create(field, indexes.First()));
+						    }
+					    }
+					    lines.AddRange(simpleRepeatsLines);
+					    lines.AddRange(complexMultilines.Select(d => (BlockLineInfo) d.Value.Clone()));
+				    }
+
+				    if (!result.ContainsKey(blockNumber)) result.Add(blockNumber, new List<BlockInfo>());
+				    result[blockNumber].Add(new BlockInfo(block.Name, block.Id, lines));
+			    }			  
+		    }
+		    return result
+				.Select(x => new CaseInfo {Blocks = x.Value, Order = x.Key});
+	    }
 
         public override HeaderBlockInfo ReadHeaderBlock(IDictionary<int, string> excelRow)
         {
@@ -144,7 +120,7 @@ namespace PravoAdder.Readers
 			        .GetCustomAttributes(typeof(FieldNameAttribute), true)
 			        .FirstOrDefault();
 
-		        var index = ExcelTable.TryGetIndex(new FieldAddress(systemName, fieldnameAttibute?.FieldName));
+		        var index = Table.TryGetIndex(new FieldAddress(systemName, fieldnameAttibute?.FieldName));
 		        if (index == 0) continue;
 
 				property.SetValue(headerObject, excelRow[index]);

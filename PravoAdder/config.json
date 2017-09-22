@@ -1,10 +1,11 @@
 {
-	"Login": "admin@pravo.ru",
-	"BaseUri": "https://sberbankcapital.casepro.pro",
+	"Login": "User1@user.ru",
+	"BaseUri": "http://betarupost.casepro.pro",
 	"DataRowPosition": 3,
 	"InformationRowPosition": 1,
+	"XmlMappingPath": "mapping.json",
 	"IdComparerPath": "blocksinfo.json",
-	"BlockLoadingMode": "Color",
+	"BlockLoadingMode": "Xml",
 	"AllowedColors": [
 		"FF92D050",
 		"FFFFFF00"

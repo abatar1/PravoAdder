@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using NLog;
-using PravoAdder.DatabaseEnviroment;
 using PravoAdder.Domain;
 using PravoAdder.Domain.Info;
 using PravoAdder.Readers;
+using PravoAdder.Api;
+using PravoAdder.Readers.Color;
+using PravoAdder.Readers.Simple;
+using PravoAdder.Readers.Xml;
 
 namespace PravoAdder.Controllers
 {
@@ -16,19 +19,24 @@ namespace PravoAdder.Controllers
 
         public BlockReaderController(Settings settings, HttpAuthenticator autentificator)
         {
-            ExcelReader excelReader;
+            TableReader tableReader;
             switch (settings.BlockLoadingMode)
             {
                 case "Color":
-                    excelReader = new ColorExcelReader();
-                    ExcelTable = excelReader.Read(settings);
-                    _blockInfoReader = new ColorBlockInfoReader(ExcelTable, settings, autentificator);
+                    tableReader = new ColorExcelReader();
+                    Table = tableReader.Read(settings);
+                    _blockInfoReader = new ColorBlockInfoReader(Table, settings, autentificator);
                     break;
                 case "Simple":
-                    excelReader = new SimpleExcelReader();
-                    ExcelTable = excelReader.Read(settings);
-                    _blockInfoReader = new SimpleBlockInfoReader(ExcelTable, settings);
+                    tableReader = new SimpleExcelReader();
+                    Table = tableReader.Read(settings);
+                    _blockInfoReader = new SimpleBlockInfoReader(Table, settings);
                     break;
+				case "Xml":
+					tableReader = new XmlWithMappingReader();
+					Table = tableReader.Read(settings);
+					_blockInfoReader = new ColorBlockInfoReader(Table, settings, autentificator);
+					break;
                 default:
                     var message = $"Типа блоков {settings.BlockLoadingMode} не существует.";
                     Logger.Error(message);
@@ -36,16 +44,16 @@ namespace PravoAdder.Controllers
             }
         }
 
-        public ExcelTable ExcelTable { get; }
+        public Table Table { get; }
 
-        public IList<BlockInfo> ReadBlockInfo()
+        public IList<CaseInfo> ReadBlockInfo()
         {
             return _blockInfoReader.Read().ToList();
         }
 
-        public HeaderBlockInfo ReadHeader(IDictionary<int, string> excelRow)
+        public HeaderBlockInfo ReadHeader(IDictionary<int, string> tableRow)
         {
-            var headerBlock = _blockInfoReader.ReadHeaderBlock(excelRow);
+            var headerBlock = _blockInfoReader.ReadHeaderBlock(tableRow);
 	        if (string.IsNullOrEmpty(headerBlock.ProjectName) || string.IsNullOrEmpty(headerBlock.ProjectTypeName)) return null;
 	        return headerBlock;
         }

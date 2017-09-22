@@ -6,9 +6,11 @@ namespace PravoAdder
 	{
 		private static void Main(string[] args)
 		{
-			Console.Title = "Pravo.Add";
-			var adder = new PravoAdder("config.json");
-			adder.Run();
+			var engine = new Engine();
+			engine.Initialize(new [] { "-t", "Migration" }).Run();
+
+			Console.WriteLine("Processed.");
+			Console.ReadKey();
 		}
 	}
 }

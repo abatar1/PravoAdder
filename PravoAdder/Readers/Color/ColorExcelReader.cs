@@ -3,13 +3,13 @@ using System.Linq;
 using OfficeOpenXml;
 using PravoAdder.Domain;
 
-namespace PravoAdder.Readers
+namespace PravoAdder.Readers.Color
 {
-    public class ColorExcelReader : ExcelReader
+    public class ColorExcelReader : TableReader
     {
-        public override ExcelTable Read(Settings settings)
+        public override Table Read(Settings settings)
         {
-            var info = GetFileInfo(settings.ExcelFileName);
+            var info = GetFileInfo(settings.SourceFileName, ".xslx");
 
             using (var xlPackage = new ExcelPackage(info))
             {
@@ -45,7 +45,7 @@ namespace PravoAdder.Readers
                         .ToDictionary(key => key.index, value => value.value);
                     table.Add(coloredRow);
                 }
-                return new ExcelTable(table, infoRowContent);
+                return new Table(table, infoRowContent);
             }
         }
     }
