@@ -39,17 +39,11 @@ namespace PravoAdder.DatabaseEnviroment
 				return new EnviromentMessage(null, "Using default project.", EnviromentMessageType.Warning);
 			}				
 
-	        ProjectGroup projectGroup;
 			if (settings.Overwrite)
 			{
-				projectGroup = ApiRouter.ProjectGroups.GetProjectGroups(_httpAuthenticator)
-					.GetByName(headerInfo.ProjectGroupName);
-				if (projectGroup != null)
-				{
-					return new EnviromentMessage(projectGroup, "Group already exists.",
-						EnviromentMessageType.Success);
-				}                   
-            }
+				var response = GetProjectGroup(headerInfo);
+				if (response.Type == EnviromentMessageType.Success) return response;
+			}
 
 	        var projectFolder = ApiRouter.ProjectFolders.GetProjectFolders(_httpAuthenticator)
 		        .GetByName(headerInfo.FolderName);
@@ -65,19 +59,33 @@ namespace PravoAdder.DatabaseEnviroment
                 headerInfo.Description
             };
 
-	        projectGroup = ApiRouter.ProjectGroups.ProjectGroups(_httpAuthenticator, content);
+	        var projectGroup = ApiRouter.ProjectGroups.ProjectGroups(_httpAuthenticator, content);
 			return projectGroup == null
 				? new EnviromentMessage(null, $"Failed to add {headerInfo.ProjectGroupName} project group", EnviromentMessageType.Error)
 				: new EnviromentMessage(projectGroup, $"Project group {projectGroup.Name} added.", EnviromentMessageType.Success);
+		}
+
+	    protected EnviromentMessage GetProjectGroup(HeaderBlockInfo headerInfo)
+	    {
+			var projectGroup = ApiRouter.ProjectGroups.GetProjectGroups(_httpAuthenticator)
+			    .GetByName(headerInfo.ProjectGroupName);
+		    if (projectGroup != null)
+		    {
+			    return new EnviromentMessage(projectGroup, "Group already exists.",
+				    EnviromentMessageType.Success);
+		    }
+			return new EnviromentMessage(null, "Project group doesn't exist.", EnviromentMessageType.Error);
 		}
 
 	    protected EnviromentMessage GetProject(HeaderBlockInfo headerInfo, string projectGroupId)
 	    {
 			var project = ApiRouter.Projects.GetProjects(_httpAuthenticator, headerInfo.FolderName, projectGroupId)
 			    .GetByName(headerInfo.ProjectName);
-		    return project != null 
-				? new EnviromentMessage(project, "Project already exists.", EnviromentMessageType.Success) 
-				: new EnviromentMessage(null, "Project doesn't exist.", EnviromentMessageType.Error);
+		    if (project != null)
+		    {
+			    return new EnviromentMessage(project, "Project already exists.", EnviromentMessageType.Success);
+		    }
+			return new EnviromentMessage(null, "Project doesn't exist.", EnviromentMessageType.Error);
 	    }
 
         protected EnviromentMessage AddProject(Settings settings, HeaderBlockInfo headerInfo,

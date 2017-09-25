@@ -55,7 +55,7 @@ namespace PravoAdder
 					Console.Title = "Pravo.Sync";
 
 					return new ProjectProcessor(arguments.ConfigFilename, request =>
-					{
+					{						
 						var engineMessage = ProcessorImplementations.MigrationMasterDataProcessor(request);
 						if (engineMessage == null) return null;
 
