@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace PravoAdder.Domain.Info
+namespace PravoAdder.Domain
 {
 	public class CaseInfo
 	{

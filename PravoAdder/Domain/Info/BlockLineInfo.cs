@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace PravoAdder.Domain.Info
+namespace PravoAdder.Domain
 {
 	public class BlockLineInfo : ICloneable
 	{

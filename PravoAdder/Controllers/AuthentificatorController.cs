@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using NLog;
 using PravoAdder.Api;
 using PravoAdder.Domain;

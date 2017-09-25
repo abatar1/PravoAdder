@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace PravoAdder.Domain.Info
+namespace PravoAdder.Domain
 {
 	public class BlockInfo
 	{

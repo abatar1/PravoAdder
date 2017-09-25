@@ -3,7 +3,7 @@ using System.Linq;
 using OfficeOpenXml;
 using PravoAdder.Domain;
 
-namespace PravoAdder.Readers.Color
+namespace PravoAdder.Readers
 {
     public class ColorExcelReader : TableReader
     {

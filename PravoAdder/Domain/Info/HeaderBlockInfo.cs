@@ -1,4 +1,4 @@
-﻿namespace PravoAdder.Domain.Info
+﻿namespace PravoAdder.Domain
 {
 	public class HeaderBlockInfo
 	{

@@ -3,10 +3,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using PravoAdder.Domain.Info;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
+using PravoAdder.Domain;
+
 // ReSharper disable InconsistentlySynchronizedField
 
 namespace PravoAdder.DatabaseEnviroment

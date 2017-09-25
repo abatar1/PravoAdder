@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using PravoAdder.Api.Domain;
 
-namespace PravoAdder.Domain.Info
+namespace PravoAdder.Domain
 {
 	public class BlockFieldInfo
 	{

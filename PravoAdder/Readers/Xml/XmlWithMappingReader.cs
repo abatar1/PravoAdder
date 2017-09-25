@@ -6,10 +6,9 @@ using System.Xml.Linq;
 using Fclp.Internals.Extensions;
 using Newtonsoft.Json.Linq;
 using PravoAdder.Domain;
-using PravoAdder.Domain.Info;
 using PravoAdder.Helpers;
 
-namespace PravoAdder.Readers.Xml
+namespace PravoAdder.Readers
 {
 	public class XmlWithMappingReader : TableReader
 	{

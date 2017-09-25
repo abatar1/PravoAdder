@@ -2,9 +2,8 @@
 using System.IO;
 using Newtonsoft.Json.Linq;
 using PravoAdder.Domain;
-using PravoAdder.Domain.Info;
 
-namespace PravoAdder.Readers.Simple
+namespace PravoAdder.Readers
 {
     public class SimpleBlockInfoReader : BlockInfoReader
     {

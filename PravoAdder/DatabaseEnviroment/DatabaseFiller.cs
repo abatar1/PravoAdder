@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PravoAdder.Domain;
-using PravoAdder.Domain.Info;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
@@ -72,18 +71,22 @@ namespace PravoAdder.DatabaseEnviroment
 				: new EnviromentMessage(projectGroup, $"Project group {projectGroup.Name} added.", EnviromentMessageType.Success);
 		}
 
+	    protected EnviromentMessage GetProject(HeaderBlockInfo headerInfo, string projectGroupId)
+	    {
+			var project = ApiRouter.Projects.GetProjects(_httpAuthenticator, headerInfo.FolderName, projectGroupId)
+			    .GetByName(headerInfo.ProjectName);
+		    return project != null 
+				? new EnviromentMessage(project, "Project already exists.", EnviromentMessageType.Success) 
+				: new EnviromentMessage(null, "Project doesn't exist.", EnviromentMessageType.Error);
+	    }
+
         protected EnviromentMessage AddProject(Settings settings, HeaderBlockInfo headerInfo,
             string projectGroupId)
         {
-	        Project project;
-            if (settings.Overwrite)
+	        if (settings.Overwrite)
             {
-	            project = ApiRouter.Projects.GetProjects(_httpAuthenticator, headerInfo.FolderName, projectGroupId)
-		            .GetByName(headerInfo.ProjectName);
-	            if (project != null)
-	            {
-					return new EnviromentMessage(project, "Project already exists.", EnviromentMessageType.Success);
-				}                  
+	            var response = GetProject(headerInfo, projectGroupId);
+	            if (response.Type == EnviromentMessageType.Success) return response;
             }
 
 	        if (string.IsNullOrEmpty(headerInfo.ProjectName)) headerInfo.ProjectName = "Название проекта по-умолчанию";
@@ -128,7 +131,7 @@ namespace PravoAdder.DatabaseEnviroment
                 Name = headerInfo.ProjectName
             };
 
-	        project = ApiRouter.Projects.CreateProject(_httpAuthenticator, content);
+	        var project = ApiRouter.Projects.CreateProject(_httpAuthenticator, content);
 			return project == null
 				? new EnviromentMessage(null, $"Failed to add {headerInfo.ProjectName} project", EnviromentMessageType.Error)
 				: new EnviromentMessage(project, $"Project {project.Name} added.", EnviromentMessageType.Success);

@@ -5,9 +5,8 @@ using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
 using PravoAdder.Domain;
-using PravoAdder.Domain.Info;
 
-namespace PravoAdder.Readers.Color
+namespace PravoAdder.Readers
 {
     public class ColorBlockInfoReader : BlockInfoReader
     {

@@ -1,5 +1,5 @@
 ﻿using PravoAdder.Api.Domain;
-using PravoAdder.Domain.Info;
+using PravoAdder.Domain;
 
 namespace PravoAdder
 {

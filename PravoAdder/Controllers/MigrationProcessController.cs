@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using NLog;
 using PravoAdder.DatabaseEnviroment;
 using PravoAdder.Domain;
-using PravoAdder.Domain.Info;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 

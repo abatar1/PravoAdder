@@ -26,49 +26,65 @@ namespace PravoAdder
 			return this;
 		}
 
+		private static IProcessor CreateProcessor(ApplicationArguments arguments)
+		{
+			switch (arguments.ProcessType)
+			{
+				case ProcessType.Migration:
+				{
+					Console.Title = "Pravo.Add";
+
+					return new ProjectProcessor(arguments.ConfigFilename, request =>
+					{
+						var engineMessage = ProcessorImplementations.MigrationMasterDataProcessor(request);
+						if (engineMessage == null) return null;
+
+						var blocksInfo = request.BlockReader.ReadBlockInfo();
+						foreach (var repeatBlock in blocksInfo)
+						{
+							foreach (var blockInfo in repeatBlock.Blocks)
+							{
+								request.Migrator.AddInformationAsync(blockInfo, request.ExcelRow, engineMessage.Project.Id, repeatBlock.Order);
+							}
+						}
+						return engineMessage;
+					});
+				}
+				case ProcessType.Syncronization:
+				{
+					Console.Title = "Pravo.Sync";
+
+					return new ProjectProcessor(arguments.ConfigFilename, request =>
+					{
+						var engineMessage = ProcessorImplementations.MigrationMasterDataProcessor(request);
+						if (engineMessage == null) return null;
+
+						if (string.IsNullOrEmpty(engineMessage.HeaderBlock.SynchronizationNumber))
+						{
+							request.Migrator.Synchronize(engineMessage.Project.Id, engineMessage.HeaderBlock.SynchronizationNumber);
+						}
+
+						return engineMessage;
+					});
+				}
+				case ProcessType.Clearing:
+				{
+					Console.Title = "Pravo.Clean";
+
+					return new CleanProcessor(request =>
+					{
+						return null;
+					});
+				}				
+				default:
+					return null;
+			}
+		}
+
 		public Engine Run()
 		{
-			var projectProcessor = new ProjectProcessor();
-
-			if (_arguments.ProcessType == ProcessType.Migration)
-			{
-				Console.Title = "Pravo.Add";
-
-				projectProcessor = new ProjectProcessor(_arguments.ConfigFilename, request =>
-				{
-					var engineMessage = ProjectProcessor.MigrationMasterDataProcessor(request);
-					if (engineMessage == null) return null;
-
-					var blocksInfo = request.BlockReader.ReadBlockInfo();
-					foreach (var repeatBlock in blocksInfo)
-					{
-						foreach (var blockInfo in repeatBlock.Blocks)
-						{
-							request.Migrator.AddInformationAsync(blockInfo, request.ExcelRow, engineMessage.Project.Id, repeatBlock.Order);
-						}
-					}
-					return engineMessage;
-				});
-			}
-			else if (_arguments.ProcessType == ProcessType.Syncronization)
-			{
-				Console.Title = "Pravo.Sync";
-
-				projectProcessor = new ProjectProcessor(_arguments.ConfigFilename, request =>
-				{
-					var engineMessage = ProjectProcessor.MigrationMasterDataProcessor(request);
-					if (engineMessage == null) return null;
-
-					if (string.IsNullOrEmpty(engineMessage.HeaderBlock.SynchronizationNumber))
-					{
-						request.Migrator.Synchronize(engineMessage.Project.Id, engineMessage.HeaderBlock.SynchronizationNumber);
-					}
-
-					return engineMessage;
-				});
-			}
-			projectProcessor.Run();
-
+			var processor = CreateProcessor(_arguments);
+			processor.Run();
 			return this;
 		}
 	}

@@ -12,6 +12,7 @@ namespace PravoAdder.Domain
 	public enum ProcessType
 	{
 		Migration,
-		Syncronization
+		Syncronization,
+		Clearing
 	}
 }

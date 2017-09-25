@@ -32,7 +32,7 @@ namespace PravoAdder.Domain
 		        })
 		        .SetDefault(0);
 	        var result = parser.Parse(GetCommandLineFromLine(address));
-			if (result.HasErrors) throw new ArgumentException("Error while parsing table header");
+			if (result.HasErrors) throw new ArgumentException($"Error while parsing table header at {address}");
         }
 
 	    private static string[] GetCommandLineFromLine(string line)

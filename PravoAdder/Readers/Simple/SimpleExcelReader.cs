@@ -3,7 +3,7 @@ using System.Linq;
 using OfficeOpenXml;
 using PravoAdder.Domain;
 
-namespace PravoAdder.Readers.Simple
+namespace PravoAdder.Readers
 {
     public class SimpleExcelReader : TableReader
     {

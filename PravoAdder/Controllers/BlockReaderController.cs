@@ -3,12 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using NLog;
 using PravoAdder.Domain;
-using PravoAdder.Domain.Info;
 using PravoAdder.Readers;
 using PravoAdder.Api;
-using PravoAdder.Readers.Color;
-using PravoAdder.Readers.Simple;
-using PravoAdder.Readers.Xml;
 
 namespace PravoAdder.Controllers
 {
