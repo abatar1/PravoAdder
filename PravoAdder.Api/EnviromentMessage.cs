@@ -1,19 +1,38 @@
-﻿using PravoAdder.Api.Domain;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using PravoAdder.Api.Domain;
 
 namespace PravoAdder.Api
 {
     public class EnviromentMessage
     {
-        public EnviromentMessage(DatabaseEntityItem content, string message, EnviromentMessageType type)
+        public EnviromentMessage(dynamic content, string message, EnviromentMessageType type)
         {
-            Content = content;
+	        if (content is IList)
+	        {
+		        MultipleContent = new List<DatabaseEntityItem>((IEnumerable<DatabaseEntityItem>) content);
+				ContentType = EnviromentContentType.Multiple;
+	        }				
+			else if (content is DatabaseEntityItem)
+	        {
+		        SingleContent = (DatabaseEntityItem) content;
+				ContentType = EnviromentContentType.Single;
+	        }
+			else if (content != null)
+	        {
+		        throw new ArgumentException("Wrong argument passed to enviroment message constructor.");
+	        }
+
             Message = message;
-            Type = type;
+            MessageType = type;
         }
 
-        public DatabaseEntityItem Content { get; }
-        public string Message { get; }
-        public EnviromentMessageType Type { get; }
+		public IList<DatabaseEntityItem> MultipleContent { get; }
+        public DatabaseEntityItem SingleContent { get; }
+		public EnviromentContentType ContentType { get; }
+		public string Message { get; }
+        public EnviromentMessageType MessageType { get; }
     }
 
     public enum EnviromentMessageType
@@ -22,4 +41,10 @@ namespace PravoAdder.Api
         Error,
         Warning
     }
+
+	public enum EnviromentContentType
+	{
+		Single,
+		Multiple
+	}
 }

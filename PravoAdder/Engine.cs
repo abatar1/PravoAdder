@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using Fclp;
 using PravoAdder.Domain;
+using PravoAdder.Processors;
 
 namespace PravoAdder
 {
@@ -34,9 +36,9 @@ namespace PravoAdder
 				{
 					Console.Title = "Pravo.Add";
 
-					return new ProjectProcessor(arguments.ConfigFilename, request =>
+					return new MigrationProcessor(arguments.ConfigFilename, request =>
 					{
-						var engineMessage = ProcessorImplementations.MigrationMasterDataProcessor(request);
+						var engineMessage = ProcessorImplementations.AddProjectProcessor(request);
 						if (engineMessage == null) return null;
 
 						var blocksInfo = request.BlockReader.ReadBlockInfo();
@@ -44,7 +46,7 @@ namespace PravoAdder
 						{
 							foreach (var blockInfo in repeatBlock.Blocks)
 							{
-								request.Migrator.AddInformationAsync(blockInfo, request.ExcelRow, engineMessage.Project.Id, repeatBlock.Order);
+								request.Migrator.AddInformationAsync(blockInfo, request.ExcelRow, engineMessage.Item.Id, repeatBlock.Order);
 							}
 						}
 						return engineMessage;
@@ -54,26 +56,42 @@ namespace PravoAdder
 				{
 					Console.Title = "Pravo.Sync";
 
-					return new ProjectProcessor(arguments.ConfigFilename, request =>
+					return new MigrationProcessor(arguments.ConfigFilename, request =>
 					{						
-						var engineMessage = ProcessorImplementations.MigrationMasterDataProcessor(request);
+						var engineMessage = ProcessorImplementations.AddProjectProcessor(request);
 						if (engineMessage == null) return null;
 
 						if (string.IsNullOrEmpty(engineMessage.HeaderBlock.SynchronizationNumber))
 						{
-							request.Migrator.Synchronize(engineMessage.Project.Id, engineMessage.HeaderBlock.SynchronizationNumber);
+							request.Migrator.Synchronize(engineMessage.Item.Id, engineMessage.HeaderBlock.SynchronizationNumber);
 						}
 
 						return engineMessage;
 					});
 				}
-				case ProcessType.Clearing:
+				case ProcessType.Cleaning:
 				{
 					Console.Title = "Pravo.Clean";
 
-					return new CleanProcessor(request =>
+					return new ForEachProjectGroupProcessor(arguments.ConfigFilename, request =>
 					{
-						return null;
+						var projects = request.Migrator.GetProjects(request.Item.Id);
+						
+						foreach (var project in projects.Select((project, count) => new {Content = project, Count = count}))
+						{
+							request.Migrator.DeleteProject(project.Content.Id);
+							request.Migrator.ProcessCount(project.Count, 0, project.Content, 70);
+						}
+						request.Migrator.DeleteProjectGroup(request.Item.Id);
+
+						var folders = request.Migrator.GetProjectFolders();
+						foreach (var folder in folders.Select((folder, count) => new { Content = folder, Count = count }))
+						{
+							request.Migrator.DeleteFolder(folder.Content.Id);
+							request.Migrator.ProcessCount(folder.Count, 0, folder.Content, 70);
+						}
+
+						return new EngineResponse();
 					});
 				}				
 				default:

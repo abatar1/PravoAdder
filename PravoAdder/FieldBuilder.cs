@@ -10,7 +10,7 @@ using PravoAdder.Domain;
 
 // ReSharper disable InconsistentlySynchronizedField
 
-namespace PravoAdder.DatabaseEnviroment
+namespace PravoAdder
 {
 	public class FieldBuilder
 	{

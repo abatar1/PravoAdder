@@ -16,10 +16,9 @@ namespace PravoAdder.Readers
             return $"{(DateTime) cell:yyyy-MM-dd}";
         }
 
-	    protected static FileInfo GetFileInfo(string name, string extention)
+	    protected static FileInfo GetFileInfo(string name)
 	    {
 		    var info = new FileInfo(name);
-		    if (info.Extension != extention) info = new FileInfo(name + extention);
 		    return !info.Exists ? null : info;
 	    }
     }

@@ -116,7 +116,7 @@ namespace PravoAdder.Api.Helpers
 			return response != null && response.IsSuccessStatusCode;
 		}
 
-		public static dynamic SendDynamicItem(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, IDictionary<string, string> parameters)
+		public static dynamic SendItemWithParameters(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, IDictionary<string, string> parameters)
 		{
 			var request = CreateRequest(parameters, $"api/{path}", httpMethod, httpAuthenticator.UserCookie);
 

@@ -1,19 +1,13 @@
 ﻿using System.Collections.Generic;
-using PravoAdder.Controllers;
+using PravoAdder.Wrappers;
 
 namespace PravoAdder
 {
-	public class EngineRequest
+	public class EngineRequest : EngineResponse
 	{
-		public EngineRequest(MigrationProcessController migrator, BlockReaderController reader, IDictionary<int, string> excelRow)
-		{
-			Migrator = migrator;
-			BlockReader = reader;
-			ExcelRow = excelRow;
-		}
-
-		public MigrationProcessController Migrator { get; }
-		public BlockReaderController BlockReader { get; }
-		public IDictionary<int, string> ExcelRow { get; }
+		public DatabaseEnviromentWrapper Migrator { get; set; }
+		public BlockReaderWrapper BlockReader { get; set; }
+		public IDictionary<int, string> ExcelRow { get; set; }		
 	}
 }
+

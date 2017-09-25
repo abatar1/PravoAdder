@@ -60,7 +60,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Api\Api.cs" />
+    <Compile Include="Api\ApiRouter.cs" />
     <Compile Include="Api\CalculationFormulasApi.cs" />
     <Compile Include="Api\CasebookApi.cs" />
     <Compile Include="Api\CurrenciesApi.cs" />

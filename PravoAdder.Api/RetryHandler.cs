@@ -25,7 +25,7 @@ namespace PravoAdder.Api
 				try
 		        {
 			        var response = await base.SendAsync(request, CancellationToken.None).ConfigureAwait(false);
-			        if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound)
+			        if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Forbidden)
 			        {
 				        return response;
 			        }

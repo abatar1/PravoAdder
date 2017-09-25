@@ -9,7 +9,7 @@ namespace PravoAdder.Readers
     {
         public override Table Read(Settings settings)
         {
-            var info = GetFileInfo(settings.SourceFileName, ".xlsx");
+            var info = GetFileInfo(settings.SourceFileName);
 
             var table = new List<IDictionary<int, string>>();
             using (var xlPackage = new ExcelPackage(info))

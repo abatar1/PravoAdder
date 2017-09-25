@@ -8,14 +8,14 @@ using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
 
-namespace PravoAdder.DatabaseEnviroment
+namespace PravoAdder
 {
-    public class DatabaseFiller
+    public class DatabaseEnviroment
     {
 		private readonly HttpAuthenticator _httpAuthenticator;
 	    private readonly FieldBuilder _fieldBuilder;
 
-        public DatabaseFiller(HttpAuthenticator httpAuthenticator)
+        public DatabaseEnviroment(HttpAuthenticator httpAuthenticator)
         {
             _httpAuthenticator = httpAuthenticator;
 	        _fieldBuilder = new FieldBuilder(httpAuthenticator);
@@ -32,7 +32,72 @@ namespace PravoAdder.DatabaseEnviroment
 					EnviromentMessageType.Success);			
 		}
 
-        protected EnviromentMessage AddProjectGroup(Settings settings, HeaderBlockInfo headerInfo)
+	    protected EnviromentMessage DeleteFolderItem(string folderId)
+	    {
+		    try
+		    {
+				ApiRouter.ProjectFolders.Delete(_httpAuthenticator, folderId);
+		    }
+			catch (Exception e)
+		    {
+			    return new EnviromentMessage(null, $"Folder deleting failed. Reason: {e.Message}", EnviromentMessageType.Error);
+		    }
+		    return new EnviromentMessage(null, "Succefully deleted folder.", EnviromentMessageType.Success);
+		}
+
+	    protected EnviromentMessage DeleteProjectGroupItem(string projectGroupId)
+	    {
+		    try
+		    {
+			    ApiRouter.ProjectGroups.ArchiveProjectGroup(_httpAuthenticator, projectGroupId);
+				ApiRouter.ProjectGroups.DeleteProjectGroup(_httpAuthenticator, projectGroupId);			
+		    }
+		    catch (Exception e)
+		    {
+			    return new EnviromentMessage(null, $"Project group deleting failed. Reason: {e.Message}", EnviromentMessageType.Error);
+		    }
+		    return new EnviromentMessage(null, "Succefully deleted project group.", EnviromentMessageType.Success);
+		}
+
+	    protected EnviromentMessage DeleteProjectItem(string projectId)
+	    {
+		    try
+		    {
+			    ApiRouter.Projects.ArchiveProject(_httpAuthenticator, projectId);
+			    ApiRouter.Projects.DeleteProject(_httpAuthenticator, projectId);
+			}
+		    catch (Exception e)
+		    {
+			    return new EnviromentMessage(null, $"Project deleting failed. Reason: {e.Message}", EnviromentMessageType.Error);
+		    }
+			return new EnviromentMessage(null, "Succefully deleted project.", EnviromentMessageType.Success);
+		}
+
+	    protected EnviromentMessage GetProjectGroupItems()
+	    {
+		    var response = ApiRouter.ProjectGroups.GetProjectGroups(_httpAuthenticator);
+		    return response == null 
+				? new EnviromentMessage(null, "No project groups found", EnviromentMessageType.Error) 
+				: new EnviromentMessage(response, "Succefully got project groups.", EnviromentMessageType.Success);
+	    }
+
+	    protected EnviromentMessage GetProjectFolderItems()
+	    {
+		    var response = ApiRouter.ProjectFolders.GetProjectFolders(_httpAuthenticator);
+		    return response == null
+			    ? new EnviromentMessage(null, "No project folders found", EnviromentMessageType.Error)
+			    : new EnviromentMessage(response, "Succefully got project folders.", EnviromentMessageType.Success);
+		}
+
+	    protected EnviromentMessage GetProjectItems(string projectGroupId, string folderName = null)
+	    {
+		    var response = ApiRouter.Projects.GetProjects(_httpAuthenticator, folderName, projectGroupId);
+		    return response == null 
+				? new EnviromentMessage(null, $"No projects found at group {projectGroupId}", EnviromentMessageType.Error) 
+				: new EnviromentMessage(response, "Succefully got projects.", EnviromentMessageType.Success);
+	    }
+
+		protected EnviromentMessage AddProjectGroup(Settings settings, HeaderBlockInfo headerInfo)
         {
 	        if (headerInfo.ProjectGroupName == null)
 	        {
@@ -41,8 +106,16 @@ namespace PravoAdder.DatabaseEnviroment
 
 			if (settings.Overwrite)
 			{
-				var response = GetProjectGroup(headerInfo);
-				if (response.Type == EnviromentMessageType.Success) return response;
+				var response = GetProjectGroupItems();
+				if (response.MessageType != EnviromentMessageType.Error)
+				{
+					var projectGroupResponse = response.MultipleContent.GetByName(headerInfo.ProjectGroupName);
+					if (projectGroupResponse != null)
+					{
+						return new EnviromentMessage(response, "Group already exists.",
+							EnviromentMessageType.Success);
+					}
+				}				
 			}
 
 	        var projectFolder = ApiRouter.ProjectFolders.GetProjectFolders(_httpAuthenticator)
@@ -65,36 +138,20 @@ namespace PravoAdder.DatabaseEnviroment
 				: new EnviromentMessage(projectGroup, $"Project group {projectGroup.Name} added.", EnviromentMessageType.Success);
 		}
 
-	    protected EnviromentMessage GetProjectGroup(HeaderBlockInfo headerInfo)
-	    {
-			var projectGroup = ApiRouter.ProjectGroups.GetProjectGroups(_httpAuthenticator)
-			    .GetByName(headerInfo.ProjectGroupName);
-		    if (projectGroup != null)
-		    {
-			    return new EnviromentMessage(projectGroup, "Group already exists.",
-				    EnviromentMessageType.Success);
-		    }
-			return new EnviromentMessage(null, "Project group doesn't exist.", EnviromentMessageType.Error);
-		}
-
-	    protected EnviromentMessage GetProject(HeaderBlockInfo headerInfo, string projectGroupId)
-	    {
-			var project = ApiRouter.Projects.GetProjects(_httpAuthenticator, headerInfo.FolderName, projectGroupId)
-			    .GetByName(headerInfo.ProjectName);
-		    if (project != null)
-		    {
-			    return new EnviromentMessage(project, "Project already exists.", EnviromentMessageType.Success);
-		    }
-			return new EnviromentMessage(null, "Project doesn't exist.", EnviromentMessageType.Error);
-	    }
-
-        protected EnviromentMessage AddProject(Settings settings, HeaderBlockInfo headerInfo,
-            string projectGroupId)
+        protected EnviromentMessage AddProject(Settings settings, HeaderBlockInfo headerInfo, string projectGroupId)
         {
 	        if (settings.Overwrite)
-            {
-	            var response = GetProject(headerInfo, projectGroupId);
-	            if (response.Type == EnviromentMessageType.Success) return response;
+	        {
+		        var response = GetProjectItems(projectGroupId, headerInfo.FolderName);
+		        if (response.MessageType != EnviromentMessageType.Error)
+		        {
+			        var projectResponse = response.MultipleContent.GetByName(headerInfo.ProjectName);
+			        if (projectResponse != null)
+			        {
+						return new EnviromentMessage(projectResponse, "Project already exists.",
+							EnviromentMessageType.Success);
+					}
+		        }
             }
 
 	        if (string.IsNullOrEmpty(headerInfo.ProjectName)) headerInfo.ProjectName = "Название проекта по-умолчанию";

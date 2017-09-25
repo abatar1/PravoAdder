@@ -22,5 +22,11 @@ namespace PravoAdder.Api
 			return ApiHelper.SendDatabaseEntityItem<ProjectFolder>(content, "ProjectFolders/InsertProjectFolder", HttpMethod.Post,
 				httpAuthenticator);
 		}
+
+		public void Delete(HttpAuthenticator httpAuthenticator, string projectFolderId)
+		{
+			var parameters = new Dictionary<string, string> { ["FolderId"] = projectFolderId };
+			ApiHelper.SendItemWithParameters(httpAuthenticator, "ProjectFolders/DeleteProjectFolder", HttpMethod.Delete, parameters);
+		}
 	}
 }

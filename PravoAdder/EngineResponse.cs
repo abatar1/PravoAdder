@@ -5,13 +5,7 @@ namespace PravoAdder
 {
 	public class EngineResponse
 	{
-		public EngineResponse(HeaderBlockInfo headerBlock, Project project)
-		{
-			HeaderBlock = headerBlock;
-			Project = project;
-		}
-
-		public Project Project { get; }
-		public HeaderBlockInfo HeaderBlock { get; }
+		public HeaderBlockInfo HeaderBlock { get; set; }
+		public DatabaseEntityItem Item { get; set; }
 	}
 }

@@ -6,9 +6,9 @@ using System.Reflection;
 using PravoAdder.Domain;
 using PravoAdder.Helpers;
 
-namespace PravoAdder.Controllers
+namespace PravoAdder.Wrappers
 {
-    public class SettingsController
+    public class SettingsWrapper
     {
         public Settings LoadSettings(string configFilename, Dictionary<string, dynamic> additionalSettings = null)
         {

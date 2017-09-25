@@ -3,14 +3,14 @@ using NLog;
 using PravoAdder.Api;
 using PravoAdder.Domain;
 
-namespace PravoAdder.Controllers
+namespace PravoAdder.Wrappers
 {
-    public class AuthentificatorController : HttpAuthenticator
+    public class AuthentificatorWrapper : HttpAuthenticator
 	{
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private readonly Settings _settings;
 
-        public AuthentificatorController(Settings settings) : base(settings.BaseUri)
+        public AuthentificatorWrapper(Settings settings) : base(settings.BaseUri)
         {
             _settings = settings;
         }
@@ -23,7 +23,7 @@ namespace PravoAdder.Controllers
 	            try
 	            {
 		            var message = Authentication(_settings.Login, _settings.Password);
-		            if (message.Type != EnviromentMessageType.Error) return this;
+		            if (message.MessageType != EnviromentMessageType.Error) return this;
 		            Logger.Error($"Failed to login in. Message: {message.Message}");
 				}
 	            catch (Exception e)

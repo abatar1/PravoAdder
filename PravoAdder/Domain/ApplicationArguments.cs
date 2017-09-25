@@ -13,6 +13,6 @@ namespace PravoAdder.Domain
 	{
 		Migration,
 		Syncronization,
-		Clearing
+		Cleaning
 	}
 }

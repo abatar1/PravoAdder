@@ -2,18 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using NLog;
+using PravoAdder.Api;
 using PravoAdder.Domain;
 using PravoAdder.Readers;
-using PravoAdder.Api;
 
-namespace PravoAdder.Controllers
+namespace PravoAdder.Wrappers
 {
-    public class BlockReaderController
+    public class BlockReaderWrapper
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private readonly BlockInfoReader _blockInfoReader;
 
-        public BlockReaderController(Settings settings, HttpAuthenticator autentificator)
+        public BlockReaderWrapper(Settings settings, HttpAuthenticator autentificator)
         {
             TableReader tableReader;
             switch (settings.BlockLoadingMode)

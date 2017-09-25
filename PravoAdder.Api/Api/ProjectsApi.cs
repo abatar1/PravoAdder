@@ -14,9 +14,13 @@ namespace PravoAdder.Api
 				.GetProjectFolders(httpAuthenticator)
 				.FirstOrDefault(folder => folder.Name == folderName);
 
-			if (projectFolder == null) projectFolder = ApiRouter.ProjectFolders.InsertProjectFolder(folderName, httpAuthenticator);
+			Dictionary<string, string> additionalContent = null;
+			if (projectFolder == null && folderName != null)
+			{
+				projectFolder = ApiRouter.ProjectFolders.InsertProjectFolder(folderName, httpAuthenticator);
+				additionalContent = new Dictionary<string, string> { ["FolderId"] = projectFolder.Id };
+			}
 
-			var additionalContent = new Dictionary<string, string>{ ["FolderId"] = projectFolder.Id };
 			var response = ApiHelper.SendWithManyPagesRequest<ProjectContainer>(httpAuthenticator, "Projects/GetGroupedProjects",
 				HttpMethod.Post,
 				additionalContent) ?? new List<ProjectContainer>();
@@ -30,6 +34,18 @@ namespace PravoAdder.Api
 		{
 			return ApiHelper.SendDatabaseEntityItem<Project>(content, "Projects/CreateProject", HttpMethod.Post,
 				httpAuthenticator);
+		}
+
+		public void DeleteProject(HttpAuthenticator httpAuthenticator, string projectId)
+		{
+			var parameters = new Dictionary<string, string> { ["Id"] = projectId };
+			ApiHelper.SendItemWithParameters(httpAuthenticator, "Projects/DeleteProject", HttpMethod.Delete, parameters);
+		}
+
+		public void ArchiveProject(HttpAuthenticator httpAuthenticator, string projectId)
+		{
+			var parameters = new Dictionary<string, string> { ["Id"] = projectId };
+			ApiHelper.SendItemWithParameters(httpAuthenticator, "projects/Archive", HttpMethod.Put, parameters);
 		}
 	}
 }
