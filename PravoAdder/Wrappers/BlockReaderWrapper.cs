@@ -11,34 +11,29 @@ namespace PravoAdder.Wrappers
     public class BlockReaderWrapper
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        private readonly BlockInfoReader _blockInfoReader;
+        private readonly BlockReader _blockInfoReader;
 
         public BlockReaderWrapper(Settings settings, HttpAuthenticator autentificator)
         {
             TableReader tableReader;
-            switch (settings.BlockLoadingMode)
+            switch (settings.BlockReadingMode)
             {
-                case "Color":
-                    tableReader = new ColorExcelReader();
+                case ReaderMode.Excel:
+                    tableReader = new ExcelReader();
                     Table = tableReader.Read(settings);
-                    _blockInfoReader = new ColorBlockInfoReader(Table, settings, autentificator);
                     break;
-                case "Simple":
-                    tableReader = new SimpleExcelReader();
-                    Table = tableReader.Read(settings);
-                    _blockInfoReader = new SimpleBlockInfoReader(Table, settings);
-                    break;
-				case "Xml":
+				case ReaderMode.XmlMap:
 					tableReader = new XmlWithMappingReader();
 					Table = tableReader.Read(settings);
-					_blockInfoReader = new ColorBlockInfoReader(Table, settings, autentificator);
+					_blockInfoReader = new BlockReader(Table, settings, autentificator);
 					break;
                 default:
-                    var message = $"Типа блоков {settings.BlockLoadingMode} не существует.";
+                    var message = $"Типа блоков {settings.BlockReadingMode} не существует.";
                     Logger.Error(message);
                     throw new ArgumentException(message);
             }
-        }
+			_blockInfoReader = new BlockReader(Table, settings, autentificator);
+		}
 
         public Table Table { get; }
 

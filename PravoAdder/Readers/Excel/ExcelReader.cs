@@ -5,7 +5,7 @@ using PravoAdder.Domain;
 
 namespace PravoAdder.Readers
 {
-    public class ColorExcelReader : TableReader
+    public class ExcelReader : TableReader
     {
         public override Table Read(Settings settings)
         {

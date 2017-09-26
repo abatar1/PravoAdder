@@ -20,14 +20,14 @@ namespace PravoAdder.Domain
 	        parser.Setup<int>('r')
 		        .Callback(repeatFieldnumber =>
 		        {
-			        if (repeatFieldnumber != -1) RepeatField = true;
+			        if (repeatFieldnumber != -1) IsRepeatField = true;
 			        RepeatFieldNumber = repeatFieldnumber;
 		        })
 				.SetDefault(-1);
 	        parser.Setup<int>('m')
 		        .Callback(repeatBlockNumber =>
 		        {
-			        if (repeatBlockNumber != 0) RepeatBlock = true;
+			        if (repeatBlockNumber != 0) IsRepeatBlock = true;
 			        RepeatBlockNumber = repeatBlockNumber;
 		        })
 		        .SetDefault(0);
@@ -65,7 +65,7 @@ namespace PravoAdder.Domain
         {
             BlockName = blockName;
             FieldName = fieldName;
-	        RepeatBlock = repeatBlock;
+	        IsRepeatBlock = repeatBlock;
 	        RepeatBlockNumber = repeatBlockNumber;
         }
 
@@ -85,17 +85,18 @@ namespace PravoAdder.Domain
 		    {
 			    var fullName = new StringBuilder();
 			    fullName.Append($"-b {BlockName} -f {FieldName}");
-			    if (RepeatField) fullName.Append($" -r {RepeatFieldNumber}");
-			    if (RepeatBlock) fullName.Append($" -m {RepeatBlockNumber}");
+			    if (IsRepeatField) fullName.Append($" -r {RepeatFieldNumber}");
+			    if (IsRepeatBlock) fullName.Append($" -m {RepeatBlockNumber}");
 
 			    _fullName = fullName.ToString();
 			    return _fullName;
 		    }
 	    }
 
-		public bool RepeatField { get; private set; }
+		public bool IsRepeatField { get; private set; }
 	    public int RepeatFieldNumber { get; private set; } = -1;
-		public bool RepeatBlock { get; private set; }
+
+		public bool IsRepeatBlock { get; private set; }
 	    public int RepeatBlockNumber { get; private set; }
 
         public bool Equals(FieldAddress other)

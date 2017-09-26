@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -82,8 +83,6 @@ namespace PravoAdder.Readers
 				if (!_matching.ContainsKey(xmlTag)) continue;
 
 				var value = xElement.Elements("Value").First().Value;
-				if (DateTime.TryParse(value, out var dateTime)) value = $"{dateTime:yyyy-MM-dd}";
-				
 				foreach (var xmlAddress in _matching[xmlTag].Where(x => x.RepeatBlockNumber <= 1))
 				{				
 					if (row.ContainsKey(xmlAddress.Count))

@@ -10,7 +10,7 @@ namespace PravoAdder.Domain
 			BlockName = blockName;
 			FieldName = fieldName;
 			Count = count;
-			RepeatBlock = repeatBlock;
+			IsRepeatBlock = repeatBlock;
 			RepeatBlockNumber = repeatBlockNumber;
 			if (count > MaxCount) MaxCount = count;
 		}
@@ -19,7 +19,7 @@ namespace PravoAdder.Domain
 		public string FieldName { get; }
 		public int Count { get; }
 
-		public bool RepeatBlock { get; }
+		public bool IsRepeatBlock { get; }
 		public int RepeatBlockNumber { get; }
 		
 		public static int MaxCount = 1;
@@ -31,7 +31,7 @@ namespace PravoAdder.Domain
 
 		public FieldAddress ToFieldAddress()
 		{
-			return new FieldAddress(BlockName, FieldName, RepeatBlock, RepeatBlockNumber);
+			return new FieldAddress(BlockName, FieldName, IsRepeatBlock, RepeatBlockNumber);
 		}
 
 		public XmlAddress ToRepeatBlock(int count, int number)

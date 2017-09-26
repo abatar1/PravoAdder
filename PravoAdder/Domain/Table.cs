@@ -28,7 +28,7 @@ namespace PravoAdder.Domain
 
             return result
                 .Select(index => _info[index])
-                .Any(address => address.RepeatField && address.RepeatFieldNumber > 0);
+                .Any(address => address.IsRepeatField && address.RepeatFieldNumber > 0);
         }
 
         public Dictionary<int, int> GetComplexIndexes(FieldAddress fieldAddress, int blockNumber = 0)
@@ -60,9 +60,9 @@ namespace PravoAdder.Domain
             {
                 var address = _info[index];
 
-	            if (!address.RepeatBlock)
+	            if (!address.IsRepeatBlock)
 	            {
-		            if (!address.RepeatField)
+		            if (!address.IsRepeatField)
 		            {
 			            return new List<int> { index };
 		            }
@@ -72,7 +72,7 @@ namespace PravoAdder.Domain
 				}
 	            else
 	            {
-		            if (!address.RepeatField)
+		            if (!address.IsRepeatField)
 		            {
 			            if (address.RepeatBlockNumber != blockNumber) continue;
 			            return new List<int> { index };

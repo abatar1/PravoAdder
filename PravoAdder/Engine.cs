@@ -36,7 +36,7 @@ namespace PravoAdder
 				{
 					Console.Title = "Pravo.Add";
 
-					return new MigrationProcessor(arguments.ConfigFilename, request =>
+					return new MigrationProcessor(arguments, request =>
 					{
 						var engineMessage = ProcessorImplementations.AddProjectProcessor(request);
 						if (engineMessage == null) return null;
@@ -56,7 +56,7 @@ namespace PravoAdder
 				{
 					Console.Title = "Pravo.Sync";
 
-					return new MigrationProcessor(arguments.ConfigFilename, request =>
+					return new MigrationProcessor(arguments, request =>
 					{						
 						var engineMessage = ProcessorImplementations.AddProjectProcessor(request);
 						if (engineMessage == null) return null;
@@ -73,7 +73,7 @@ namespace PravoAdder
 				{
 					Console.Title = "Pravo.Clean";
 
-					return new ForEachProjectGroupProcessor(arguments.ConfigFilename, request =>
+					return new ForEachProjectGroupProcessor(arguments, request =>
 					{
 						var projects = request.Migrator.GetProjects(request.Item.Id);
 						

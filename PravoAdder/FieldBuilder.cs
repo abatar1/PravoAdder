@@ -17,13 +17,13 @@ namespace PravoAdder
 		private readonly HttpAuthenticator _httpAuthenticator;
 		private readonly object _dictionaryContainsKeyLock = new object();
 
-		private static IList<Participant> _participants;	
+		private static Lazy<IList<Participant>> _participants;	
 		private static IDictionary<string, ConcurrentBag<DictionaryItem>> _dictionaries;
 
 		public FieldBuilder(HttpAuthenticator httpAuthenticator)
 		{
 			_httpAuthenticator = httpAuthenticator;
-			_participants = ApiRouter.Participants.GetParticipants(_httpAuthenticator);
+			_participants = new Lazy<IList<Participant>>(() => ApiRouter.Participants.GetParticipants(_httpAuthenticator));
 			_dictionaries = new ConcurrentDictionary<string, ConcurrentBag<DictionaryItem>>();
 		}
 
@@ -86,17 +86,19 @@ namespace PravoAdder
 
 		private Participant GetParticipantFromData(string fieldData)
 		{
-			var correctFieldData = fieldData.Trim();
+			var participants = _participants.Value;
+			var correctFieldData = fieldData.Trim();		
 			Participant participant;
-			if (_participants.All(p => !p.Name.Equals(correctFieldData)))
+
+			if (participants.All(p => !p.Name.Equals(correctFieldData)))
 			{
 				participant = ApiRouter.Participants.PutParticipant(_httpAuthenticator, fieldData);
 				if (participant == null) return null;
 
-				_participants = ApiRouter.Participants.GetParticipants(_httpAuthenticator);
+				participants = ApiRouter.Participants.GetParticipants(_httpAuthenticator);
 			}
 
-			participant = _participants
+			participant = participants
 				.First(p => p.Name == correctFieldData);
 
 			return Participant.TryParse(participant);

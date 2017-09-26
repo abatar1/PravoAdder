@@ -1,10 +1,11 @@
 ﻿using System;
+using PravoAdder.Domain;
 
 namespace PravoAdder.Processors
 {
 	public interface IProcessor
 	{
-		string ConfigFilename { get; }
+		ApplicationArguments ApplicationArguments { get; }
 		Func<EngineRequest, EngineResponse> Processor { get; }
 		void Run();
 	}

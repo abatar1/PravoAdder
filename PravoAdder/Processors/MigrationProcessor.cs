@@ -1,36 +1,37 @@
 ﻿using System;
 using System.Threading.Tasks;
 using PravoAdder.Wrappers;
+using PravoAdder.Domain;
 
 namespace PravoAdder.Processors
 {
 	public class MigrationProcessor : IProcessor
 	{
-		public string ConfigFilename { get; }
-		public Func<EngineRequest, EngineResponse> Processor { get; }		
+		public Func<EngineRequest, EngineResponse> Processor { get; }
+		public ApplicationArguments ApplicationArguments { get; }
 
 		public MigrationProcessor()
 		{
 			
 		}
 
-		public MigrationProcessor(string configFilename, Func<EngineRequest, EngineResponse> processor)
+		public MigrationProcessor(ApplicationArguments arguments, Func<EngineRequest, EngineResponse> processor)
 		{
-			ConfigFilename = configFilename;
+			ApplicationArguments = arguments;
 			Processor = processor;
 		}
 
 		public void Run()
 		{
 			var settingsController = new SettingsWrapper();
-			var settings = settingsController.LoadSettings(ConfigFilename);
+			var settings = settingsController.LoadSettingsFromConsole(ApplicationArguments);
 
 			var authenticatorController = new AuthentificatorWrapper(settings);
 			using (var authenticator = authenticatorController.Authenticate())
 			{
 				var blockReaderController = new BlockReaderWrapper(settings, authenticator);
 				var excelTable = blockReaderController.Table.TableContent;
-
+				
 				var migrationProcessController = new DatabaseEnviromentWrapper(authenticator, settings);
 				var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = settings.MaxDegreeOfParallelism };
 				Parallel.ForEach(excelTable, parallelOptions, (excelRow, state, index) =>

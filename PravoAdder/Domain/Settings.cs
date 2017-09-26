@@ -5,46 +5,54 @@ using Newtonsoft.Json;
 namespace PravoAdder.Domain
 {
     public class Settings
-    {
-        public string Login { get; set; }
+	{
+		[ProcessType(ProcessType.All)]
+		public string Login { get; set; }
 
-        [JsonIgnore]
+        [JsonIgnore, ProcessType(ProcessType.All)]
         public string Password { get; set; }
 
-        [DisplayName("Base uri")]
+        [DisplayName("Base uri"), ProcessType(ProcessType.All)]
         public string BaseUri { get; set; }
 
-        [DisplayName("Line number from which the data begins")]
+	    [DisplayName("Enter block loading mode"), ProcessType(ProcessType.Migration)]
+	    public ReaderMode BlockReadingMode { get; set; }
+
+		[DisplayName("Line number from which the data begins"), ProcessType(ProcessType.Migration), ReadingType(ReaderMode.Excel)]
         public int DataRowPosition { get; set; }
 
-        [DisplayName("Line number with information")]
+		[DisplayName("Line number with information"), ProcessType(ProcessType.Migration), ReadingType(ReaderMode.Excel)]
         public int InformationRowPosition { get; set; }
 
-        [DisplayName("Path to the Id file with the table")]
+		[DisplayName("Path to the Id file with the table"), ProcessType(ProcessType.Migration), ReadingType(ReaderMode.Excel)]
         public string IdComparerPath { get; set; }
 
-	    [DisplayName("Enter block loading mode")]
-	    public string BlockLoadingMode { get; set; }
-
-		[DisplayName("Path to xml mapping file")]
+		[DisplayName("Path to xml mapping file"), ProcessType(ProcessType.Migration), ReadingType(ReaderMode.XmlMap)]
 		public string XmlMappingPath { get; set; }
 
-        [DisplayName("Overwrite project and project's folders?"), JsonIgnore]
+        [DisplayName("Overwrite project and project's folders?"), JsonIgnore, ProcessType(ProcessType.All)]
         public bool Overwrite { get; set; }
 
-        [DisplayName("Write source filename"), JsonIgnore]
+		[DisplayName("Write source filename"), JsonIgnore, ProcessType(ProcessType.Migration)]
         public string SourceFileName { get; set; }       
 
-        [DisplayName("Enter list allowed column's colors separated by commas (format:FFRRGGBB)")]
+        [DisplayName("Enter list allowed column's colors separated by commas (format:FFRRGGBB)"), ProcessType(ProcessType.Migration), ReadingType(ReaderMode.Excel)]
         public string[] AllowedColors { get; set; }
 
-        [DisplayName("Number of threads"), JsonIgnore]
+        [DisplayName("Number of threads"), JsonIgnore, ProcessType(ProcessType.All)]
         public int MaxDegreeOfParallelism { get; set; }
 
-        [DisplayName("Number of starting row"), JsonIgnore]
+        [DisplayName("Number of starting row"), JsonIgnore, ProcessType(ProcessType.Migration)]
         public int StartRow { get; set; }
 
-        [Ignore(true), JsonIgnore]
+        [Ignore(true), JsonIgnore, ProcessType(ProcessType.All)]
         public Dictionary<string, dynamic> AdditionalSettings { get; set; }
     }
+
+	public enum ReaderMode
+	{
+		All,
+		Excel,
+		XmlMap
+	}
 }

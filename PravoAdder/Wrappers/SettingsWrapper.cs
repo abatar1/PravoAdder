@@ -10,13 +10,23 @@ namespace PravoAdder.Wrappers
 {
     public class SettingsWrapper
     {
-        public Settings LoadSettings(string configFilename, Dictionary<string, dynamic> additionalSettings = null)
+	    private static ReaderMode _blockReadingMode = ReaderMode.All;
+
+        public Settings LoadSettingsFromConsole(ApplicationArguments applicationArguments, Dictionary<string, dynamic> additionalSettings = null)
         {
             Console.WriteLine("Reading config files...");
-            var settingsObject = SettingsHelper.Read(configFilename);
+            var settingsObject = SettingsHelper.Read(applicationArguments.ConfigFilename);
 
             foreach (var property in settingsObject.GetType().GetProperties())
             {
+	            var processTypeAttribute = LoadAttribute<ProcessTypeAttribute>(property);
+	            if (!processTypeAttribute.ProcessTypes.Contains(applicationArguments.ProcessType) &&
+	                !processTypeAttribute.ProcessTypes.Contains(ProcessType.All)) continue;
+
+	            var readingTypeAttribute = LoadAttribute<ReadingTypeAttribute>(property);
+	            if (readingTypeAttribute != null &&
+	                !readingTypeAttribute.ReadingTypes.Contains(_blockReadingMode)) continue;
+
 #if DEBUG
 				switch (property.Name)
 				{
@@ -37,27 +47,33 @@ namespace PravoAdder.Wrappers
 						continue;
 				}
 #endif
-				var ignoreAttibute = (IgnoreAttribute) property
-					.GetCustomAttributes(typeof(IgnoreAttribute))
-                    .FirstOrDefault();
+	            	          
+	            var ignoreAttibute = LoadAttribute<IgnoreAttribute>(property);
                 if (ignoreAttibute != null && ignoreAttibute.Ignore) continue;
               
                 var value = property.GetValue(settingsObject);
                 if (!IsEmptyValue(property.PropertyType, value) && property.PropertyType != typeof(bool)) continue;
 
-	            var nameAttribute = (DisplayNameAttribute)property
-					.GetCustomAttributes(typeof(DisplayNameAttribute))
-		            .FirstOrDefault();
-	            var displayName = nameAttribute != null ? nameAttribute.DisplayName : property.Name;
+	            var nameAttribute = LoadAttribute<DisplayNameAttribute>(property);
+				var displayName = nameAttribute != null ? nameAttribute.DisplayName : property.Name;
 
 				var propertyValue = LoadValue(displayName, property.PropertyType, ',');
                 property.SetValue(settingsObject, propertyValue);
 			}
-			if (additionalSettings != null)
-                settingsObject.AdditionalSettings = new Dictionary<string, dynamic>(additionalSettings);
-
-            settingsObject.Save(configFilename);
+	        if (additionalSettings != null)
+	        {
+				settingsObject.AdditionalSettings = new Dictionary<string, dynamic>(additionalSettings);
+			}
+               
+            settingsObject.Save(applicationArguments.ConfigFilename);
             return settingsObject;
+		}
+
+	    private static T LoadAttribute<T>(MemberInfo property) where T : Attribute
+	    {
+		    return (T) property
+			    .GetCustomAttributes(typeof(T))
+			    .FirstOrDefault();
 		}
 
 		private static bool IsEmptyValue(Type type, object value)
@@ -71,7 +87,7 @@ namespace PravoAdder.Wrappers
         private static dynamic LoadValue(string message, Type type, char separator)
         {
 	        if (type == null) return null;
-
+		        
             while (true)
             {
                 var additionalMessage = type == typeof(bool) ? "(y/n)" : "";
@@ -82,11 +98,21 @@ namespace PravoAdder.Wrappers
 
                 if (!string.IsNullOrEmpty(data))
                 {
-                    if (type.IsArray)
-                        return data
-                            .Split(separator)
-                            .Select(d => Convert.ChangeType(d, type.GetElementType())?.ToString())
-                            .ToArray();
+	                if (type.IsArray)
+	                {
+						return data
+							.Split(separator)
+							.Select(d => Convert.ChangeType(d, type.GetElementType())?.ToString())
+							.ToArray();
+					}
+	                if (type.IsEnum)
+	                {
+		                if (Enum.TryParse(data, out ReaderMode result))
+		                {
+			                if (type == typeof(ReaderMode)) _blockReadingMode = result;
+							return result;
+		                }
+	                }
                     return Convert.ChangeType(data, type);
                 }
                 Console.WriteLine($"Wrong {message}!");

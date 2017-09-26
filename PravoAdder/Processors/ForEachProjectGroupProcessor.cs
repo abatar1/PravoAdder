@@ -1,24 +1,25 @@
 ﻿using System;
 using System.Threading.Tasks;
+using PravoAdder.Domain;
 using PravoAdder.Wrappers;
 
 namespace PravoAdder.Processors
 {
 	public class ForEachProjectGroupProcessor : IProcessor
 	{
-		public ForEachProjectGroupProcessor(string configFilename, Func<EngineRequest, EngineResponse> processor)
+		public ForEachProjectGroupProcessor(ApplicationArguments applicationArguments, Func<EngineRequest, EngineResponse> processor)
 		{
 			Processor = processor;
-			ConfigFilename = configFilename;
+			ApplicationArguments = applicationArguments;
 		}
 
-		public string ConfigFilename { get; }
+		public ApplicationArguments ApplicationArguments { get; }
 		public Func<EngineRequest, EngineResponse> Processor { get; }
 
 		public void Run()
 		{
 			var settingsController = new SettingsWrapper();
-			var settings = settingsController.LoadSettings(ConfigFilename);
+			var settings = settingsController.LoadSettingsFromConsole(ApplicationArguments);
 
 			var authenticatorController = new AuthentificatorWrapper(settings);
 			using (var authenticator = authenticatorController.Authenticate())

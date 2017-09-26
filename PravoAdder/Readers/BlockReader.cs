@@ -8,15 +8,20 @@ using PravoAdder.Domain;
 
 namespace PravoAdder.Readers
 {
-    public class ColorBlockInfoReader : BlockInfoReader
+    public class BlockReader
     {
 	    private readonly IDictionary<string, List<VisualBlock>> _visualBlocks;
 		private readonly object _visualBlocksLocker = new object();
 	    private readonly HttpAuthenticator _httpAuthenticator;
 
-        public ColorBlockInfoReader(Table excelTable, Settings settings, HttpAuthenticator httpAuthenticator) :
-            base(settings, excelTable)
+	    public readonly Table Table;
+	    public readonly Settings Settings;
+	    public HeaderBlockInfo HeaderBlockInfo;
+
+		public BlockReader(Table excelTable, Settings settings, HttpAuthenticator httpAuthenticator)
         {
+	        Settings = settings;
+	        Table = excelTable;
 			_visualBlocks = new ConcurrentDictionary<string, List<VisualBlock>>();
 	        _httpAuthenticator = httpAuthenticator;
         }
@@ -36,7 +41,7 @@ namespace PravoAdder.Readers
 		    return visualBlocks;
 	    }
 
-	    public override IEnumerable<CaseInfo> Read()
+	    public IEnumerable<CaseInfo> Read()
 	    {
 		    if (HeaderBlockInfo.ProjectTypeName == null) return null;
 
@@ -109,7 +114,7 @@ namespace PravoAdder.Readers
 				.Select(x => new CaseInfo {Blocks = x.Value, Order = x.Key});
 	    }
 
-        public override HeaderBlockInfo ReadHeaderBlock(IDictionary<int, string> excelRow)
+        public HeaderBlockInfo ReadHeaderBlock(IDictionary<int, string> excelRow)
         {
             const string systemName = "Системный";
 	        var headerObject = new HeaderBlockInfo();
@@ -127,5 +132,11 @@ namespace PravoAdder.Readers
 	        HeaderBlockInfo = headerObject;
 	        return headerObject;
         }
-    }
+
+	    public BlockInfo GetByName(IEnumerable<BlockInfo> blocks, string name)
+	    {
+		    return blocks
+			    .FirstOrDefault(block => block.Name == name);
+	    }
+	}
 }

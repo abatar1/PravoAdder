@@ -5,7 +5,6 @@
 	"InformationRowPosition": 1,
 	"XmlMappingPath": "mapping.json",
 	"IdComparerPath": "blocksinfo.json",
-	"BlockLoadingMode": "Xml",
 	"AllowedColors": [
 		"FF92D050",
 		"FFFFFF00"

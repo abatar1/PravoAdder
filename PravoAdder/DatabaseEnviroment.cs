@@ -12,6 +12,7 @@ namespace PravoAdder
 {
     public class DatabaseEnviroment
     {
+	    private const int MaxWordLength = 350;
 		private readonly HttpAuthenticator _httpAuthenticator;
 	    private readonly FieldBuilder _fieldBuilder;
 
@@ -122,7 +123,7 @@ namespace PravoAdder
 		        .GetByName(headerInfo.FolderName);
 	        if (projectFolder == null)
 	        {
-				return new EnviromentMessage(null, "Project folder doesn't exist.", EnviromentMessageType.Error);
+		        ApiRouter.ProjectFolders.InsertProjectFolder(headerInfo.FolderName, _httpAuthenticator);
 			}               
 
             var content = new
@@ -160,9 +161,7 @@ namespace PravoAdder
 		        .GetByName(headerInfo.FolderName);
 	        if (projectFolder == null)
 	        {
-				return new EnviromentMessage(null,
-					$"Project folder {headerInfo.FolderName} doesn't exist. Project name: {headerInfo.ProjectName}",
-					EnviromentMessageType.Error);
+		        ApiRouter.ProjectFolders.InsertProjectFolder(headerInfo.FolderName, _httpAuthenticator);
 			}
 
 	        var projectType = ApiRouter.ProjectTypes.GetProjectTypes(_httpAuthenticator)
@@ -187,14 +186,17 @@ namespace PravoAdder
 		        ? null
 		        : new ProjectGroup(headerInfo.ProjectGroupName, projectGroupId);
 
+			var projectName = headerInfo.ProjectName;
+	        if (projectName.Length > MaxWordLength) projectName = projectName.Remove(MaxWordLength);
+
 			var content = new
             {
                 ProjectFolder = projectFolder,
                 ProjectType = projectType,
                 Responsible = responsible,
                 ProjectGroup = projectGroup,
-                Name = headerInfo.ProjectName
-            };
+                Name = projectName
+			};
 
 	        var project = ApiRouter.Projects.CreateProject(_httpAuthenticator, content);
 			return project == null

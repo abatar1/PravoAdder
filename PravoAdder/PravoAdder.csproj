@@ -70,6 +70,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Domain\ProcessTypeAttribute.cs" />
+    <Compile Include="Domain\ReadingTypeAttribute.cs" />
     <Compile Include="Processors\ForEachProjectGroupProcessor.cs" />
     <Compile Include="Domain\ApplicationArguments.cs" />
     <Compile Include="Domain\Info\CaseInfo.cs" />
@@ -89,13 +91,11 @@
     <Compile Include="Processors\IProcessor.cs" />
     <Compile Include="Processors\ProcessorImplementations.cs" />
     <Compile Include="Processors\MigrationProcessor.cs" />
-    <Compile Include="Readers\BlockInfoReader.cs" />
     <Compile Include="Wrappers\SettingsWrapper.cs" />
     <Compile Include="Wrappers\DatabaseEnviromentWrapper.cs" />
     <Compile Include="Domain\Info\HeaderBlockInfo.cs" />
-    <Compile Include="Readers\Color\ColorBlockInfoReader.cs" />
-    <Compile Include="Readers\Color\ColorExcelReader.cs" />
-    <Compile Include="Readers\Simple\SimpleBlockInfoReader.cs" />
+    <Compile Include="Readers\BlockReader.cs" />
+    <Compile Include="Readers\Excel\ExcelReader.cs" />
     <Compile Include="DatabaseEnviroment.cs" />
     <Compile Include="Domain\Info\BlockInfo.cs" />
     <Compile Include="Domain\Info\BlockFieldInfo.cs" />
@@ -105,7 +105,6 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Helpers\SettingsHelper.cs" />
-    <Compile Include="Readers\Simple\SimpleExcelReader.cs" />
     <Compile Include="Readers\Xml\XmlWithMappingReader.cs" />
   </ItemGroup>
   <ItemGroup>
