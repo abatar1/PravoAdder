@@ -9,6 +9,8 @@ namespace PravoAdder.Processors
 		{
 			var headerBlock = request.BlockReader.ReadHeader(request.ExcelRow);
 			if (headerBlock == null) return null;
+			
+			if (headerBlock.ProjectTypeName != "Судебное дело") return null;		
 
 			var projectGroup = request.Migrator.AddProjectGroup(headerBlock);
 			var project = request.Migrator.AddProject(headerBlock, projectGroup?.Id);

@@ -3,12 +3,15 @@ using System.Linq;
 using Fclp;
 using PravoAdder.Domain;
 using PravoAdder.Processors;
+using NLog;
+using PravoAdder.Api.Domain;
 
 namespace PravoAdder
 {
 	public class Engine
 	{
 		private ApplicationArguments _arguments;
+		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
 		public Engine Initialize(string[] args)
 		{
@@ -28,13 +31,23 @@ namespace PravoAdder
 			return this;
 		}
 
+		public Engine Run()
+		{
+			var processor = CreateProcessor(_arguments);
+			processor.Run();
+			Logger.Info($"{DateTime.Now} | {_arguments.ProcessType} successfully processed. Press any key to continue.");
+			Console.ReadKey();
+
+			return this;
+		}
+
 		private static IProcessor CreateProcessor(ApplicationArguments arguments)
 		{
 			switch (arguments.ProcessType)
 			{
 				case ProcessType.Migration:
 				{
-					Console.Title = "Pravo.Add";
+					Console.Title = "Pravo.Migration";
 
 					return new MigrationProcessor(arguments, request =>
 					{
@@ -69,26 +82,28 @@ namespace PravoAdder
 						return engineMessage;
 					});
 				}
-				case ProcessType.Cleaning:
+				case ProcessType.CleanAll:
 				{
 					Console.Title = "Pravo.Clean";
 
 					return new ForEachProjectGroupProcessor(arguments, request =>
 					{
-						var projects = request.Migrator.GetProjects(request.Item.Id);
+						var projects = ((GroupedProjects) request.Migrator.GetGroupedProjects(request.Item.Id)).Projects;
 						
-						foreach (var project in projects.Select((project, count) => new {Content = project, Count = count}))
+						foreach (var p in projects.Select((project, count) => new {Project = project, Count = count}))
 						{
-							request.Migrator.DeleteProject(project.Content.Id);
-							request.Migrator.ProcessCount(project.Count, 0, project.Content, 70);
+							request.Migrator.DeleteProject(p.Project.Id);
+							request.Migrator.ProcessCount(p.Count, 0, p.Project, 70);
 						}
 						request.Migrator.DeleteProjectGroup(request.Item.Id);
 
 						var folders = request.Migrator.GetProjectFolders();
-						foreach (var folder in folders.Select((folder, count) => new { Content = folder, Count = count }))
+						foreach (var f in folders.Select((folder, count) => new { Folder = folder, Count = count }))
 						{
-							request.Migrator.DeleteFolder(folder.Content.Id);
-							request.Migrator.ProcessCount(folder.Count, 0, folder.Content, 70);
+							if ((GroupedProjects) request.Migrator.GetGroupedProjects(null, f.Folder.Name) != null)
+								continue;
+							request.Migrator.DeleteFolder(f.Folder.Id);
+							request.Migrator.ProcessCount(f.Count, 0, f.Folder, 70);
 						}
 
 						return new EngineResponse();
@@ -97,13 +112,6 @@ namespace PravoAdder
 				default:
 					return null;
 			}
-		}
-
-		public Engine Run()
-		{
-			var processor = CreateProcessor(_arguments);
-			processor.Run();
-			return this;
 		}
 	}
 }

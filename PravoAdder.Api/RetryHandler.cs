@@ -23,20 +23,20 @@ namespace PravoAdder.Api
 	        for (var i = 0; i < _maxRetries; i++)
 	        {
 				try
-		        {
+				{
 			        var response = await base.SendAsync(request, CancellationToken.None).ConfigureAwait(false);
 			        if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Forbidden)
 			        {
 				        return response;
 			        }
 		        }
-		        catch (Exception)
+		        catch (Exception e)
 		        {
-			        return null;
+			        throw new Exception($"Failed to send response after {_maxRetries} retries.", e);
 		        }
 		        Thread.Sleep(TimeSpan.FromSeconds(10));
 			}
-	        return null;
-        }
+			throw new Exception();
+		}
     }
 }

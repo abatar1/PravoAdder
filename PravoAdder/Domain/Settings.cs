@@ -18,14 +18,14 @@ namespace PravoAdder.Domain
 	    [DisplayName("Enter block loading mode"), ProcessType(ProcessType.Migration)]
 	    public ReaderMode BlockReadingMode { get; set; }
 
+		[DisplayName("Enter filename with ignore indexes"), ProcessType(ProcessType.Migration)]
+		public string IgnoreFilePath { get; set; }
+
 		[DisplayName("Line number from which the data begins"), ProcessType(ProcessType.Migration), ReadingType(ReaderMode.Excel)]
         public int DataRowPosition { get; set; }
 
 		[DisplayName("Line number with information"), ProcessType(ProcessType.Migration), ReadingType(ReaderMode.Excel)]
         public int InformationRowPosition { get; set; }
-
-		[DisplayName("Path to the Id file with the table"), ProcessType(ProcessType.Migration), ReadingType(ReaderMode.Excel)]
-        public string IdComparerPath { get; set; }
 
 		[DisplayName("Path to xml mapping file"), ProcessType(ProcessType.Migration), ReadingType(ReaderMode.XmlMap)]
 		public string XmlMappingPath { get; set; }
@@ -44,6 +44,9 @@ namespace PravoAdder.Domain
 
         [DisplayName("Number of starting row"), JsonIgnore, ProcessType(ProcessType.Migration)]
         public int StartRow { get; set; }
+
+		[DisplayName("Number of maximum rows"), JsonIgnore, ProcessType(ProcessType.Migration)]
+		public int MaximumRows { get; set; }
 
         [Ignore(true), JsonIgnore, ProcessType(ProcessType.All)]
         public Dictionary<string, dynamic> AdditionalSettings { get; set; }

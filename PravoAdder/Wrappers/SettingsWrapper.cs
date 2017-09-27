@@ -34,16 +34,19 @@ namespace PravoAdder.Wrappers
 						property.SetValue(settingsObject, "123123");
 						continue;
 					case "Overwrite":
-						property.SetValue(settingsObject, true);
+						property.SetValue(settingsObject, false);
 						continue;
 					case "SourceFileName":
-						property.SetValue(settingsObject, "prod.xml");
+						property.SetValue(settingsObject, "prod");
 						continue;
 					case "MaxDegreeOfParallelism":
 						property.SetValue(settingsObject, 1);
 						continue;
 					case "StartRow":
 						property.SetValue(settingsObject, 1);
+						continue;
+					case "MaximumRows":
+						property.SetValue(settingsObject, int.MaxValue);
 						continue;
 				}
 #endif
@@ -113,6 +116,7 @@ namespace PravoAdder.Wrappers
 							return result;
 		                }
 	                }
+	                if (data == "max") return int.MaxValue;
                     return Convert.ChangeType(data, type);
                 }
                 Console.WriteLine($"Wrong {message}!");

@@ -15,10 +15,17 @@ namespace PravoAdder.Api.Helpers
 	{
 		public static dynamic GetMessageFromRequest(HttpRequestMessage request, HttpAuthenticator httpAuthenticator)
 		{
-			var response = httpAuthenticator.Client.SendAsync(request).Result;
-			response.EnsureSuccessStatusCode();
+			try
+			{
+				var response = httpAuthenticator.Client.SendAsync(request).Result;
+				response.EnsureSuccessStatusCode();
 
-			return !response.IsSuccessStatusCode ? null : GetMessageFromResponce(response);
+				return !response.IsSuccessStatusCode ? null : GetMessageFromResponce(response);
+			}
+			catch (Exception)
+			{
+				return null;
+			}		
 		}
 
 		public static dynamic GetMessageFromResponce(HttpResponseMessage response)
@@ -91,7 +98,7 @@ namespace PravoAdder.Api.Helpers
 
 			} while (true);
 
-			return resultContainer.Count == 0 ? null : resultContainer;
+			return resultContainer.Count == 0 ? new List<T>() : resultContainer;
 		}
 
 		public static T SendDatabaseEntityItem<T>(dynamic content, string path, HttpMethod httpMethod, HttpAuthenticator httpAuthenticator) 
@@ -109,11 +116,19 @@ namespace PravoAdder.Api.Helpers
 
 		public static async Task<bool> TrySendAsync(HttpAuthenticator httpAuthenticator, dynamic content, string path, HttpMethod httpMethod)
 		{
-			var request = CreateRequest((object) content, $"api/{path}", httpMethod, httpAuthenticator.UserCookie);
+			try
+			{
+				var request = CreateRequest((object)content, $"api/{path}", httpMethod, httpAuthenticator.UserCookie);
 
-			var response = await httpAuthenticator.Client.SendAsync(request);
+				var response = await httpAuthenticator.Client.SendAsync(request);
 
-			return response != null && response.IsSuccessStatusCode;
+				return response != null && response.IsSuccessStatusCode;
+
+			}
+			catch (Exception)
+			{
+				return false;
+			}		
 		}
 
 		public static dynamic SendItemWithParameters(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, IDictionary<string, string> parameters)

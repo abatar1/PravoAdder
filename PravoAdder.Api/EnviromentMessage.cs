@@ -7,7 +7,7 @@ namespace PravoAdder.Api
 {
     public class EnviromentMessage
     {
-        public EnviromentMessage(dynamic content, string message, EnviromentMessageType type)
+        public EnviromentMessage(object content, string message, EnviromentMessageType type)
         {
 	        if (content is IList)
 	        {

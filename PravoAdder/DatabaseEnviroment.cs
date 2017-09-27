@@ -92,7 +92,7 @@ namespace PravoAdder
 
 	    protected EnviromentMessage GetProjectItems(string projectGroupId, string folderName = null)
 	    {
-		    var response = ApiRouter.Projects.GetProjects(_httpAuthenticator, folderName, projectGroupId);
+		    var response = ApiRouter.Projects.GetGroupedProjects(_httpAuthenticator, folderName, projectGroupId);
 		    return response == null 
 				? new EnviromentMessage(null, $"No projects found at group {projectGroupId}", EnviromentMessageType.Error) 
 				: new EnviromentMessage(response, "Succefully got projects.", EnviromentMessageType.Success);
@@ -268,7 +268,7 @@ namespace PravoAdder
 	        }
 	        else
 	        {
-		        message = $"Failed to add information block {blockInfo.Name}. {messageBuilder}";
+		        message = $"{DateTime.Now} | Failed to add information block {blockInfo.Name}. {messageBuilder.ToString().Trim()} | Id : {projectId}";
 		        resultMessageType = EnviromentMessageType.Error;
 			}
 	        return new EnviromentMessage(null, message, resultMessageType);

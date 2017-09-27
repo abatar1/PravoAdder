@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using OfficeOpenXml;
 using PravoAdder.Domain;
@@ -7,7 +8,13 @@ namespace PravoAdder.Readers
 {
     public class ExcelReader : TableReader
     {
-        public override Table Read(Settings settings)
+	    protected override FileInfo GetFileInfo(string name, params string[] stub)
+	    {
+		    var extentions = new[] {".xlsx", ".xlsb", ".xlsm"};
+		    return base.GetFileInfo(name, extentions);
+	    }
+
+	    public override Table Read(Settings settings)
         {
             var info = GetFileInfo(settings.SourceFileName);
 

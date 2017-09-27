@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using PravoAdder.Domain;
 
 namespace PravoAdder.Readers
@@ -8,7 +9,7 @@ namespace PravoAdder.Readers
     {
         public abstract Table Read(Settings settings);
 
-        protected static string FormatCell(object cell)
+        protected virtual string FormatCell(object cell)
         {
             var cellString = cell?.ToString();
             if (!(cell is DateTime)) return cellString;
@@ -16,10 +17,11 @@ namespace PravoAdder.Readers
             return $"{(DateTime) cell:yyyy-MM-dd}";
         }
 
-	    protected static FileInfo GetFileInfo(string name)
+	    protected virtual FileInfo GetFileInfo(string name, params string[] extentions)
 	    {
-		    var info = new FileInfo(name);
-		    return !info.Exists ? null : info;
+		    return extentions
+				.Select(extention => new FileInfo(name + extention))
+				.FirstOrDefault(info => info.Exists);
 	    }
     }
 }

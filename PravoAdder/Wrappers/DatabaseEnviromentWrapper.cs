@@ -51,11 +51,11 @@ namespace PravoAdder.Wrappers
 		    return sender.MultipleContent;
 		}
 
-	    public IList<DatabaseEntityItem> GetProjects(string projectGroupId)
+	    public DatabaseEntityItem GetGroupedProjects(string projectGroupId, string folderName = null)
 	    {
-		    var sender = GetProjectItems(projectGroupId);
+		    var sender = GetProjectItems(projectGroupId, folderName);
 		    if (sender.MessageType == EnviromentMessageType.Error) Logger.Error($"{sender.Message}");
-		    return sender.MultipleContent;
+		    return sender.SingleContent;
 		}
 
 	    public DatabaseEntityItem AddProject(HeaderBlockInfo headerBlock, string projectGroupId)

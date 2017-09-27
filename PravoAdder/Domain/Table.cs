@@ -31,9 +31,14 @@ namespace PravoAdder.Domain
                 .Any(address => address.IsRepeatField && address.RepeatFieldNumber > 0);
         }
 
+	    public bool IsReferenceField(FieldAddress fieldAddress)
+	    {
+			var isReference = _infoRowContentSti.Keys.FirstOrDefault(f => f.Equals(fieldAddress))?.IsReference;
+		    return isReference.HasValue && isReference.Value;
+	    }
+
         public Dictionary<int, int> GetComplexIndexes(FieldAddress fieldAddress, int blockNumber = 0)
         {
-
 			return _info
                 .Where(x => x.Value.Equals(fieldAddress))
 				.Where(i => i.Value.RepeatBlockNumber == blockNumber)

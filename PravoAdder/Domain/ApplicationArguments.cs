@@ -13,7 +13,8 @@ namespace PravoAdder.Domain
 	{
 		Migration,
 		Syncronization,
-		Cleaning,
+		CleanAll,
+		CleanEmptyFolders,
 		Test,
 		All
 	}

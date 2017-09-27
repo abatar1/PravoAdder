@@ -68,6 +68,11 @@ namespace PravoAdder.Readers
 						    var fieldAddress = new FieldAddress(block.Name, field.ProjectField.Name);
 						    var fieldCount = line.Fields.Count;
 
+						    if (Table.IsReferenceField(fieldAddress))
+						    {
+							    var a = 0;
+						    }
+
 						    if (line.LineType.SysName == "Repeated" && fieldCount > 1)
 						    {
 							    var complexIndexes = Table.GetComplexIndexes(fieldAddress, blockNumber);

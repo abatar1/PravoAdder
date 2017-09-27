@@ -83,6 +83,7 @@
     <Compile Include="Domain\ProjectFieldFormat.cs" />
     <Compile Include="Domain\ProjectFolder.cs" />
     <Compile Include="Domain\ProjectGroup.cs" />
+    <Compile Include="Domain\GroupedProjects.cs" />
     <Compile Include="Domain\ProjectType.cs" />
     <Compile Include="Domain\Responsible.cs" />
     <Compile Include="Domain\VisualBlock.cs" />

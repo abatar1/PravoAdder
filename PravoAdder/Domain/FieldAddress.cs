@@ -31,34 +31,42 @@ namespace PravoAdder.Domain
 			        RepeatBlockNumber = repeatBlockNumber;
 		        })
 		        .SetDefault(0);
-	        var result = parser.Parse(GetCommandLineFromLine(address));
+	        parser.Setup<string>('s')
+		        .Callback(referenceAddress =>
+		        {
+			        if (!string.IsNullOrEmpty(referenceAddress)) IsReference = true;
+			        ReferenceAddress = referenceAddress;
+		        })
+		        .SetDefault(string.Empty);
+
+	        var result = parser.Parse(GetCommandsFromString(address));
 			if (result.HasErrors) throw new ArgumentException($"Error while parsing table header at {address}");
         }
 
-	    private static string[] GetCommandLineFromLine(string line)
+	    private static string[] GetCommandsFromString(string line)
 	    {
-		    var preResult = line.Split(' ');
-		    var result = new List<string>();
+		    var words = line.Split(' ');
+		    var commands = new List<string>();
 
-			for (var i = 0; i < preResult.Length; i++)
+			for (var i = 0; i < words.Length; i++)
 		    {
-			    result.Add(preResult[i]);
-				if (preResult[i].StartsWith("-")) continue;
+			    commands.Add(words[i]);
+				if (words[i].StartsWith("-")) continue;
 
 				var count = 1;
 				while (true)
-			    {				    		   
-				    if (i + count >= preResult.Length || preResult[i + count].StartsWith("-"))
+				{
+					if (i + count >= words.Length || words[i + count].StartsWith("-"))
 				    {
 					    i += count - 1;
 					    break;
 				    }
-				    result[result.Count - 1] += $" {preResult[i + count]}";
+				    commands[commands.Count - 1] += $" {words[i + count]}";
 					count += 1;
 				}				
 			}
 
-		    return result.ToArray();
+		    return commands.ToArray();
 	    }
 
         public FieldAddress(string blockName, string fieldName, bool repeatBlock = false, int repeatBlockNumber = 0)
@@ -98,6 +106,9 @@ namespace PravoAdder.Domain
 
 		public bool IsRepeatBlock { get; private set; }
 	    public int RepeatBlockNumber { get; private set; }
+
+		public bool IsReference { get; private set; }
+		public string ReferenceAddress { get; private set; }
 
         public bool Equals(FieldAddress other)
         {

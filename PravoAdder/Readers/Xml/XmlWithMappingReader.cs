@@ -17,21 +17,35 @@ namespace PravoAdder.Readers
 
 		public override Table Read(Settings settings)
 		{
-			var sourceInfo = GetFileInfo(settings.SourceFileName);			
-			var mappingInfo = GetFileInfo(settings.XmlMappingPath);
+			var sourceInfo = GetFileInfo(settings.SourceFileName, ".xml");			
+			var mappingInfo = GetFileInfo(settings.XmlMappingPath, ".json");
 			if (sourceInfo == null || mappingInfo == null) throw new FileNotFoundException();
 
 			var xdoc = XDocument.Load(sourceInfo.Name);
 			var mapping = (JArray) JObject.Parse(File.ReadAllText(mappingInfo.Name)).GetValue("Blocks");
 			_matching = GetMatching(mapping);			
+		
+			var processedInfo = GetFileInfo(settings.IgnoreFilePath, ".csv");
+			var processed = new int[0];
+			if (processedInfo != null)
+			{
+				processed = File
+					.ReadAllLines(processedInfo.Name)
+					.Select(int.Parse)
+					.ToArray();
+			}
 
 			var table = new List<IDictionary<int, string>>();
-			foreach (var project in xdoc.Elements("Cases").Elements())
-			{			
-				var row = new Dictionary<int, string>();
 
+			foreach (var p in xdoc.Elements("Cases").Elements().Select((value, count) => new { Value = value, Count = count + 1}))
+			{
+				if (processedInfo!= null && processed.Contains(p.Count)) continue;
+				
+				var project = p.Value;		
 				var header = ReadHeaderFromX(project);
 				if (header == null) continue;
+
+				var row = new Dictionary<int, string>();
 				row.AddRange(AdaptHeader(header));
 
 				var attributes = project.Elements("Attributes")

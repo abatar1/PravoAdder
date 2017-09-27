@@ -8,6 +8,7 @@ namespace PravoAdder
 		public DatabaseEnviromentWrapper Migrator { get; set; }
 		public BlockReaderWrapper BlockReader { get; set; }
 		public IDictionary<int, string> ExcelRow { get; set; }		
+		public int Index { get; set; }
 	}
 }
 
