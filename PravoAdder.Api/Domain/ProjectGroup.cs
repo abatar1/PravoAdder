@@ -13,5 +13,7 @@
 		public ProjectGroup()
 		{
 		}
+
+		public static ProjectGroup EmptyProjectGroup => new ProjectGroup(null, null);
 	}
 }

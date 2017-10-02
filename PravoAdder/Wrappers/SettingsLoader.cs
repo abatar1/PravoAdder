@@ -8,7 +8,7 @@ using PravoAdder.Helpers;
 
 namespace PravoAdder.Wrappers
 {
-    public class SettingsWrapper
+    public class SettingsLoader
     {
 	    private static ReaderMode _blockReadingMode = ReaderMode.All;
 
@@ -34,7 +34,7 @@ namespace PravoAdder.Wrappers
 						property.SetValue(settingsObject, "123123");
 						continue;
 					case "Overwrite":
-						property.SetValue(settingsObject, false);
+						property.SetValue(settingsObject, true);
 						continue;
 					case "SourceFileName":
 						property.SetValue(settingsObject, "prod");
@@ -60,7 +60,10 @@ namespace PravoAdder.Wrappers
 	            var nameAttribute = LoadAttribute<DisplayNameAttribute>(property);
 				var displayName = nameAttribute != null ? nameAttribute.DisplayName : property.Name;
 
-				var propertyValue = LoadValue(displayName, property.PropertyType, ',');
+	            var requiredAttribute = LoadAttribute<IsRequiredAttribute>(property);
+	            var isRequired = requiredAttribute.IsRequiredValue;
+
+				var propertyValue = LoadValue(displayName, property.PropertyType, ',', isRequired);
                 property.SetValue(settingsObject, propertyValue);
 			}
 	        if (additionalSettings != null)
@@ -87,7 +90,7 @@ namespace PravoAdder.Wrappers
             return !string.IsNullOrEmpty(value.ToString()) && value.ToString() == defaultValue;
         }
 
-        private static dynamic LoadValue(string message, Type type, char separator)
+        private static dynamic LoadValue(string message, Type type, char separator, bool isRequired)
         {
 	        if (type == null) return null;
 		        
@@ -99,7 +102,7 @@ namespace PravoAdder.Wrappers
 
                 if (type == typeof(bool)) return data == "y";
 
-                if (!string.IsNullOrEmpty(data))
+                if (!isRequired || !string.IsNullOrEmpty(data))
                 {
 	                if (type.IsArray)
 	                {
@@ -117,8 +120,10 @@ namespace PravoAdder.Wrappers
 		                }
 	                }
 	                if (data == "max") return int.MaxValue;
+					if (data == null) Console.WriteLine("Skipped non-required value.");
                     return Convert.ChangeType(data, type);
                 }
+
                 Console.WriteLine($"Wrong {message}!");
             }
         }

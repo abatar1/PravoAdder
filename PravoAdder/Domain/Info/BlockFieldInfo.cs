@@ -1,9 +1,11 @@
 ﻿using System;
 using Newtonsoft.Json;
 using PravoAdder.Api.Domain;
+using PravoAdder.Helpers;
 
 namespace PravoAdder.Domain
 {
+	[Serializable]
 	public class BlockFieldInfo
 	{
 		[JsonIgnore]
@@ -24,27 +26,33 @@ namespace PravoAdder.Domain
 		[JsonIgnore]
 		public string SpecialData { get; set; }
 
+		[JsonIgnore]
+		public bool IsReference { get; set; }
+
+		[JsonIgnore]
+		public string Reference { get; set; }
+
 		public BlockFieldInfo CloneWithValue(object value)
 		{
-			return new BlockFieldInfo
-			{
-				ColumnNumber = ColumnNumber,
-				Id = Id,
-				Name = Name,
-				SpecialData = SpecialData,
-				Type = Type,
-				Value = value
-			};
+			var newFieldObject = this.DeepClone();
+			newFieldObject.Value = value;
+			return newFieldObject;
 		}
 
-		public static BlockFieldInfo Create(VisualBlockField field, int index)
-		{
+		public static BlockFieldInfo Create(VisualBlockField field, int index, string reference = null)
+		{			
 			var blockfieldInfo = new BlockFieldInfo
 			{
 				Id = field.Id,
 				Name = field.ProjectField.Name,
 				ColumnNumber = index
 			};
+			if (reference != null)
+			{
+				blockfieldInfo.IsReference = true;
+				blockfieldInfo.Reference = reference;
+			}
+
 			var projectField = field.ProjectField;
 			var fieldType = projectField.ProjectFieldFormat.SysName;
 			switch (fieldType)

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using PravoAdder.Api.Domain;
 using PravoAdder.Domain;
 using PravoAdder.Wrappers;
 
@@ -18,7 +20,7 @@ namespace PravoAdder.Processors
 
 		public void Run()
 		{
-			var settingsController = new SettingsWrapper();
+			var settingsController = new SettingsLoader();
 			var settings = settingsController.LoadSettingsFromConsole(ApplicationArguments);
 
 			var authenticatorController = new AuthentificatorWrapper(settings);
@@ -28,6 +30,11 @@ namespace PravoAdder.Processors
 				var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = settings.MaxDegreeOfParallelism };
 
 				var projectGroups = migrationProcessController.GetProjectGroups();
+				if (projectGroups == null || projectGroups.Count == 0)
+				{
+					projectGroups = new List<DatabaseEntityItem> { ProjectGroup.EmptyProjectGroup };
+				}
+				                    
 				Parallel.ForEach(projectGroups, parallelOptions, (projectGroup, state, index) =>
 				{
 					var request = new EngineRequest

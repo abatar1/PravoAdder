@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PravoAdder.Domain
+namespace PravoAdder.TableEnviroment
 {
 	public class XmlAddress : IEquatable<XmlAddress>
 	{
@@ -29,9 +29,9 @@ namespace PravoAdder.Domain
 			return $"{BlockName} {FieldName} {Count} {RepeatBlockNumber}";
 		}
 
-		public FieldAddress ToFieldAddress()
+		public FieldInfo ToFieldAddress()
 		{
-			return new FieldAddress(BlockName, FieldName, IsRepeatBlock, RepeatBlockNumber);
+			return new FieldInfo(BlockName, FieldName, IsRepeatBlock, RepeatBlockNumber);
 		}
 
 		public XmlAddress ToRepeatBlock(int count, int number)

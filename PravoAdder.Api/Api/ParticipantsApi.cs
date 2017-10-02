@@ -7,16 +7,17 @@ namespace PravoAdder.Api
 {
 	public class ParticipantsApi
 	{
-		public Participant PutParticipant(HttpAuthenticator httpAuthenticator, string organizationName)
+		public Participant PutParticipant(HttpAuthenticator httpAuthenticator, string organizationName, string projectId = null)
 		{
 			var content = new
 			{
+				IncludeInProjectId = projectId,
 				Organization = organizationName,
 				Type = new
 				{
-					Id = "92ffb67f-fac0-e611-8b3a-902b343a9588",
+					Id = "3f2e9588-97c0-e611-80b8-0cc47a7d3f5d",
 					action = "add",
-					Name = "Организация",
+					Name = "Company",
 					NameEn = "company"
 				}
 			};

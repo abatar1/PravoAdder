@@ -4,6 +4,7 @@ using NLog;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Domain;
+using PravoAdder.TableEnviroment;
 
 namespace PravoAdder.Wrappers
 {
@@ -19,7 +20,13 @@ namespace PravoAdder.Wrappers
             _settings = settings;
         }
 
-	    public void DeleteFolder(string folderId)
+	    public void AttachParticipant(string participantName, string projectId)
+	    {
+		    var sender = AttachParticipantItem(participantName, projectId);
+		    if (sender.MessageType == EnviromentMessageType.Error) Logger.Error($"{sender.Message}");
+		}
+
+		public void DeleteFolder(string folderId)
 	    {
 			var sender = DeleteFolderItem(folderId);
 		    if (sender.MessageType == EnviromentMessageType.Error) Logger.Error($"{sender.Message}");
@@ -72,7 +79,7 @@ namespace PravoAdder.Wrappers
 		    return projectSender.SingleContent;
 	    }
 
-		public void AddInformationAsync(BlockInfo blockInfo, IDictionary<int, string> tableRow,
+		public void AddInformationAsync(BlockInfo blockInfo, Row tableRow,
             string projectId, int order)
         {
             var informationSender = AddInformationAsync(projectId, blockInfo, tableRow, order).Result;
@@ -88,7 +95,7 @@ namespace PravoAdder.Wrappers
 		public void ProcessCount(int current, int total, DatabaseEntityItem item, int sliceNum = int.MaxValue)
 		{
 			var itemName = item.Name;
-			if (itemName.Length > sliceNum)
+			if (itemName != null && itemName.Length > sliceNum)
 			{
 				var lastSpacePosition = itemName.LastIndexOf(' ', sliceNum);
 				itemName = $"{itemName.Remove(lastSpacePosition)}...";

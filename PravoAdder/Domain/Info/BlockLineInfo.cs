@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using PravoAdder.Helpers;
 
 namespace PravoAdder.Domain
 {
+	[Serializable]
 	public class BlockLineInfo : ICloneable
 	{
 		[JsonProperty(PropertyName = "BlockLineId")]
@@ -27,12 +29,7 @@ namespace PravoAdder.Domain
 
 		public object Clone()
 		{
-			return new BlockLineInfo
-			{
-				Fields = new List<BlockFieldInfo>(Fields),
-				Id = Id,
-				Order = Order
-			};
+			return this.DeepClone();
 		}
 
 		public BlockLineInfo()

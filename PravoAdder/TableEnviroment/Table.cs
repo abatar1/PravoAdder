@@ -1,45 +1,45 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace PravoAdder.Domain
+namespace PravoAdder.TableEnviroment
 {
     public class Table
     {
-        private readonly IDictionary<int, FieldAddress> _info;
+        private readonly Dictionary<FieldInfo, List<int>> _headerRowContentSti;
 
-        private readonly Dictionary<FieldAddress, List<int>> _infoRowContentSti;
-
-        public Table(IList<IDictionary<int, string>> table, IDictionary<int, string> info)
+        public Table(List<Row> table, Row header)
         {
-            _info = info
-                .ToDictionary(i => i.Key, i => new FieldAddress(i.Value));
-            _infoRowContentSti = _info
+	        Header = header;
+            _headerRowContentSti = Header.Content
                 .GroupBy(i => i.Value)
                 .ToDictionary(g => g.Key, g => g.Select(p => p.Key).ToList());
             TableContent = table;
         }
 
-        public IList<IDictionary<int, string>> TableContent { get; }
+	    public Row Header { get; }
+		public List<Row> TableContent { get; }
+		public string Name { get; set; }
 
-        public bool IsComplexRepeat(FieldAddress fieldAddress)
+        public bool IsComplexRepeat(FieldInfo fieldAddress)
         {
-            _infoRowContentSti.TryGetValue(fieldAddress, out List<int> result);
+            _headerRowContentSti.TryGetValue(fieldAddress, out List<int> result);
             if (result == null) return false;
 
             return result
-                .Select(index => _info[index])
+                .Select(index => Header[index])
                 .Any(address => address.IsRepeatField && address.RepeatFieldNumber > 0);
         }
 
-	    public bool IsReferenceField(FieldAddress fieldAddress)
+	    public FieldInfo GetFullAddressInfo(string blockName, string fieldName)
 	    {
-			var isReference = _infoRowContentSti.Keys.FirstOrDefault(f => f.Equals(fieldAddress))?.IsReference;
-		    return isReference.HasValue && isReference.Value;
+			var fieldAddress = new FieldInfo(blockName, fieldName);
+		    return _headerRowContentSti.Keys
+			    .FirstOrDefault(f => f.Equals(fieldAddress));
 	    }
 
-        public Dictionary<int, int> GetComplexIndexes(FieldAddress fieldAddress, int blockNumber = 0)
+        public Dictionary<int, int> GetComplexIndexes(FieldInfo fieldAddress, int blockNumber = 0)
         {
-			return _info
+			return Header
                 .Where(x => x.Value.Equals(fieldAddress))
 				.Where(i => i.Value.RepeatBlockNumber == blockNumber)
 				.ToDictionary(x => x.Value.RepeatFieldNumber, x => x.Key);
@@ -47,23 +47,27 @@ namespace PravoAdder.Domain
 
 	    public List<int> GetRepeatBlockNumber(string blockName)
 	    {
-		    return _info.Values
-				.GroupBy(x => x.BlockName)
-				.First(x => x.Key == blockName)
-				.Select(x => x.RepeatBlockNumber)
-			    .Distinct()
-				.ToList();
+		    if (Header.Values.Any(x => x.BlockName == blockName))
+		    {
+				return Header.Values
+					.GroupBy(x => x.BlockName)
+					.First(x => x.Key == blockName)
+					.Select(x => x.RepeatBlockNumber)
+					.Distinct()
+					.ToList();
+			}
+			return new List<int>{0};	    
 	    }
 
-        public List<int> GetIndexes(FieldAddress fieldAddress, int blockNumber = 0)
+        public List<int> GetIndexes(FieldInfo fieldAddress, int blockNumber = 0)
         {
-            _infoRowContentSti.TryGetValue(fieldAddress, out List<int> result);
+            _headerRowContentSti.TryGetValue(fieldAddress, out List<int> result);
             if (result == null) return null;
 
 			var resultList = new List<int>();
             foreach (var index in result)
             {
-                var address = _info[index];
+                var address = Header[index];
 
 	            if (!address.IsRepeatBlock)
 	            {
@@ -71,7 +75,7 @@ namespace PravoAdder.Domain
 		            {
 			            return new List<int> { index };
 		            }
-					resultList.AddRange(_info
+					resultList.AddRange(Header
 			            .Where(i => i.Value.RepeatFieldNumber == address.RepeatFieldNumber && i.Value.Equals(fieldAddress))
 			            .Select(i => i.Key));
 				}
@@ -83,7 +87,7 @@ namespace PravoAdder.Domain
 			            return new List<int> { index };
 					}
 
-					resultList.AddRange(_info
+					resultList.AddRange(Header
 						.Where(i => i.Value.RepeatFieldNumber == address.RepeatFieldNumber && i.Value.Equals(fieldAddress))
 						.Where(i => i.Value.RepeatBlockNumber == blockNumber)
 				        .Select(i => i.Key));
@@ -93,16 +97,16 @@ namespace PravoAdder.Domain
             return resultList;
         }
 
-        public int TryGetIndex(FieldAddress fieldAddress)
+        public int TryGetIndex(FieldInfo fieldAddress)
         {
-            _infoRowContentSti.TryGetValue(fieldAddress, out List<int> result);
+            _headerRowContentSti.TryGetValue(fieldAddress, out List<int> result);
             if (result != null && result.Count == 1) return result.First();
             return 0;
         }
 
-        public bool Contains(FieldAddress fieldAddress)
+        public bool Contains(FieldInfo fieldAddress)
         {
-            return _infoRowContentSti.ContainsKey(fieldAddress);
+            return _headerRowContentSti.ContainsKey(fieldAddress);
         }
     }
 }

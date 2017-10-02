@@ -110,7 +110,7 @@ namespace PravoAdder.Api.Helpers
 			var responseMessage = GetMessageFromRequest(request, httpAuthenticator).Result;
 			if (responseMessage == null) return null;
 
-			return (T) Activator.CreateInstance(typeof(T), new object[] { responseMessage.Name.ToString(),
+			return (T) Activator.CreateInstance(typeof(T), new object[] { responseMessage.Name?.ToString() ?? responseMessage.DisplayName.ToString(),
 				responseMessage.Id.ToString() });
 		}
 

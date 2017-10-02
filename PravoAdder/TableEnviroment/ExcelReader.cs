@@ -2,9 +2,8 @@
 using System.IO;
 using System.Linq;
 using OfficeOpenXml;
-using PravoAdder.Domain;
 
-namespace PravoAdder.Readers
+namespace PravoAdder.TableEnviroment
 {
     public class ExcelReader : TableReader
     {
@@ -14,7 +13,7 @@ namespace PravoAdder.Readers
 		    return base.GetFileInfo(name, extentions);
 	    }
 
-	    public override Table Read(Settings settings)
+	    public override Table Read(TableSettings settings)
         {
             var info = GetFileInfo(settings.SourceFileName);
 
@@ -31,28 +30,29 @@ namespace PravoAdder.Readers
                     .Where(c => settings.AllowedColors.Contains(c.Style.Fill.BackgroundColor.Rgb))
                     .Select(c => c.Start.Column)
                     .ToList();
-                var infoRowContent = infoRow
+                var headerRowContent = infoRow
                     .Where(c => colorColumnsPositions.Contains(c.Start.Column))
                     .Select(c => FormatCell(c.Value) ?? string.Empty)
                     .Zip(colorColumnsPositions, (value, key) => new {value, key})
-                    .ToDictionary(key => key.key, value => value.value);
+                    .ToDictionary(key => key.key, value => new FieldInfo(value.value));
 
-                var table = new List<IDictionary<int, string>>();
+                var table = new List<Row>();
                 for (var rowNum = settings.DataRowPosition + settings.StartRow - 1; rowNum <= totalRows; rowNum++)
                 {
-                    var row = new List<string>();
+                    var line = new List<string>();
                     for (var columnNum = 1; columnNum <= totalColumns; columnNum++)
                     {
                         var cell = worksheet.Cells[rowNum, columnNum].Value?.ToString();
-                        row.Add(cell);
+                        line.Add(cell);
                     }
-                    var coloredRow = row
+                    var coloredLine = line
                         .Zip(Enumerable.Range(1, totalColumns), (value, index) => new {value, index})
                         .Where(z => colorColumnsPositions.Contains(z.index))
-                        .ToDictionary(key => key.index, value => value.value);
-                    table.Add(coloredRow);
+                        .ToDictionary(key => key.index, value => new FieldInfo(value.value));
+					var row = new Row(coloredLine);
+                    table.Add(row);
                 }
-                return new Table(table, infoRowContent);
+                return new Table(table, new Row(headerRowContent));
             }
         }
     }

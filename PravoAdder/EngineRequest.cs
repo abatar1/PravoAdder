@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using PravoAdder.TableEnviroment;
 using PravoAdder.Wrappers;
 
 namespace PravoAdder
@@ -6,8 +6,8 @@ namespace PravoAdder
 	public class EngineRequest : EngineResponse
 	{
 		public DatabaseEnviromentWrapper Migrator { get; set; }
-		public BlockReaderWrapper BlockReader { get; set; }
-		public IDictionary<int, string> ExcelRow { get; set; }		
+		public BlockReader BlockReader { get; set; }
+		public Row Row { get; set; }		
 		public int Index { get; set; }
 	}
 }

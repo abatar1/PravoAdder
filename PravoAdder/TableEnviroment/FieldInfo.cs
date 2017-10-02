@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Text;
 using Fclp;
 
-namespace PravoAdder.Domain
+namespace PravoAdder.TableEnviroment
 {
-    public class FieldAddress : IEquatable<FieldAddress>
+    public class FieldInfo : IEquatable<FieldInfo>
     {
-        public FieldAddress(string address)
+        public FieldInfo(string address)
         {
 	        var parser = new FluentCommandLineParser();
 
@@ -35,16 +35,28 @@ namespace PravoAdder.Domain
 		        .Callback(referenceAddress =>
 		        {
 			        if (!string.IsNullOrEmpty(referenceAddress)) IsReference = true;
-			        ReferenceAddress = referenceAddress;
+			        Reference = referenceAddress;
+		        })
+		        .SetDefault(string.Empty);
+	        parser.Setup<string>('k')
+		        .Callback(key =>
+		        {
+			        if (!string.IsNullOrEmpty(key)) IsKey = true;
 		        })
 		        .SetDefault(string.Empty);
 
-	        var result = parser.Parse(GetCommandsFromString(address));
-			if (result.HasErrors) throw new ArgumentException($"Error while parsing table header at {address}");
+			var result = parser.Parse(GetCommandsFromString(address));
+	        if (result.HasErrors)
+	        {
+		        IsValue = true;
+		        Value = address;
+	        }
         }
 
 	    private static string[] GetCommandsFromString(string line)
 	    {
+		    if (line == null) return null;
+
 		    var words = line.Split(' ');
 		    var commands = new List<string>();
 
@@ -69,7 +81,7 @@ namespace PravoAdder.Domain
 		    return commands.ToArray();
 	    }
 
-        public FieldAddress(string blockName, string fieldName, bool repeatBlock = false, int repeatBlockNumber = 0)
+        public FieldInfo(string blockName, string fieldName, bool repeatBlock = false, int repeatBlockNumber = 0)
         {
             BlockName = blockName;
             FieldName = fieldName;
@@ -92,14 +104,21 @@ namespace PravoAdder.Domain
 		    get
 		    {
 			    var fullName = new StringBuilder();
-			    fullName.Append($"-b {BlockName} -f {FieldName}");
-			    if (IsRepeatField) fullName.Append($" -r {RepeatFieldNumber}");
-			    if (IsRepeatBlock) fullName.Append($" -m {RepeatBlockNumber}");
-
+			    fullName.Append(Value);
+			    if (!IsValue)
+			    {
+					fullName.Append($"-b {BlockName} -f {FieldName}");
+				    if (IsRepeatField) fullName.Append($" -r {RepeatFieldNumber}");
+				    if (IsRepeatBlock) fullName.Append($" -m {RepeatBlockNumber}");
+				    if (IsReference) fullName.Append($" -s {Reference}");
+				}			    
 			    _fullName = fullName.ToString();
 			    return _fullName;
 		    }
 	    }
+
+		public bool IsValue { get; }
+		public string Value { get; }
 
 		public bool IsRepeatField { get; private set; }
 	    public int RepeatFieldNumber { get; private set; } = -1;
@@ -108,9 +127,11 @@ namespace PravoAdder.Domain
 	    public int RepeatBlockNumber { get; private set; }
 
 		public bool IsReference { get; private set; }
-		public string ReferenceAddress { get; private set; }
+		public string Reference { get; private set; }
 
-        public bool Equals(FieldAddress other)
+		public bool IsKey { get; private set; }
+
+        public bool Equals(FieldInfo other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -124,7 +145,7 @@ namespace PravoAdder.Domain
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
-            return Equals((FieldAddress) obj);
+            return Equals((FieldInfo) obj);
         }
 
         public override int GetHashCode()

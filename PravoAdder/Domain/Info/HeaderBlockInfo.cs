@@ -8,16 +8,16 @@
 		[FieldName("Название проекта")]
 		public string ProjectGroupName { get; set; }
 
-		[FieldName("Название дела")]
+		[FieldName("Название дела", "Case name")]
 		public string ProjectName { get; set; }
 
-		[FieldName("Ответственный")]
+		[FieldName("Ответственный", "Assignee")]
 		public string ResponsibleName { get; set; }
 
 		[FieldName("Синхронизация")]
 		public string SynchronizationNumber { get; set; }
 
-		[FieldName("Тип дела")]
+		[FieldName("Тип дела", "Practice area")]
 		public string ProjectTypeName { get; set; }
 
 		[FieldName("Описание")]

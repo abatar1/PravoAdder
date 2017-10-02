@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using PravoAdder.Wrappers;
 using PravoAdder.Domain;
+using PravoAdder.TableEnviroment;
 
 namespace PravoAdder.Processors
 {
@@ -23,33 +24,30 @@ namespace PravoAdder.Processors
 
 		public void Run()
 		{
-			var settingsController = new SettingsWrapper();
-			var settings = settingsController.LoadSettingsFromConsole(ApplicationArguments);
+			var settingsLoader = new SettingsLoader();
+			var settings = settingsLoader.LoadSettingsFromConsole(ApplicationArguments);
+
+			TablesContainer.Initialize(new TableSettings(settings));
+			var table = TablesContainer.Table.TableContent;
 
 			var authenticatorController = new AuthentificatorWrapper(settings);
 			using (var authenticator = authenticatorController.Authenticate())
-			{
-				var blockReaderController = new BlockReaderWrapper(settings, authenticator);
-				var excelTable = blockReaderController.Table.TableContent;
-				
-				var migrationProcessController = new DatabaseEnviromentWrapper(authenticator, settings);
+			{				
+				var blockReader = new BlockReader(authenticator);				
+				var databaseWrapper = new DatabaseEnviromentWrapper(authenticator, settings);
 				var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = settings.MaxDegreeOfParallelism };
-				var count = 0;
-				Parallel.ForEach(excelTable, parallelOptions, (excelRow, state, index) =>
+				Parallel.ForEach(table, parallelOptions, (excelRow, state, index) =>
 				{
-					if (count > settings.MaximumRows) state.Break();
-
 					var request = new EngineRequest
 					{								
-						Migrator = migrationProcessController,
-						ExcelRow = excelRow,
-						BlockReader = blockReaderController
+						Migrator = databaseWrapper,
+						Row = excelRow,
+						BlockReader = blockReader
 					};
 					var response = Processor.Invoke(request);
 					if (response == null) return;
 
-					count += 1;
-					migrationProcessController.ProcessCount((int) index + settings.StartRow, excelTable.Count, response.Item, 70);
+					databaseWrapper.ProcessCount((int) index + settings.StartRow, table.Count, response.Item, 70);
 				});
 			}
 		}		

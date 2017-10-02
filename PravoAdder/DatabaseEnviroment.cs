@@ -7,6 +7,7 @@ using PravoAdder.Domain;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
+using PravoAdder.TableEnviroment;
 
 namespace PravoAdder
 {
@@ -20,7 +21,15 @@ namespace PravoAdder
         {
             _httpAuthenticator = httpAuthenticator;
 	        _fieldBuilder = new FieldBuilder(httpAuthenticator);
-        }      
+        }
+
+	    protected EnviromentMessage AttachParticipantItem(string name, string projectId)
+	    {
+		    var response = ApiRouter.Participants.PutParticipant(_httpAuthenticator, name, projectId);
+		    return response == null
+			    ? new EnviromentMessage(null, $"Failed to attach participant {name} to {projectId}", EnviromentMessageType.Error)
+			    : new EnviromentMessage(response, "Succefully attached participant.", EnviromentMessageType.Success);
+		}
 
 	    protected async Task<EnviromentMessage> SynchronizeCase(string projectId, string syncNumber)
 	    {
@@ -146,8 +155,10 @@ namespace PravoAdder
 		        var response = GetProjectItems(projectGroupId, headerInfo.FolderName);
 		        if (response.MessageType != EnviromentMessageType.Error)
 		        {
-			        var projectResponse = response.MultipleContent.GetByName(headerInfo.ProjectName);
-			        if (projectResponse != null)
+			        var projectsResponse = ((GroupedProjects) response.SingleContent).Projects;
+					var projectResponse = projectsResponse.GetByName(headerInfo.ProjectName);
+
+					if (projectResponse != null)
 			        {
 						return new EnviromentMessage(projectResponse, "Project already exists.",
 							EnviromentMessageType.Success);
@@ -159,7 +170,7 @@ namespace PravoAdder
 
 			var projectFolder = ApiRouter.ProjectFolders.GetProjectFolders(_httpAuthenticator)
 		        .GetByName(headerInfo.FolderName);
-	        if (projectFolder == null)
+	        if (projectFolder == null && !string.IsNullOrEmpty(headerInfo.FolderName))
 	        {
 		        ApiRouter.ProjectFolders.InsertProjectFolder(headerInfo.FolderName, _httpAuthenticator);
 			}
@@ -202,11 +213,9 @@ namespace PravoAdder
 			return project == null
 				? new EnviromentMessage(null, $"Failed to add {headerInfo.ProjectName} project", EnviromentMessageType.Error)
 				: new EnviromentMessage(project, $"Project {project.Name} added.", EnviromentMessageType.Success);
-
 		}
 
-        protected async Task<EnviromentMessage> AddInformationAsync(string projectId, BlockInfo blockInfo,
-            IDictionary<int, string> excelRow, int order)
+        protected async Task<EnviromentMessage> AddInformationAsync(string projectId, BlockInfo blockInfo, Row excelRow, int order)
         {
             var contentLines = new List<BlockLineInfo>();
             if (blockInfo.Lines == null || !blockInfo.Lines.Any())
@@ -227,11 +236,11 @@ namespace PravoAdder
                     }
                     var fieldData = excelRow[fieldInfo.ColumnNumber];
 
-                    if (string.IsNullOrEmpty(fieldData)) continue;
+                    if (string.IsNullOrEmpty(fieldData.Value)) continue;
 
                     try
                     {
-                        var value = _fieldBuilder.CreateFieldValueFromData(fieldInfo, fieldData);
+                        var value = _fieldBuilder.CreateFieldValueFromData(fieldInfo, fieldData.Value);
                         var newFieldInfo = fieldInfo.CloneWithValue(value);
                         contentFields.Add(newFieldInfo);
                     }

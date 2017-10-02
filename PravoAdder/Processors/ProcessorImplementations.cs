@@ -5,17 +5,15 @@ namespace PravoAdder.Processors
 {
 	public class ProcessorImplementations
 	{
-		public static Func<EngineRequest, EngineRequest> AddProjectProcessor = request =>
+		public static Func<EngineRequest, EngineResponse> AddProjectProcessor = request =>
 		{
-			var headerBlock = request.BlockReader.ReadHeader(request.ExcelRow);
-			if (headerBlock == null) return null;
-			
-			if (headerBlock.ProjectTypeName != "Судебное дело") return null;		
+			var headerBlock = request.BlockReader.ReadHeaderBlock(request.Row);
+			if (headerBlock == null) return null;		
 
 			var projectGroup = request.Migrator.AddProjectGroup(headerBlock);
 			var project = request.Migrator.AddProject(headerBlock, projectGroup?.Id);
 
-			return string.IsNullOrEmpty(project?.Id) ? null : new EngineRequest
+			return string.IsNullOrEmpty(project?.Id) ? null : new EngineResponse
 			{
 				HeaderBlock = headerBlock,
 				Item = (Project) project

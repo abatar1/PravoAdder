@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -9,13 +7,13 @@ using Newtonsoft.Json.Linq;
 using PravoAdder.Domain;
 using PravoAdder.Helpers;
 
-namespace PravoAdder.Readers
+namespace PravoAdder.TableEnviroment
 {
 	public class XmlWithMappingReader : TableReader
 	{
 		private Dictionary<string, HashSet<XmlAddress>> _matching;
 
-		public override Table Read(Settings settings)
+		public override Table Read(TableSettings settings)
 		{
 			var sourceInfo = GetFileInfo(settings.SourceFileName, ".xml");			
 			var mappingInfo = GetFileInfo(settings.XmlMappingPath, ".json");
@@ -25,7 +23,7 @@ namespace PravoAdder.Readers
 			var mapping = (JArray) JObject.Parse(File.ReadAllText(mappingInfo.Name)).GetValue("Blocks");
 			_matching = GetMatching(mapping);			
 		
-			var processedInfo = GetFileInfo(settings.IgnoreFilePath, ".csv");
+			var processedInfo = GetFileInfo(settings.ProcessedIndexesFilePath, ".csv");
 			var processed = new int[0];
 			if (processedInfo != null)
 			{
@@ -35,7 +33,7 @@ namespace PravoAdder.Readers
 					.ToArray();
 			}
 
-			var table = new List<IDictionary<int, string>>();
+			var table = new List<IDictionary<int, FieldInfo>>();
 
 			foreach (var p in xdoc.Elements("Cases").Elements().Select((value, count) => new { Value = value, Count = count + 1}))
 			{
@@ -45,7 +43,7 @@ namespace PravoAdder.Readers
 				var header = ReadHeaderFromX(project);
 				if (header == null) continue;
 
-				var row = new Dictionary<int, string>();
+				var row = new Dictionary<int, FieldInfo>();
 				row.AddRange(AdaptHeader(header));
 
 				var attributes = project.Elements("Attributes")
@@ -79,16 +77,17 @@ namespace PravoAdder.Readers
 
 			var infos = _matching
 				.SelectMany(match => match.Value)
-				.ToDictionary(value => value.Count, value => value.ToFieldAddress().ToString());
+				.ToDictionary(value => value.Count, value => value.ToFieldAddress());
+			
 
-			return new Table(table, infos);
+			return new Table(table.Select(t => new Row(t)).ToList(), new Row(infos));
 		}
 
-		private Dictionary<int, string> AdaptXElement(IEnumerable<XElement> xElements)
+		private Dictionary<int, FieldInfo> AdaptXElement(IEnumerable<XElement> xElements)
 		{
 			if (xElements == null) return null;
 
-			var row = new Dictionary<int, string>();
+			var row = new Dictionary<int, FieldInfo>();
 			var repeatCount = new Dictionary<string, int>();
 
 			foreach (var xElement in xElements)
@@ -115,13 +114,13 @@ namespace PravoAdder.Readers
 						if (repeatCount[xmlTag] >= blockNumber)
 						{
 							_matching[xmlTag].Add(xmlAddress.ToRepeatBlock(XmlAddress.MaxCount + 1, blockNumber + 1));
-							row.Add(XmlAddress.MaxCount, value);
+							row.Add(XmlAddress.MaxCount, new FieldInfo(value));
 							break;
 						}
-						row.Add(_matching[xmlTag].First(x => x.RepeatBlockNumber == repeatCount[xmlTag] + 1).Count, value);
+						row.Add(_matching[xmlTag].First(x => x.RepeatBlockNumber == repeatCount[xmlTag] + 1).Count, new FieldInfo(value));
 						break;
 					}
-					row.Add(xmlAddress.Count, value);
+					row.Add(xmlAddress.Count, new FieldInfo(value));
 				}
 			}
 			return row;
@@ -156,9 +155,9 @@ namespace PravoAdder.Readers
 			return matching;
 		}
 
-		private Dictionary<int, string> AdaptHeader(HeaderBlockInfo headerInfo)
+		private Dictionary<int, FieldInfo> AdaptHeader(HeaderBlockInfo headerInfo)
 		{
-			var row = new Dictionary<int, string>();
+			var row = new Dictionary<int, FieldInfo>();
 			foreach (var property in headerInfo.GetType().GetProperties())
 			{
 				var value = property.GetValue(headerInfo);
@@ -167,7 +166,7 @@ namespace PravoAdder.Readers
 				var key = $"Sys_{property.Name}";
 				_matching[key].ForEach(address =>
 				{
-					row.Add(address.Count, value.ToString());
+					row.Add(address.Count, new FieldInfo(value.ToString()));
 				});			
 			}
 			return row;

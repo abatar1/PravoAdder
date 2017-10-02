@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Fclp;
+using Fclp.Internals.Extensions;
 using PravoAdder.Domain;
 using PravoAdder.Processors;
 using NLog;
+using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 
 namespace PravoAdder
@@ -33,6 +36,7 @@ namespace PravoAdder
 
 		public Engine Run()
 		{
+			
 			var processor = CreateProcessor(_arguments);
 			processor.Run();
 			Logger.Info($"{DateTime.Now} | {_arguments.ProcessType} successfully processed. Press any key to continue.");
@@ -54,12 +58,13 @@ namespace PravoAdder
 						var engineMessage = ProcessorImplementations.AddProjectProcessor(request);
 						if (engineMessage == null) return null;
 
-						var blocksInfo = request.BlockReader.ReadBlockInfo();
+						var blocksInfo = request.BlockReader.Read();
+						request.Row.Participants.ForEach(p => request.Migrator.AttachParticipant(p, engineMessage.Item.Id));
 						foreach (var repeatBlock in blocksInfo)
 						{
 							foreach (var blockInfo in repeatBlock.Blocks)
 							{
-								request.Migrator.AddInformationAsync(blockInfo, request.ExcelRow, engineMessage.Item.Id, repeatBlock.Order);
+								request.Migrator.AddInformationAsync(blockInfo, request.Row, engineMessage.Item.Id, repeatBlock.Order);
 							}
 						}
 						return engineMessage;
@@ -88,22 +93,27 @@ namespace PravoAdder
 
 					return new ForEachProjectGroupProcessor(arguments, request =>
 					{
-						var projects = ((GroupedProjects) request.Migrator.GetGroupedProjects(request.Item.Id)).Projects;
-						
-						foreach (var p in projects.Select((project, count) => new {Project = project, Count = count}))
+						var projectsResponse = (GroupedProjects) request.Migrator.GetGroupedProjects(request.Item.Id);
+						var projects = new List<Project>();
+						if (projectsResponse != null) projects = projectsResponse.Projects;
+
+						foreach (var pair in projects.Select((project, count) => new {Project = project, Count = count}))
 						{
-							request.Migrator.DeleteProject(p.Project.Id);
-							request.Migrator.ProcessCount(p.Count, 0, p.Project, 70);
+							request.Migrator.DeleteProject(pair.Project.Id);
+							request.Migrator.ProcessCount(pair.Count, 0, pair.Project, 70);
 						}
-						request.Migrator.DeleteProjectGroup(request.Item.Id);
+						if (request.Item.Id != null)
+						{
+							request.Migrator.DeleteProjectGroup(request.Item.Id);
+						}					
 
 						var folders = request.Migrator.GetProjectFolders();
-						foreach (var f in folders.Select((folder, count) => new { Folder = folder, Count = count }))
+						foreach (var pair in folders.Select((f, c) => new { Folder = f, Count = c }))
 						{
-							if ((GroupedProjects) request.Migrator.GetGroupedProjects(null, f.Folder.Name) != null)
+							if ((GroupedProjects) request.Migrator.GetGroupedProjects(null, pair.Folder.Name) != null)
 								continue;
-							request.Migrator.DeleteFolder(f.Folder.Id);
-							request.Migrator.ProcessCount(f.Count, 0, f.Folder, 70);
+							request.Migrator.DeleteFolder(pair.Folder.Id);
+							request.Migrator.ProcessCount(pair.Count, 0, pair.Folder, 70);
 						}
 
 						return new EngineResponse();

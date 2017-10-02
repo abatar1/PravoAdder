@@ -12,6 +12,10 @@
             TypeId = typeId;
         }
 
+		public Participant(string name, string id) : base(name, id)
+		{
+		}
+
 		public Participant(object data) : base(data)
 		{
 			var dynamicData = data as dynamic;
@@ -21,6 +25,7 @@
 
 		public string TypeName { get; private set; }
         public string TypeId { get; private set; }
+		public string DisplayName { get; set; }
 
         public Participant ChangeName(string newName)
         {
