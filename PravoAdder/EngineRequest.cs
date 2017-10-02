@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using PravoAdder.Wrappers;
 
 namespace PravoAdder
@@ -9,6 +10,7 @@ namespace PravoAdder
 		public BlockReaderWrapper BlockReader { get; set; }
 		public IDictionary<int, string> ExcelRow { get; set; }		
 		public int Index { get; set; }
+		public DateTime Date { get; set; }
 	}
 }
 

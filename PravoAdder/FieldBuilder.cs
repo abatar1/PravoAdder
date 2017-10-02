@@ -37,6 +37,8 @@ namespace PravoAdder
 				case "Value":
 					return FormatFieldData(fieldData);
 				case "Text":
+					if (fieldData == "True") return "Да";
+					if (fieldData == "False") return "Нет";
 					return fieldData;
 				case "Formula":
 					var calculationFormula = ApiRouter.CalculationFormulas

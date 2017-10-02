@@ -88,7 +88,7 @@ namespace PravoAdder.Wrappers
 		public void ProcessCount(int current, int total, DatabaseEntityItem item, int sliceNum = int.MaxValue)
 		{
 			var itemName = item.Name;
-			if (itemName.Length > sliceNum)
+			if (itemName != null && itemName.Length > sliceNum)
 			{
 				var lastSpacePosition = itemName.LastIndexOf(' ', sliceNum);
 				itemName = $"{itemName.Remove(lastSpacePosition)}...";

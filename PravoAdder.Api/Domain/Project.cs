@@ -1,4 +1,6 @@
-﻿namespace PravoAdder.Api.Domain
+﻿using System;
+
+namespace PravoAdder.Api.Domain
 {
 	public class Project : DatabaseEntityItem
 	{
@@ -8,10 +10,14 @@
 
 		public Project(object data) : base(data)
 		{
+			var dynamicData = data as dynamic;
+			CreationDate = DateTime.Parse(dynamicData.CreationDate.ToString());
 		}
 
 		public Project()
 		{
 		}
+
+		public DateTime CreationDate { get; }
 	}
 }

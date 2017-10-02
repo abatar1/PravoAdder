@@ -14,6 +14,7 @@ namespace PravoAdder.Domain
 		Migration,
 		Syncronization,
 		CleanAll,
+		CleanByDate,
 		CleanEmptyFolders,
 		Test,
 		All

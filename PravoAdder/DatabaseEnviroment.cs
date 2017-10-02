@@ -146,7 +146,8 @@ namespace PravoAdder
 		        var response = GetProjectItems(projectGroupId, headerInfo.FolderName);
 		        if (response.MessageType != EnviromentMessageType.Error)
 		        {
-			        var projectResponse = response.MultipleContent.GetByName(headerInfo.ProjectName);
+			        var projects = ((GroupedProjects) response.SingleContent).Projects;
+					var projectResponse = projects.GetByName(headerInfo.ProjectName);
 			        if (projectResponse != null)
 			        {
 						return new EnviromentMessage(projectResponse, "Project already exists.",
@@ -207,8 +208,8 @@ namespace PravoAdder
 
         protected async Task<EnviromentMessage> AddInformationAsync(string projectId, BlockInfo blockInfo,
             IDictionary<int, string> excelRow, int order)
-        {
-            var contentLines = new List<BlockLineInfo>();
+        {		
+			var contentLines = new List<BlockLineInfo>();
             if (blockInfo.Lines == null || !blockInfo.Lines.Any())
                 return new EnviromentMessage(null, "Block skipped.", EnviromentMessageType.Warning);
 

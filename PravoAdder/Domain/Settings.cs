@@ -48,6 +48,9 @@ namespace PravoAdder.Domain
 		[DisplayName("Number of maximum rows"), JsonIgnore, ProcessType(ProcessType.Migration)]
 		public int MaximumRows { get; set; }
 
+		[DisplayName("Date time:"), JsonIgnore, ProcessType(ProcessType.CleanByDate)]
+		public string DateTime { get; set; }
+
         [Ignore(true), JsonIgnore, ProcessType(ProcessType.All)]
         public Dictionary<string, dynamic> AdditionalSettings { get; set; }
     }

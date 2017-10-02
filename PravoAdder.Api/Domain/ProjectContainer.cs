@@ -8,7 +8,7 @@ namespace PravoAdder.Api.Domain
 		{
 			foreach (var project in ((dynamic) data).Projects)
 			{
-				Projects.Add(new Project(project.Name?.ToString(), project.Id?.ToString()));
+				Projects.Add(new Project(project));
 			}
 		}
 

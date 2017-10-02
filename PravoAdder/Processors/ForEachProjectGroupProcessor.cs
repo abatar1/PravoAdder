@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using PravoAdder.Api.Domain;
 using PravoAdder.Domain;
 using PravoAdder.Wrappers;
 
@@ -28,12 +30,14 @@ namespace PravoAdder.Processors
 				var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = settings.MaxDegreeOfParallelism };
 
 				var projectGroups = migrationProcessController.GetProjectGroups();
+				projectGroups.Add(ProjectGroup.Empty);
 				Parallel.ForEach(projectGroups, parallelOptions, (projectGroup, state, index) =>
 				{
 					var request = new EngineRequest
 					{
 						Migrator = migrationProcessController,
-						Item = projectGroup
+						Item = projectGroup,
+						Date = DateTime.Parse(settings.DateTime)
 					};
 					var response = Processor.Invoke(request);
 					if (response == null) return;

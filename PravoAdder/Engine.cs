@@ -84,7 +84,7 @@ namespace PravoAdder
 				}
 				case ProcessType.CleanAll:
 				{
-					Console.Title = "Pravo.Clean";
+					Console.Title = "Pravo.CleanAll";
 
 					return new ForEachProjectGroupProcessor(arguments, request =>
 					{
@@ -108,7 +108,26 @@ namespace PravoAdder
 
 						return new EngineResponse();
 					});
-				}				
+				}
+				case ProcessType.CleanByDate:
+				{
+					Console.Title = "Pravo.CleanByDate";
+
+					return new ForEachProjectGroupProcessor(arguments, request =>
+					{
+						var projects = ((GroupedProjects) request.Migrator.GetGroupedProjects(request.Item.Id)).Projects
+							.Where(p => p.CreationDate == request.Date);
+
+						foreach (var p in projects.Select((project, count) => new { Project = project, Count = count }))
+						{
+							request.Migrator.DeleteProject(p.Project.Id);
+							request.Migrator.ProcessCount(p.Count, 0, p.Project, 70);
+						}
+
+						return new EngineResponse();
+					});
+				}
+
 				default:
 					return null;
 			}
