@@ -34,16 +34,16 @@ namespace PravoAdder.Wrappers
 						property.SetValue(settingsObject, "123123");
 						continue;
 					case "Overwrite":
-						property.SetValue(settingsObject, false);
+						property.SetValue(settingsObject, true);
 						continue;
 					case "SourceFileName":
 						property.SetValue(settingsObject, "prod");
 						continue;
 					case "MaxDegreeOfParallelism":
-						property.SetValue(settingsObject, 1);
+						property.SetValue(settingsObject, 4);
 						continue;
 					case "StartRow":
-						property.SetValue(settingsObject, 1);
+						property.SetValue(settingsObject, 1430);
 						continue;
 					case "MaximumRows":
 						property.SetValue(settingsObject, int.MaxValue);

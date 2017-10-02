@@ -70,6 +70,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Domain\Enums.cs" />
     <Compile Include="Domain\ProcessTypeAttribute.cs" />
     <Compile Include="Domain\ReadingTypeAttribute.cs" />
     <Compile Include="Processors\ForEachProjectGroupProcessor.cs" />

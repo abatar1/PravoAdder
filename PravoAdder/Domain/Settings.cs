@@ -55,10 +55,4 @@ namespace PravoAdder.Domain
         public Dictionary<string, dynamic> AdditionalSettings { get; set; }
     }
 
-	public enum ReaderMode
-	{
-		All,
-		Excel,
-		XmlMap
-	}
 }
