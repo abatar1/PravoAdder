@@ -92,12 +92,12 @@
     <Compile Include="Processors\IProcessor.cs" />
     <Compile Include="Processors\ProcessorImplementations.cs" />
     <Compile Include="Processors\MigrationProcessor.cs" />
+    <Compile Include="Wrappers\Counter.cs" />
     <Compile Include="Wrappers\SettingsWrapper.cs" />
-    <Compile Include="Wrappers\DatabaseEnviromentWrapper.cs" />
     <Compile Include="Domain\Info\HeaderBlockInfo.cs" />
     <Compile Include="Readers\BlockReader.cs" />
     <Compile Include="Readers\Excel\ExcelReader.cs" />
-    <Compile Include="DatabaseEnviroment.cs" />
+    <Compile Include="Wrappers\ApiEnviroment.cs" />
     <Compile Include="Domain\Info\BlockInfo.cs" />
     <Compile Include="Domain\Info\BlockFieldInfo.cs" />
     <Compile Include="Domain\Info\BlockLineInfo.cs" />

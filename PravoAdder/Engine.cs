@@ -59,7 +59,7 @@ namespace PravoAdder
 						{
 							foreach (var blockInfo in repeatBlock.Blocks)
 							{
-								request.Migrator.AddInformationAsync(blockInfo, request.ExcelRow, engineMessage.Item.Id, repeatBlock.Order);
+								request.ApiEnviroment.AddInformationAsync(blockInfo, request.ExcelRow, engineMessage.Item.Id, repeatBlock.Order);
 							}
 						}
 						return engineMessage;
@@ -76,7 +76,7 @@ namespace PravoAdder
 
 						if (string.IsNullOrEmpty(engineMessage.HeaderBlock.SynchronizationNumber))
 						{
-							request.Migrator.Synchronize(engineMessage.Item.Id, engineMessage.HeaderBlock.SynchronizationNumber);
+							request.ApiEnviroment.SynchronizeCase(engineMessage.Item.Id, engineMessage.HeaderBlock.SynchronizationNumber);
 						}
 
 						return engineMessage;
@@ -88,22 +88,22 @@ namespace PravoAdder
 
 					return new ForEachProjectGroupProcessor(arguments, request =>
 					{
-						var projects = ((GroupedProjects) request.Migrator.GetGroupedProjects(request.Item.Id)).Projects;
+						var projects = request.ApiEnviroment.GetGroupedProjects(request.Item.Id).Projects;
 						
 						foreach (var p in projects.Select((project, count) => new {Project = project, Count = count}))
 						{
-							request.Migrator.DeleteProject(p.Project.Id);
-							request.Migrator.ProcessCount(p.Count, 0, p.Project, 70);
+							request.ApiEnviroment.DeleteProjectItem(p.Project.Id);
+							request.Counter.ProcessCount(p.Count, 0, p.Project, 70);
 						}
-						request.Migrator.DeleteProjectGroup(request.Item.Id);
+						request.ApiEnviroment.DeleteProjectGroupItem(request.Item.Id);
 
-						var folders = request.Migrator.GetProjectFolders();
+						var folders = request.ApiEnviroment.GetProjectFolderItems();
 						foreach (var f in folders.Select((folder, count) => new { Folder = folder, Count = count }))
 						{
-							if ((GroupedProjects) request.Migrator.GetGroupedProjects(null, f.Folder.Name) != null)
+							if (request.ApiEnviroment.GetGroupedProjects(null, f.Folder.Name) != null)
 								continue;
-							request.Migrator.DeleteFolder(f.Folder.Id);
-							request.Migrator.ProcessCount(f.Count, 0, f.Folder, 70);
+							request.ApiEnviroment.DeleteFolderItem(f.Folder.Id);
+							request.Counter.ProcessCount(f.Count, 0, f.Folder, 70);
 						}
 
 						return new EngineResponse();
@@ -115,13 +115,13 @@ namespace PravoAdder
 
 					return new ForEachProjectGroupProcessor(arguments, request =>
 					{
-						var projects = ((GroupedProjects) request.Migrator.GetGroupedProjects(request.Item.Id)).Projects
+						var projects = request.ApiEnviroment.GetGroupedProjects(request.Item.Id).Projects
 							.Where(p => p.CreationDate == request.Date);
 
 						foreach (var p in projects.Select((project, count) => new { Project = project, Count = count }))
 						{
-							request.Migrator.DeleteProject(p.Project.Id);
-							request.Migrator.ProcessCount(p.Count, 0, p.Project, 70);
+							request.ApiEnviroment.DeleteProjectItem(p.Project.Id);
+							request.Counter.ProcessCount(p.Count, 0, p.Project, 70);
 						}
 
 						return new EngineResponse();

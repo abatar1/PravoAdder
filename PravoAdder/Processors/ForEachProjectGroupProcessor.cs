@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using PravoAdder.Api.Domain;
 using PravoAdder.Domain;
@@ -26,23 +25,21 @@ namespace PravoAdder.Processors
 			var authenticatorController = new AuthentificatorWrapper(settings);
 			using (var authenticator = authenticatorController.Authenticate())
 			{
-				var migrationProcessController = new DatabaseEnviromentWrapper(authenticator, settings);
+				var migrationProcessController = new ApiEnviroment(authenticator);
 				var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = settings.MaxDegreeOfParallelism };
 
-				var projectGroups = migrationProcessController.GetProjectGroups();
+				var projectGroups = migrationProcessController.GetProjectGroupItems();
 				projectGroups.Add(ProjectGroup.Empty);
 				Parallel.ForEach(projectGroups, parallelOptions, (projectGroup, state, index) =>
 				{
 					var request = new EngineRequest
 					{
-						Migrator = migrationProcessController,
+						ApiEnviroment = migrationProcessController,
 						Item = projectGroup,
-						Date = DateTime.Parse(settings.DateTime)
+						Date = DateTime.Parse(settings.DateTime),
+						Settings = settings
 					};
-					var response = Processor.Invoke(request);
-					if (response == null) return;
-
-					migrationProcessController.ProcessCount((int)index + settings.StartRow, 0, projectGroup, 70);
+					Processor.Invoke(request);					
 				});
 			}
 		}
