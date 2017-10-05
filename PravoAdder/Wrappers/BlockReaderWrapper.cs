@@ -11,7 +11,7 @@ namespace PravoAdder.Wrappers
     public class BlockReaderWrapper
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        private readonly BlockReader _blockInfoReader;
+        private readonly BlocksConstructor _blockInfoReader;
 
         public BlockReaderWrapper(Settings settings, HttpAuthenticator autentificator)
         {
@@ -25,14 +25,14 @@ namespace PravoAdder.Wrappers
 				case ReaderMode.XmlMap:
 					tableReader = new XmlWithMappingReader();
 					Table = tableReader.Read(settings);
-					_blockInfoReader = new BlockReader(Table, settings, autentificator);
+					_blockInfoReader = new BlocksConstructor(Table, settings, autentificator);
 					break;
                 default:
                     var message = $"Типа блоков {settings.BlockReadingMode} не существует.";
                     Logger.Error(message);
                     throw new ArgumentException(message);
             }
-			_blockInfoReader = new BlockReader(Table, settings, autentificator);
+			_blockInfoReader = new BlocksConstructor(Table, settings, autentificator);
 		}
 
         public Table Table { get; }

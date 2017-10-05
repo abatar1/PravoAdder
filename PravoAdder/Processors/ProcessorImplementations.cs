@@ -16,7 +16,7 @@ namespace PravoAdder.Processors
 			return string.IsNullOrEmpty(project?.Id) ? null : new EngineRequest
 			{
 				HeaderBlock = headerBlock,
-				Item = (Project) project
+				Item = project
 			};
 		};
 	}

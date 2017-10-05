@@ -8,7 +8,7 @@ namespace PravoAdder.Api
 {
 	public class ProjectsApi
 	{
-		public GroupedProjects GetGroupedProjects(HttpAuthenticator httpAuthenticator, string folderName, string projectGroupid)
+		public List<GroupedProjects> GetGroupedProjects(HttpAuthenticator httpAuthenticator, string folderName, string projectGroupid)
 		{
 			var projectFolder = ApiRouter.ProjectFolders
 				.GetProjectFolders(httpAuthenticator)
@@ -26,8 +26,8 @@ namespace PravoAdder.Api
 			}
 
 			return ApiHelper.SendWithManyPagesRequest<GroupedProjects>(httpAuthenticator, "Projects/GetGroupedProjects",
-					HttpMethod.Post, additionalContent)
-				.FirstOrDefault();
+				HttpMethod.Post, additionalContent)
+				.ToList();
 		}
 
 		public Project CreateProject(HttpAuthenticator httpAuthenticator, dynamic content)

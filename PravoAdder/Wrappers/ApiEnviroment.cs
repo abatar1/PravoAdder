@@ -81,7 +81,7 @@ namespace PravoAdder.Wrappers
 		    return response;
 	    }
 
-	    public GroupedProjects GetGroupedProjects(string projectGroupId, string folderName = null)
+	    public List<GroupedProjects> GetGroupedProjects(string projectGroupId, string folderName = null)
 	    {
 		    var response = ApiRouter.Projects.GetGroupedProjects(_httpAuthenticator, folderName, projectGroupId);
 		    if (response == null) Logger.Error($"No projects found at group {projectGroupId}");
@@ -125,7 +125,7 @@ namespace PravoAdder.Wrappers
 		        var response = GetGroupedProjects(projectGroupId, headerInfo.FolderName);
 		        if (response != null)
 		        {
-					var projects = response.Projects;
+					var projects = response.SelectMany(s => s.Projects).ToList();
 			        var projectResponse = projects.GetByName(headerInfo.ProjectName);
 			        if (projectResponse != null) return projectResponse;
 				}

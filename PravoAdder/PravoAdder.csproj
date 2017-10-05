@@ -71,8 +71,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Domain\Enums.cs" />
-    <Compile Include="Domain\ProcessTypeAttribute.cs" />
-    <Compile Include="Domain\ReadingTypeAttribute.cs" />
+    <Compile Include="Domain\Attribute\ProcessTypeAttribute.cs" />
+    <Compile Include="Domain\Attribute\ReadingTypeAttribute.cs" />
+    <Compile Include="Domain\Row.cs" />
     <Compile Include="Processors\ForEachProjectGroupProcessor.cs" />
     <Compile Include="Domain\ApplicationArguments.cs" />
     <Compile Include="Domain\Info\CaseInfo.cs" />
@@ -81,10 +82,10 @@
     <Compile Include="FieldBuilder.cs" />
     <Compile Include="Wrappers\AuthentificatorWrapper.cs" />
     <Compile Include="Wrappers\BlockReaderWrapper.cs" />
-    <Compile Include="Domain\FieldNameAttribute.cs" />
+    <Compile Include="Domain\Attribute\FieldNameAttribute.cs" />
     <Compile Include="Domain\Table.cs" />
     <Compile Include="Domain\FieldAddress.cs" />
-    <Compile Include="Domain\IgnoreAttribute.cs" />
+    <Compile Include="Domain\Attribute\IgnoreAttribute.cs" />
     <Compile Include="EngineRequest.cs" />
     <Compile Include="EngineResponse.cs" />
     <Compile Include="Helpers\CollectionHelper.cs" />
@@ -95,8 +96,8 @@
     <Compile Include="Wrappers\Counter.cs" />
     <Compile Include="Wrappers\SettingsWrapper.cs" />
     <Compile Include="Domain\Info\HeaderBlockInfo.cs" />
-    <Compile Include="Readers\BlockReader.cs" />
-    <Compile Include="Readers\Excel\ExcelReader.cs" />
+    <Compile Include="Readers\BlocksConstructor.cs" />
+    <Compile Include="Readers\ExcelReader.cs" />
     <Compile Include="Wrappers\ApiEnviroment.cs" />
     <Compile Include="Domain\Info\BlockInfo.cs" />
     <Compile Include="Domain\Info\BlockFieldInfo.cs" />
@@ -106,7 +107,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Helpers\SettingsHelper.cs" />
-    <Compile Include="Readers\Xml\XmlWithMappingReader.cs" />
+    <Compile Include="Readers\XmlWithMappingReader.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

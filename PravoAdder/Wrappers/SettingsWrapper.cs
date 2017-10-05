@@ -40,7 +40,7 @@ namespace PravoAdder.Wrappers
 						property.SetValue(settingsObject, "prod");
 						continue;
 					case "MaxDegreeOfParallelism":
-						property.SetValue(settingsObject, 4);
+						property.SetValue(settingsObject, 1);
 						continue;
 					case "StartRow":
 						property.SetValue(settingsObject, 1430);

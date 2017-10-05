@@ -4,7 +4,6 @@ using Fclp;
 using PravoAdder.Domain;
 using PravoAdder.Processors;
 using NLog;
-using PravoAdder.Api.Domain;
 
 namespace PravoAdder
 {
@@ -88,7 +87,7 @@ namespace PravoAdder
 
 					return new ForEachProjectGroupProcessor(arguments, request =>
 					{
-						var projects = request.ApiEnviroment.GetGroupedProjects(request.Item.Id).Projects;
+						var projects = request.ApiEnviroment.GetGroupedProjects(request.Item.Id).SelectMany(s => s.Projects);
 						
 						foreach (var p in projects.Select((project, count) => new {Project = project, Count = count}))
 						{
@@ -115,9 +114,9 @@ namespace PravoAdder
 
 					return new ForEachProjectGroupProcessor(arguments, request =>
 					{
-						var projects = request.ApiEnviroment.GetGroupedProjects(request.Item.Id).Projects
+						var projects = request.ApiEnviroment.GetGroupedProjects(request.Item.Id)
+							.SelectMany(s => s.Projects)
 							.Where(p => p.CreationDate == request.Date);
-
 						foreach (var p in projects.Select((project, count) => new { Project = project, Count = count }))
 						{
 							request.ApiEnviroment.DeleteProjectItem(p.Project.Id);

@@ -8,7 +8,7 @@ using PravoAdder.Domain;
 
 namespace PravoAdder.Readers
 {
-    public class BlockReader
+    public class BlocksConstructor
     {
 	    private readonly IDictionary<string, List<VisualBlock>> _visualBlocks;
 		private readonly object _visualBlocksLocker = new object();
@@ -18,7 +18,7 @@ namespace PravoAdder.Readers
 	    public readonly Settings Settings;
 	    public HeaderBlockInfo HeaderBlockInfo;
 
-		public BlockReader(Table excelTable, Settings settings, HttpAuthenticator httpAuthenticator)
+		public BlocksConstructor(Table excelTable, Settings settings, HttpAuthenticator httpAuthenticator)
         {
 	        Settings = settings;
 	        Table = excelTable;

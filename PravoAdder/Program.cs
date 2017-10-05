@@ -5,7 +5,7 @@
 		private static void Main(string[] args)
 		{
 			var engine = new Engine();
-			engine.Initialize(new [] { "-t", "Migration" }).Run();			
+			engine.Initialize(new [] { "-t", "CleanByDate" }).Run();			
 		}
 	}
 }
