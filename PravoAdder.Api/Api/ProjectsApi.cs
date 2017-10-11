@@ -25,27 +25,27 @@ namespace PravoAdder.Api
 				additionalContent = new Dictionary<string, string> { ["FolderId"] = projectFolder.Id };
 			}
 
-			return ApiHelper.SendWithManyPagesRequest<GroupedProjects>(httpAuthenticator, "Projects/GetGroupedProjects",
+			return ApiHelper.GetItems<GroupedProjects>(httpAuthenticator, "Projects/GetGroupedProjects",
 				HttpMethod.Post, additionalContent)
 				.ToList();
 		}
 
 		public Project CreateProject(HttpAuthenticator httpAuthenticator, dynamic content)
 		{
-			return ApiHelper.SendDatabaseEntityItem<Project>(content, "Projects/CreateProject", HttpMethod.Post,
+			return ApiHelper.GetItem<Project>(content, "Projects/CreateProject", HttpMethod.Post,
 				httpAuthenticator);
 		}
 
 		public void DeleteProject(HttpAuthenticator httpAuthenticator, string projectId)
 		{
 			var parameters = new Dictionary<string, string> { ["Id"] = projectId };
-			ApiHelper.SendItemWithParameters(httpAuthenticator, "Projects/DeleteProject", HttpMethod.Delete, parameters);
+			ApiHelper.GetItem(httpAuthenticator, "Projects/DeleteProject", HttpMethod.Delete, parameters);
 		}
 
 		public void ArchiveProject(HttpAuthenticator httpAuthenticator, string projectId)
 		{
 			var parameters = new Dictionary<string, string> { ["Id"] = projectId };
-			ApiHelper.SendItemWithParameters(httpAuthenticator, "projects/Archive", HttpMethod.Put, parameters);
+			ApiHelper.GetItem(httpAuthenticator, "projects/Archive", HttpMethod.Put, parameters);
 		}
 	}
 }

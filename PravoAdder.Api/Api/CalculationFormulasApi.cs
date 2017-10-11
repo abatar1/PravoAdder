@@ -9,7 +9,7 @@ namespace PravoAdder.Api
 	{
 		public IList<CalculationFormula> GetCalculationFormulas(HttpAuthenticator httpAuthenticator)
 		{
-			return ApiHelper.SendWithManyPagesRequest<CalculationFormula>(httpAuthenticator, "CalculationFormulasSuggest/GetCalculationFormulas", HttpMethod.Post);
+			return ApiHelper.GetItems<CalculationFormula>(httpAuthenticator, "CalculationFormulasSuggest/GetCalculationFormulas", HttpMethod.Post);
 		}
 	}
 }

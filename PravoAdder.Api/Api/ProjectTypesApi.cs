@@ -10,13 +10,13 @@ namespace PravoAdder.Api
 	{
 		public IList<ProjectType> GetProjectTypes(HttpAuthenticator httpAuthenticator)
 		{
-			return ApiHelper.SendWithManyPagesRequest<ProjectType>(httpAuthenticator, "ProjectTypes/GetProjectTypes", HttpMethod.Post);
+			return ApiHelper.GetItems<ProjectType>(httpAuthenticator, "ProjectTypes/GetProjectTypes", HttpMethod.Post);
 		}
 
 		public List<VisualBlock> GetVisualBlocks(HttpAuthenticator httpAuthenticator, string projectTypeId)
 		{
 			var parameters = new Dictionary<string, string> { ["projectTypeId"] = projectTypeId };
-			var projectType = ApiHelper.SendItemWithParameters(httpAuthenticator, "ProjectTypes/GetProjectType", HttpMethod.Get,
+			var projectType = ApiHelper.GetItem(httpAuthenticator, "ProjectTypes/GetProjectType", HttpMethod.Get,
 				parameters).VisualBlocks;
 			return JsonConvert.DeserializeObject<List<VisualBlock>>(projectType.ToString());
 		}

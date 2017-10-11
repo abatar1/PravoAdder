@@ -54,7 +54,7 @@ namespace PravoAdder.Api
             if (UserCookie == null)
                 return new EnviromentMessage(null, "Cannot create new session", EnviromentMessageType.Error);
 
-            var message = ApiHelper.GetMessageFromResponce(response);
+            var message = ApiHelper.ReadFromResponce(response);
             if (!(bool) message.Succeeded)
                 return new EnviromentMessage(null, "Wrong login or password", EnviromentMessageType.Error);
 

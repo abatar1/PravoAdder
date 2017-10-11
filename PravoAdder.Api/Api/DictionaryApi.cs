@@ -15,13 +15,13 @@ namespace PravoAdder.Api
 				Name = itemName
 			};
 
-			return ApiHelper.SendDatabaseEntityItem<DictionaryItem>(content, "Dictionary/SaveDictionaryItem", HttpMethod.Put,
+			return ApiHelper.GetItem<DictionaryItem>(content, "Dictionary/SaveDictionaryItem", HttpMethod.Put,
 				httpAuthenticator);
 		}
 
 		public List<DictionaryItem> GetDictionaryItems(HttpAuthenticator httpAuthenticator, string dictionaryName)
 		{
-			return ApiHelper.SendWithManyPagesRequest<DictionaryItem>(httpAuthenticator, $"dictionary/{dictionaryName}/getdictionaryitems", HttpMethod.Post);
+			return ApiHelper.GetItems<DictionaryItem>(httpAuthenticator, $"dictionary/{dictionaryName}/getdictionaryitems", HttpMethod.Post);
 		}
 	}
 }

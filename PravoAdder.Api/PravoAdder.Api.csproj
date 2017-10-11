@@ -77,6 +77,7 @@
     <Compile Include="Domain\DictionaryItem.cs" />
     <Compile Include="Domain\LineType.cs" />
     <Compile Include="Domain\Participant.cs" />
+    <Compile Include="Domain\ParticipantType.cs" />
     <Compile Include="Domain\Project.cs" />
     <Compile Include="Domain\ProjectContainer.cs" />
     <Compile Include="Domain\ProjectField.cs" />

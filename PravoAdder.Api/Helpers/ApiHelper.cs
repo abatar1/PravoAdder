@@ -13,14 +13,14 @@ namespace PravoAdder.Api.Helpers
 {
 	public class ApiHelper
 	{
-		public static dynamic GetMessageFromRequest(HttpRequestMessage request, HttpAuthenticator httpAuthenticator)
+		public static dynamic GetResponseFromRequest(HttpRequestMessage request, HttpAuthenticator httpAuthenticator)
 		{
 			try
 			{
 				var response = httpAuthenticator.Client.SendAsync(request).Result;
 				response.EnsureSuccessStatusCode();
 
-				return !response.IsSuccessStatusCode ? null : GetMessageFromResponce(response);
+				return !response.IsSuccessStatusCode ? null : ReadFromResponce(response);
 			}
 			catch (Exception)
 			{
@@ -28,13 +28,13 @@ namespace PravoAdder.Api.Helpers
 			}		
 		}
 
-		public static dynamic GetMessageFromResponce(HttpResponseMessage response)
+		public static dynamic ReadFromResponce(HttpResponseMessage response)
 		{
 			var message = response.Content.ReadAsStringAsync().Result;
 			return message == null ? null : JsonConvert.DeserializeObject(message);
 		}
 
-		public static HttpRequestMessage CreateRequest(object content, string requestUri, HttpMethod method,
+		public static HttpRequestMessage CreateHttpRequest(object content, string requestUri, HttpMethod method,
 			Cookie cookie)
 		{
 			HttpRequestMessage request;
@@ -65,7 +65,7 @@ namespace PravoAdder.Api.Helpers
 			return request;
 		}
 
-		public static List<T> SendWithManyPagesRequest<T>(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, 
+		public static List<T> GetItems<T>(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, 
 			IDictionary<string, string> additionalContent = null)
 		{
 			var count = 1;
@@ -83,10 +83,10 @@ namespace PravoAdder.Api.Helpers
 					}
 				}
 
-				var request = CreateRequest(content, $"api/{path}", httpMethod,
+				var request = CreateHttpRequest(content, $"api/{path}", httpMethod,
 					httpAuthenticator.UserCookie);
 
-				var responseMessage = GetMessageFromRequest(request, httpAuthenticator);
+				var responseMessage = GetResponseFromRequest(request, httpAuthenticator);
 				if (responseMessage == null) return null;				
 
 				var newItems = new List<dynamic>(responseMessage.Result)
@@ -99,29 +99,14 @@ namespace PravoAdder.Api.Helpers
 			} while (true);
 
 			return resultContainer.Count == 0 ? new List<T>() : resultContainer;
-		}
-
-		public static T SendDatabaseEntityItem<T>(dynamic content, string path, HttpMethod httpMethod, HttpAuthenticator httpAuthenticator) 
-			where T : DatabaseEntityItem, new()
-		{		
-			var request = CreateRequest((object) content, $"api/{path}", httpMethod,
-				httpAuthenticator.UserCookie);
-
-			var responseMessage = GetMessageFromRequest(request, httpAuthenticator).Result;
-			if (responseMessage == null) return null;
-
-			return (T) Activator.CreateInstance(typeof(T), new object[] { responseMessage.Name.ToString(),
-				responseMessage.Id.ToString() });
-		}
+		}	
 
 		public static async Task<bool> TrySendAsync(HttpAuthenticator httpAuthenticator, dynamic content, string path, HttpMethod httpMethod)
 		{
 			try
 			{
-				var request = CreateRequest((object)content, $"api/{path}", httpMethod, httpAuthenticator.UserCookie);
-
+				var request = CreateHttpRequest((object)content, $"api/{path}", httpMethod, httpAuthenticator.UserCookie);
 				var response = await httpAuthenticator.Client.SendAsync(request);
-
 				return response != null && response.IsSuccessStatusCode;
 
 			}
@@ -131,11 +116,23 @@ namespace PravoAdder.Api.Helpers
 			}		
 		}
 
-		public static dynamic SendItemWithParameters(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, IDictionary<string, string> parameters)
+		public static T GetItem<T>(dynamic content, string path, HttpMethod httpMethod, HttpAuthenticator httpAuthenticator)
+			where T : DatabaseEntityItem, new()
 		{
-			var request = CreateRequest(parameters, $"api/{path}", httpMethod, httpAuthenticator.UserCookie);
+			var item = GetItem(httpAuthenticator, path, httpMethod, content);
+			return (T) Activator.CreateInstance(typeof(T), new object[] {item});
+		}
 
-			return GetMessageFromRequest(request, httpAuthenticator).Result;
+		public static dynamic GetItem(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, IDictionary<string, string> parameters)
+		{
+			var request = CreateHttpRequest(parameters, $"api/{path}", httpMethod, httpAuthenticator.UserCookie);
+			return GetResponseFromRequest(request, httpAuthenticator).Result;
+		}
+
+		public static dynamic GetItem(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, dynamic content)
+		{
+			var request = CreateHttpRequest(content, $"api/{path}", httpMethod, httpAuthenticator.UserCookie);
+			return GetResponseFromRequest(request, httpAuthenticator).Result;
 		}
 	}
 }

@@ -21,13 +21,20 @@ namespace PravoAdder.Api
 				}
 			};
 
-			return ApiHelper.SendDatabaseEntityItem<Participant>(content, "participants/PutParticipant", HttpMethod.Put,
+			return ApiHelper.GetItem<Participant>(content, "participants/PutParticipant", HttpMethod.Put,
 				httpAuthenticator);
 		}
 
 		public IList<Participant> GetParticipants(HttpAuthenticator httpAuthenticator)
 		{
-			return ApiHelper.SendWithManyPagesRequest<Participant>(httpAuthenticator, "ParticipantsSuggest/GetParticipants", HttpMethod.Post);
+			return ApiHelper.GetItems<Participant>(httpAuthenticator, "ParticipantsSuggest/GetParticipants", HttpMethod.Post);
+		}
+
+		public List<ParticipantType> GetParticipantTypes(HttpAuthenticator httpAuthenticator)
+		{
+			return (List<ParticipantType>) ApiHelper
+				.GetItem(httpAuthenticator, "bootstrap/GetBootstrap", HttpMethod.Post, null).CaseMap.Modules.Participants
+				.ParticipantTypes;
 		}
 	}
 }

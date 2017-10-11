@@ -9,26 +9,26 @@ namespace PravoAdder.Api
 	{
 		public IList<ProjectGroup> GetProjectGroups(HttpAuthenticator httpAuthenticator)
 		{
-			return ApiHelper.SendWithManyPagesRequest<ProjectGroup>(httpAuthenticator, "ProjectGroups/PostProjectGroups", HttpMethod.Post);
+			return ApiHelper.GetItems<ProjectGroup>(httpAuthenticator, "ProjectGroups/PostProjectGroups", HttpMethod.Post);
 		}
 
 		public ProjectGroup ProjectGroups(HttpAuthenticator httpAuthenticator, object content)
 		{
-			return ApiHelper.SendDatabaseEntityItem<ProjectGroup>(content, "ProjectGroups", HttpMethod.Put,
+			return ApiHelper.GetItem<ProjectGroup>(content, "ProjectGroups", HttpMethod.Put,
 				httpAuthenticator);
 		}
 
 		public void DeleteProjectGroup(HttpAuthenticator httpAuthenticator, string projectGroupId)
 		{
 			var parameters = new Dictionary<string, string> { ["Id"] = projectGroupId };
-			ApiHelper.SendItemWithParameters(httpAuthenticator, "ProjectGroups/DeleteProjectGroup", HttpMethod.Delete,
+			ApiHelper.GetItem(httpAuthenticator, "ProjectGroups/DeleteProjectGroup", HttpMethod.Delete,
 				parameters);
 		}
 
 		public void ArchiveProjectGroup(HttpAuthenticator httpAuthenticator, string projectGroupId)
 		{
 			var parameters = new Dictionary<string, string> { ["Id"] = projectGroupId };
-			ApiHelper.SendItemWithParameters(httpAuthenticator, "ProjectGroups/Archive", HttpMethod.Put,
+			ApiHelper.GetItem(httpAuthenticator, "ProjectGroups/Archive", HttpMethod.Put,
 				parameters);
 		}
 	}
