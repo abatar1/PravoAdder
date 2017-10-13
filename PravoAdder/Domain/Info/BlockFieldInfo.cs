@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Newtonsoft.Json;
 using PravoAdder.Api.Domain;
 
@@ -62,8 +63,11 @@ namespace PravoAdder.Domain
 					blockfieldInfo.Type = "Value";
 					break;
 				case "Participant":
+					blockfieldInfo.Type = fieldType;
+					break;
 				case "CalculationFormula":
 					blockfieldInfo.Type = fieldType;
+					blockfieldInfo.SpecialData = projectField.CalculationFormulas.First().Name;
 					break;
 				default:
 					throw new ArgumentException("Field type doesn't supported.");

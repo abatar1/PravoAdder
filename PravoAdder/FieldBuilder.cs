@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
@@ -19,6 +20,7 @@ namespace PravoAdder
 
 		private static Lazy<IList<Participant>> _participants;	
 		private static IDictionary<string, ConcurrentBag<DictionaryItem>> _dictionaries;
+		private static List<CalculationFormula> _formulas;
 
 		public FieldBuilder(HttpAuthenticator httpAuthenticator)
 		{
@@ -41,15 +43,7 @@ namespace PravoAdder
 					if (fieldData == "False") return "Нет";
 					return fieldData;
 				case "CalculationFormula":
-					var calculationFormula = ApiRouter.CalculationFormulas
-						.GetCalculationFormulas(_httpAuthenticator)
-						.GetByName(fieldInfo.SpecialData);
-					if (calculationFormula == null) return null;
-					return new
-					{
-						Result = FormatFieldData(fieldData),
-						CalculationFormulaId = calculationFormula.Id
-					};
+					return GetCalculationFormulaValueFromData(fieldData, fieldInfo.SpecialData);
 				case "Dictionary":
 					return GetDictionaryFromData(fieldData, fieldInfo);
 				case "Participant":
@@ -62,29 +56,52 @@ namespace PravoAdder
 
 		private static object FormatFieldData(string value)
 		{
-			string correctIntValue;
-			if (!value.Contains(','))
+			string correctNumberValue;
+			if (!value.Contains(',') && !value.Contains('.'))
 			{
-				correctIntValue = value.Trim();
+				correctNumberValue = value.Trim();
 			}
 			else
 			{
-				var newValue = value.Replace(" ", "").Trim();
-				var splitted = newValue.Split(',');
-				correctIntValue = splitted[1].All(c => c == '0') ? splitted[0] : newValue;
+				var trimmed = string.Join("", value.Where(c => !char.IsWhiteSpace(c)));
+				var newValue = trimmed.Replace(",", ".");
+				var splitted = newValue.Split('.');
+				correctNumberValue = splitted[1].All(c => c == '0') ? splitted[0] : newValue;
+			}			
+
+			if (TypeDescriptor.GetConverter(typeof(int)).IsValid(correctNumberValue))
+			{
+				return int.Parse(correctNumberValue, CultureInfo.InvariantCulture);
 			}
 
-			if (TypeDescriptor.GetConverter(typeof(int)).IsValid(correctIntValue))
-				return int.Parse(correctIntValue);
-
-			if (TypeDescriptor.GetConverter(typeof(double)).IsValid(value.Replace(',', '.')))
-				return double.Parse(value);
+			if (TypeDescriptor.GetConverter(typeof(double)).IsValid(correctNumberValue))
+			{
+				return double.Parse(correctNumberValue, CultureInfo.InvariantCulture);
+			}
+				
 			return value;
 		}
 
 		private static string FormatDictionaryItemName(string item)
 		{
 			return $"{item.First().ToString().ToUpper()}{item.Substring(1)}".Trim();
+		}
+
+		private CalculationFormulaValue GetCalculationFormulaValueFromData(string data, string specialData)
+		{
+			if (_formulas == null)
+			{
+				_formulas = ApiRouter.CalculationFormulas
+					.GetCalculationFormulas(_httpAuthenticator)
+					.ToList();
+			}
+			var calculationFormula = _formulas.GetByName(specialData);
+			if (calculationFormula == null) return null;
+			return new CalculationFormulaValue
+			{
+				Result = FormatFieldData(data),
+				CalculationFormulaId = calculationFormula.Id
+			};
 		}
 
 		private Participant GetParticipantFromData(string fieldData, string vadId = null)

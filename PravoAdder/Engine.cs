@@ -31,8 +31,10 @@ namespace PravoAdder
 				parser.Setup(arg => arg.RowNum)
 					.As('r', "row")
 					.SetDefault(1);
-			}			
-
+			}
+			parser.Setup(arg => arg.MaxDegreeOfParallelism)
+				.As('p', "parallel")
+				.SetDefault(1);
 			parser.Setup(arg => arg.ConfigFilename)
 				.As('c', "config")
 				.SetDefault("config.json");
@@ -72,7 +74,7 @@ namespace PravoAdder
 						{
 							foreach (var blockInfo in repeatBlock.Blocks)
 							{
-								request.ApiEnviroment.AddInformationAsync(blockInfo, request.ExcelRow, engineMessage.Item.Id, repeatBlock.Order);
+								request.ApiEnviroment.AddInformation(blockInfo, request.ExcelRow, engineMessage.Item.Id, repeatBlock.Order);
 							}
 						}
 						return engineMessage;

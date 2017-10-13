@@ -6,8 +6,9 @@ namespace PravoAdder.Domain
 {
 	public class BlockLineInfo : ICloneable
 	{
-		[JsonProperty(PropertyName = "BlockLineId")]
 		public string Id { get; set; }
+
+		public string BlockLineId { get; set; }
 
 		[JsonProperty(PropertyName = "Values")]
 		public ICollection<BlockFieldInfo> Fields { get; set; } = new List<BlockFieldInfo>();
@@ -20,7 +21,7 @@ namespace PravoAdder.Domain
 			return new BlockLineInfo
 			{
 				Fields = new List<BlockFieldInfo>(fields),
-				Id = Id,
+				BlockLineId = BlockLineId,
 				Order = Order
 			};
 		}
@@ -30,7 +31,7 @@ namespace PravoAdder.Domain
 			return new BlockLineInfo
 			{
 				Fields = new List<BlockFieldInfo>(Fields),
-				Id = Id,
+				BlockLineId = BlockLineId,
 				Order = Order
 			};
 		}
@@ -42,13 +43,13 @@ namespace PravoAdder.Domain
 
 		public BlockLineInfo(string id, int order)
 		{
-			Id = id;
+			BlockLineId = id;
 			Order = order;
 		}
 
 		public BlockLineInfo(string id, int order, ICollection<BlockFieldInfo> fields)
 		{
-			Id = id;
+			BlockLineId = id;
 			Order = order;
 			Fields = new List<BlockFieldInfo>(fields);
 		}

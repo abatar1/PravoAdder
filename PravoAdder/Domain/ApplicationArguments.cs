@@ -6,5 +6,6 @@
 		public ProcessType ProcessType { get; set; }
 		public ReaderMode ReaderMode { get; set; }
 		public int RowNum { get; set; }
+		public int MaxDegreeOfParallelism { get; set; }
 	}
 }

@@ -92,7 +92,7 @@ namespace PravoAdder.Readers
 							    simpleRepeatsLines = indexes
 								    .Select(i => new BlockLineInfo
 								    {
-									    Id = line.Id,
+									    BlockLineId = line.Id,
 									    Order = 0,
 									    Fields = new List<BlockFieldInfo> {BlockFieldInfo.Create(field, i)}
 								    })

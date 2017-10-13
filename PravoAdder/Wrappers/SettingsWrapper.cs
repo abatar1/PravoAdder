@@ -13,7 +13,7 @@ namespace PravoAdder.Wrappers
     {
 	    private static ReaderMode _blockReadingMode = ReaderMode.All;
 
-        public Settings LoadSettingsFromConsole(ApplicationArguments applicationArguments, Dictionary<string, dynamic> additionalSettings = null)
+		public Settings LoadSettingsFromConsole(ApplicationArguments applicationArguments, Dictionary<string, dynamic> additionalSettings = null)
         {
             Console.WriteLine("Reading config files...");
             var settingsObject = SettingsHelper.Read(applicationArguments.ConfigFilename);
@@ -35,16 +35,10 @@ namespace PravoAdder.Wrappers
 						property.SetValue(settingsObject, "1301Zakzak");
 						continue;
 					case "Overwrite":
-						property.SetValue(settingsObject, true);
+						property.SetValue(settingsObject, false);
 						continue;
 					case "SourceFileName":
 						property.SetValue(settingsObject, "prod");
-						continue;
-					case "MaxDegreeOfParallelism":
-						property.SetValue(settingsObject, 1);
-						continue;
-					case "StartRow":
-						property.SetValue(settingsObject, 1701);
 						continue;
 					case "MaximumRows":
 						property.SetValue(settingsObject, int.MaxValue);
@@ -103,7 +97,7 @@ namespace PravoAdder.Wrappers
 
                 if (type == typeof(bool)) return data == "y";
 
-                if (!isRequired || !string.IsNullOrEmpty(data))
+                if (!string.IsNullOrEmpty(data))
                 {
 	                if (type.IsArray)
 	                {
@@ -119,12 +113,20 @@ namespace PravoAdder.Wrappers
 			                if (type == typeof(ReaderMode)) _blockReadingMode = result;
 							return result;
 		                }
+						Console.WriteLine("Wrong enum item passed.");
 	                }
-	                if (data == "max") return int.MaxValue;
+	                else if (data == "max")
+	                {
+		                return int.MaxValue;
+	                }
                     return Convert.ChangeType(data, type);
                 }
-                Console.WriteLine($"Wrong {message}!");
-            }
+	            if (!isRequired)
+	            {
+		            return null;
+	            }
+				Console.WriteLine($"Wrong {message}!");
+            }       
         }
 	}
 }

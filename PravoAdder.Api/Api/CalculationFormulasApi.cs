@@ -11,5 +11,17 @@ namespace PravoAdder.Api
 		{
 			return ApiHelper.GetItems<CalculationFormula>(httpAuthenticator, "CalculationFormulasSuggest/GetCalculationFormulas", HttpMethod.Post);
 		}
+
+		public int GetInputData(HttpAuthenticator httpAuthenticator, string projectId, string calculationId, string visualBlockId, string blockLineId)
+		{
+			var parameters = new Dictionary<string, string>
+			{
+				["ProjectId"] = projectId,
+				["CalculationFormulaId"] = calculationId,
+				["VisualBlockId"] = visualBlockId,
+				["BlockLineId"] = blockLineId
+			};
+			return (int) ApiHelper.GetItem(httpAuthenticator, "Calculation/GetInputData", HttpMethod.Get, parameters).Result.Result;
+		}
 	}
 }

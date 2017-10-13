@@ -149,7 +149,8 @@ namespace PravoAdder.Wrappers
 		        .GetByName(headerInfo.ProjectTypeName);
 	        if (projectType == null)
 	        {
-		        Logger.Error($"{DateTime.Now} | {count} | Project type {headerInfo.ProjectTypeName} doesn't exist. Project name: {headerInfo.ProjectName}");
+		        Logger.Error(
+			        $"{DateTime.Now} | {count} | Project type {headerInfo.ProjectTypeName} doesn't exist. Project name: {headerInfo.ProjectName}");
 		        return null;
 	        }
 
@@ -157,7 +158,8 @@ namespace PravoAdder.Wrappers
 		        .GetByName(headerInfo.ResponsibleName.Replace(".", ""));
 	        if (responsible == null)
 	        {
-				Logger.Error($"{DateTime.Now} | {count} | Responsible {headerInfo.ResponsibleName} doesn't exist. Project name: {headerInfo.ProjectName}");
+		        Logger.Error(
+			        $"{DateTime.Now} | {count} | Responsible {headerInfo.ResponsibleName} doesn't exist. Project name: {headerInfo.ProjectName}");
 		        return null;
 	        }
 
@@ -182,13 +184,13 @@ namespace PravoAdder.Wrappers
 			return project;
 		}
 
-        public async void AddInformationAsync(BlockInfo blockInfo,
-            Row excelRow, string projectId, int order)
+        public void AddInformation(BlockInfo blockInfo, Row excelRow, string projectId, int order)
         {		
 			var contentLines = new List<BlockLineInfo>();
 	        if (blockInfo.Lines == null || !blockInfo.Lines.Any()) return;
 
             var messageBuilder = new StringBuilder();	        
+			var calculationIds = new List<string>();
 			foreach (var line in blockInfo.Lines)
             {
                 var contentFields = new List<BlockFieldInfo>();
@@ -206,7 +208,12 @@ namespace PravoAdder.Wrappers
                     try
                     {
                         var value = _fieldBuilder.CreateFieldValueFromData(fieldInfo, fieldData, excelRow.Vat);
-                        var newFieldInfo = fieldInfo.CloneWithValue(value);
+	                    if (value is CalculationFormulaValue)
+	                    {
+							calculationIds.Add(((CalculationFormulaValue) value).CalculationFormulaId);
+						}
+
+						var newFieldInfo = fieldInfo.CloneWithValue(value);
                         contentFields.Add(newFieldInfo);
                     }
                     catch (Exception e)
@@ -231,12 +238,56 @@ namespace PravoAdder.Wrappers
 				Order = order
 			};
 
-	        var isSuccessResponse = await ApiRouter.ProjectCustomValues.Create(_httpAuthenticator, contentBlock);
-	        if (!isSuccessResponse)
-	        {
-		        Logger.Error(
-			        $"{DateTime.Now} | Failed to add information block {blockInfo.Name}. {messageBuilder.ToString().Trim()} | Id : {projectId}");
-	        }
-        }
+	        var visualBlockResponse = ApiRouter.ProjectCustomValues.Create(_httpAuthenticator, contentBlock);
+
+			//if (calculationIds.Count > 0)
+			//{
+			//	bool IsCorrectFormula(BlockFieldInfo field, string calculationId) => field.Type == "CalculationFormula" &&
+			//																		 ((dynamic)field.Value)
+			//																		 .CalculationFormulaId == calculationId;
+			//	var lines = new List<BlockLineInfo>();
+			//	foreach (var calculationId in calculationIds)
+			//	{
+			//		var formulaLine =
+			//			contentLines.First(line => line.Fields.Any(field => IsCorrectFormula(field, calculationId)));
+			//		formulaLine.Id = visualBlockResponse.Lines.First(line => line.BlockLineId == formulaLine.BlockLineId).Id;
+
+			//		var formulaField =
+			//			formulaLine.Fields.First(field => IsCorrectFormula(field, calculationId));
+			//		formulaField.Value = new
+			//		{
+			//			((dynamic)formulaField.Value).CalculationFormulaId,
+			//			Result = ApiRouter.CalculationFormulas.GetInputData(_httpAuthenticator, projectId, calculationId,
+			//				blockInfo.Id, formulaLine.BlockLineId)
+			//		};
+
+			//		var existedLine = lines.FirstOrDefault(line => line.BlockLineId == formulaLine.BlockLineId);
+			//		if (existedLine == null)
+			//		{
+			//			formulaLine.Fields = new List<BlockFieldInfo> { formulaField };
+			//			lines.Add(formulaLine);
+			//		}
+			//		else
+			//		{
+			//			lines.First(line => line.BlockLineId == formulaLine.BlockLineId).Fields.Add(formulaField);
+			//		}
+			//	}
+			//	var updateContentBlock = new
+			//	{
+			//		visualBlockResponse.Id,
+			//		VisualBlockId = blockInfo.Id,
+			//		ProjectId = projectId,
+			//		Lines = lines,
+			//		FrontOrder = order,
+			//		Order = order
+			//	};
+			//	var isSuccessUpdateResponse = ApiRouter.ProjectCustomValues.Update(_httpAuthenticator, updateContentBlock);
+			//}
+			if (visualBlockResponse == null)
+			{
+				Logger.Error(
+					$"{DateTime.Now} | Failed to create information block {blockInfo.Name}. {messageBuilder.ToString().Trim()} | Id : {projectId}");
+			}
+		}
     }
 }

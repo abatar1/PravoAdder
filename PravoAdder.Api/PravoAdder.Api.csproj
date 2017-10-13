@@ -80,6 +80,7 @@
     <Compile Include="Api\ProjectTypesApi.cs" />
     <Compile Include="Api\ResponsiblesApi.cs" />
     <Compile Include="Domain\CalculationFormula.cs" />
+    <Compile Include="Domain\CalculationFormulaValue.cs" />
     <Compile Include="Domain\DatabaseEntityItem.cs" />
     <Compile Include="Domain\DictionaryItem.cs" />
     <Compile Include="Domain\LineType.cs" />

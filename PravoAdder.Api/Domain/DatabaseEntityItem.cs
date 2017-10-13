@@ -22,8 +22,8 @@ namespace PravoAdder.Api.Domain
 			Id = dynamicData?.Id?.ToString();
 		}
 
-		public string Name { get; protected set; }
-		public string Id { get; protected set; }
+		public string Name { get; set; }
+		public string Id { get; set; }
 
 		public override string ToString()
 		{

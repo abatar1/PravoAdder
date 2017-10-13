@@ -37,9 +37,6 @@ namespace PravoAdder.Domain
 		[DisplayName("Enter list allowed column's colors separated by commas (format:FFRRGGBB)"), ProcessType(ProcessType.Migration), ReadingType(ReaderMode.Excel), IsRequired(true)]
 		public string[] AllowedColors { get; set; }
 
-		[DisplayName("Number of threads"), JsonIgnore, ProcessType(ProcessType.All), IsRequired(true)]
-		public int MaxDegreeOfParallelism { get; set; }
-
 		[DisplayName("Number of maximum rows"), JsonIgnore, ProcessType(ProcessType.Migration), IsRequired(true)]
 		public int MaximumRows { get; set; }
 

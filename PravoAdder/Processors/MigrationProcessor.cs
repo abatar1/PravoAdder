@@ -34,7 +34,7 @@ namespace PravoAdder.Processors
 				
 				var apiEnviroment = new ApiEnviroment(authenticator);
 				var counter = new Counter();
-				var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = settings.MaxDegreeOfParallelism };
+				var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = ApplicationArguments.MaxDegreeOfParallelism };
 				Parallel.ForEach(excelTable, parallelOptions, (excelRow, state, index) =>
 				{
 					var request = new EngineRequest
@@ -48,7 +48,7 @@ namespace PravoAdder.Processors
 					var response = Processor.Invoke(request);
 					if (response == null) return;
 
-					counter.ProcessCount((int) index + ApplicationArguments.RowNum, excelTable.Count, response.Item, 70);
+					counter.ProcessCount((int) index + ApplicationArguments.RowNum, excelTable.Count + ApplicationArguments.RowNum, response.Item, 70);
 				});
 			}
 		}		

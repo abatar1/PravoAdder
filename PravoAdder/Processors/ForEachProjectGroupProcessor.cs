@@ -26,7 +26,7 @@ namespace PravoAdder.Processors
 			using (var authenticator = authenticatorController.Authenticate())
 			{
 				var migrationProcessController = new ApiEnviroment(authenticator);
-				var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = settings.MaxDegreeOfParallelism };
+				var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = ApplicationArguments.MaxDegreeOfParallelism };
 
 				var projectGroups = migrationProcessController.GetProjectGroupItems();
 				projectGroups.Add(ProjectGroup.Empty);
