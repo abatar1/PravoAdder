@@ -8,6 +8,7 @@ namespace PravoAdder
 	{
 		public Settings Settings { get; set; }
 		public ApiEnviroment ApiEnviroment { get; set; }
+		public ApplicationArguments AppArgs { get; set; }
 		public Counter Counter { get; set; } = new Counter();
 		public BlockReaderWrapper BlockReader { get; set; }
 		public Row ExcelRow { get; set; }		

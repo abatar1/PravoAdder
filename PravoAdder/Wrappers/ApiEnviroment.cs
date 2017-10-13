@@ -88,11 +88,11 @@ namespace PravoAdder.Wrappers
 			return response;
 	    }
 
-		public ProjectGroup AddProjectGroup(Settings settings, HeaderBlockInfo headerInfo)
+		public ProjectGroup AddProjectGroup(bool needOverwrite, HeaderBlockInfo headerInfo)
         {
 	        if (headerInfo.ProjectGroupName == null) return null;		
 
-			if (settings.Overwrite)
+			if (needOverwrite)
 			{
 				var response = GetProjectGroupItems();
 				var projectGroupResponse = response?.GetByName(headerInfo.ProjectGroupName);
@@ -118,9 +118,9 @@ namespace PravoAdder.Wrappers
 	        return projectGroup;			
 		}
 
-        public Project AddProject(Settings settings, HeaderBlockInfo headerInfo, string projectGroupId, int count)
+        public Project AddProject(bool needOverwrite, HeaderBlockInfo headerInfo, string projectGroupId, int count)
         {
-	        if (settings.Overwrite)
+	        if (needOverwrite)
 	        {
 		        var response = GetGroupedProjects(projectGroupId, headerInfo.FolderName);
 		        if (response != null)

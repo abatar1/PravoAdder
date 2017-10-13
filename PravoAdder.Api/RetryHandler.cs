@@ -24,17 +24,24 @@ namespace PravoAdder.Api
 	        {
 				try
 				{
-			        var response = await base.SendAsync(request, CancellationToken.None).ConfigureAwait(false);
-			        if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Forbidden)
-			        {
-				        return response;
-			        }
+			        var responseTask = base.SendAsync(request, CancellationToken.None);
+					if (responseTask.Wait(TimeSpan.FromMinutes(5)))
+					{
+						var response = responseTask.Result;
+						if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Forbidden)
+						{
+							return response;
+						}
+					}
+					else
+					{
+						break;
+					}
 		        }
-		        catch (Exception e)
+		        catch (Exception)
 		        {
-			        throw new Exception($"Failed to send response after {_maxRetries} retries.", e);
-		        }
-		        Thread.Sleep(TimeSpan.FromSeconds(10));
+					Thread.Sleep(TimeSpan.FromSeconds(10));
+				}		        
 			}
 			throw new Exception();
 		}

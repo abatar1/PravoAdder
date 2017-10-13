@@ -34,9 +34,6 @@ namespace PravoAdder.Wrappers
 					case "Password":
 						property.SetValue(settingsObject, "1301Zakzak");
 						continue;
-					case "Overwrite":
-						property.SetValue(settingsObject, false);
-						continue;
 					case "SourceFileName":
 						property.SetValue(settingsObject, "prod");
 						continue;

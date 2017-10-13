@@ -14,7 +14,7 @@ namespace PravoAdder.Domain
 	public enum ProcessType
 	{
 		Migration,
-		Syncronization,
+		Sync,
 		CleanAll,
 		CleanByDate,
 		CleanEmptyFolders,

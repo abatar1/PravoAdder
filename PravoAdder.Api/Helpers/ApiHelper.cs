@@ -28,6 +28,21 @@ namespace PravoAdder.Api.Helpers
 			}		
 		}
 
+		public static async Task<bool> TrySendAsync(HttpAuthenticator httpAuthenticator, object content, string path, HttpMethod httpMethod)
+		{
+			try
+			{
+				var request = CreateHttpRequest(content, $"api/{path}", httpMethod, httpAuthenticator.UserCookie);
+				var response = await httpAuthenticator.Client.SendAsync(request);
+				return response != null && response.IsSuccessStatusCode;
+
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+		}
+
 		public static dynamic ReadFromResponce(HttpResponseMessage response)
 		{
 			var message = response.Content.ReadAsStringAsync().Result;
@@ -105,22 +120,7 @@ namespace PravoAdder.Api.Helpers
 			return resultContainer.Count == 0 ? new List<T>() : resultContainer;
 		}	
 
-		public static async Task<bool> TrySendAsync(HttpAuthenticator httpAuthenticator, dynamic content, string path, HttpMethod httpMethod)
-		{
-			try
-			{
-				var request = CreateHttpRequest((object)content, $"api/{path}", httpMethod, httpAuthenticator.UserCookie);
-				var response = await httpAuthenticator.Client.SendAsync(request);
-				return response != null && response.IsSuccessStatusCode;
-
-			}
-			catch (Exception)
-			{
-				return false;
-			}		
-		}
-
-		public static T GetItem<T>(dynamic content, string path, HttpMethod httpMethod, HttpAuthenticator httpAuthenticator)
+		public static T GetItem<T>(object content, string path, HttpMethod httpMethod, HttpAuthenticator httpAuthenticator)
 			where T : DatabaseEntityItem, new()
 		{
 			var item = GetItem(httpAuthenticator, path, httpMethod, content);
@@ -133,7 +133,7 @@ namespace PravoAdder.Api.Helpers
 			return GetResponseFromRequest(request, httpAuthenticator);
 		}
 
-		public static dynamic GetItem(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, dynamic content)
+		public static dynamic GetItem(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, object content)
 		{
 			var request = CreateHttpRequest(content, $"api/{path}", httpMethod, httpAuthenticator.UserCookie);
 			return GetResponseFromRequest(request, httpAuthenticator).Result;

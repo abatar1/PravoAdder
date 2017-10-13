@@ -38,7 +38,8 @@ namespace PravoAdder.Processors
 						ApiEnviroment = migrationProcessController,
 						Item = projectGroup,
 						Date = date,
-						Settings = settings
+						Settings = settings,
+						AppArgs = ApplicationArguments
 					};
 					Processor.Invoke(request);					
 				});

@@ -43,7 +43,8 @@ namespace PravoAdder.Processors
 						ExcelRow = excelRow,
 						BlockReader = blockReaderController,
 						Settings = settings,
-						Count = (int) index + ApplicationArguments.RowNum
+						Count = (int) index + ApplicationArguments.RowNum,
+						AppArgs = ApplicationArguments
 					};
 					var response = Processor.Invoke(request);
 					if (response == null) return;

@@ -23,7 +23,7 @@ namespace PravoAdder
 				.As('t', "type")
 				.Required();
 			parser.Parse(args);
-			if (parser.Object.ProcessType == ProcessType.Migration)
+			if (parser.Object.ProcessType == ProcessType.Migration || parser.Object.ProcessType == ProcessType.Sync)
 			{
 				parser.Setup(arg => arg.ReaderMode)
 					.As('m', "mode")
@@ -31,6 +31,9 @@ namespace PravoAdder
 				parser.Setup(arg => arg.RowNum)
 					.As('r', "row")
 					.SetDefault(1);
+				parser.Setup(arg => arg.Overwrite)
+					.As('o', "overwrite")
+					.SetDefault(true);
 			}
 			parser.Setup(arg => arg.MaxDegreeOfParallelism)
 				.As('p', "parallel")
@@ -80,7 +83,7 @@ namespace PravoAdder
 						return engineMessage;
 					});
 				}
-				case ProcessType.Syncronization:
+				case ProcessType.Sync:
 				{
 					Console.Title = "Pravo.Sync";
 
@@ -89,7 +92,7 @@ namespace PravoAdder
 						var engineMessage = ProcessorImplementations.AddProjectProcessor(request);
 						if (engineMessage == null) return null;
 
-						if (string.IsNullOrEmpty(engineMessage.HeaderBlock.SynchronizationNumber))
+						if (!string.IsNullOrEmpty(engineMessage.HeaderBlock.SynchronizationNumber))
 						{
 							request.ApiEnviroment.SynchronizeCase(engineMessage.Item.Id, engineMessage.HeaderBlock.SynchronizationNumber);
 						}
