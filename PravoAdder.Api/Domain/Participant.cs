@@ -1,4 +1,6 @@
-﻿namespace PravoAdder.Api.Domain
+﻿using System.Runtime.InteropServices;
+
+namespace PravoAdder.Api.Domain
 {
     public class Participant : DatabaseEntityItem
 	{
@@ -10,23 +12,24 @@
         {
             TypeName = typeName;
             TypeId = typeId;
-	        VAT = vat;
+	        Inn = vat;
         }
 
 		public Participant(object data) : base(data)
 		{
 			var dynamicData = data as dynamic;
-			TypeId = dynamicData.TypeId.ToString();
-			TypeName = dynamicData.TypeName.ToString();
+			TypeId = dynamicData?.TypeId?.ToString() ?? dynamicData?.Type?.Id;
+			TypeName = dynamicData?.TypeName?.ToString() ?? dynamicData?.Type?.Name;
+			Inn = dynamicData?.INN?.ToString();
 		}
 
 		public string TypeName { get; private set; }
         public string TypeId { get; private set; }
-		public string VAT { get; private set; }
+		public string Inn { get; private set; }
 
         public Participant ChangeName(string newName)
         {
-            return new Participant(newName, Id, TypeName, TypeId, VAT);
+            return new Participant(newName, Id, TypeName, TypeId, Inn);
         }
 
         public static Participant TryParse(dynamic participant)
@@ -37,7 +40,7 @@
                 Name = participant.Name.ToString(),
                 TypeId = participant.TypeId.ToString(),
                 TypeName = participant.TypeName.ToString(),
-				VAT = participant.INN.ToString()
+				Inn = participant.INN.ToString()
             };
         }
     }

@@ -4,5 +4,7 @@
 	{
 		public string ConfigFilename { get; set; }
 		public ProcessType ProcessType { get; set; }
+		public ReaderMode ReaderMode { get; set; }
+		public int RowNum { get; set; }
 	}
 }

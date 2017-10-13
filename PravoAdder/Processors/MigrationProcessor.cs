@@ -29,7 +29,7 @@ namespace PravoAdder.Processors
 			var authenticatorController = new AuthentificatorWrapper(settings);
 			using (var authenticator = authenticatorController.Authenticate())
 			{
-				var blockReaderController = new BlockReaderWrapper(settings, authenticator);
+				var blockReaderController = new BlockReaderWrapper(ApplicationArguments, settings, authenticator);
 				var excelTable = blockReaderController.Table.TableContent;
 				
 				var apiEnviroment = new ApiEnviroment(authenticator);
@@ -42,12 +42,13 @@ namespace PravoAdder.Processors
 						ApiEnviroment = apiEnviroment,
 						ExcelRow = excelRow,
 						BlockReader = blockReaderController,
-						Settings = settings
+						Settings = settings,
+						Count = (int) index + ApplicationArguments.RowNum
 					};
 					var response = Processor.Invoke(request);
 					if (response == null) return;
 
-					counter.ProcessCount((int) index + settings.StartRow, excelTable.Count, response.Item, 70);
+					counter.ProcessCount((int) index + ApplicationArguments.RowNum, excelTable.Count, response.Item, 70);
 				});
 			}
 		}		

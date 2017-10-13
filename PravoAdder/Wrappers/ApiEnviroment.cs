@@ -118,7 +118,7 @@ namespace PravoAdder.Wrappers
 	        return projectGroup;			
 		}
 
-        public Project AddProject(Settings settings, HeaderBlockInfo headerInfo, string projectGroupId)
+        public Project AddProject(Settings settings, HeaderBlockInfo headerInfo, string projectGroupId, int count)
         {
 	        if (settings.Overwrite)
 	        {
@@ -135,16 +135,21 @@ namespace PravoAdder.Wrappers
 
 			var projectFolder = ApiRouter.ProjectFolders.GetProjectFolders(_httpAuthenticator)
 		        .GetByName(headerInfo.FolderName);
+
 	        if (projectFolder == null)
 	        {
-		        ApiRouter.ProjectFolders.InsertProjectFolder(headerInfo.FolderName, _httpAuthenticator);
+		        var folderName = headerInfo.FolderName;
+
+		        if (folderName.Length > MaxWordLength)
+					folderName = folderName.Remove(MaxWordLength);
+		        projectFolder = ApiRouter.ProjectFolders.InsertProjectFolder(folderName, _httpAuthenticator);
 			}
 
 	        var projectType = ApiRouter.ProjectTypes.GetProjectTypes(_httpAuthenticator)
 		        .GetByName(headerInfo.ProjectTypeName);
 	        if (projectType == null)
 	        {
-		        Logger.Error($"Project type {headerInfo.ProjectTypeName} doesn't exist. Project name: {headerInfo.ProjectName}");
+		        Logger.Error($"{DateTime.Now} | {count} | Project type {headerInfo.ProjectTypeName} doesn't exist. Project name: {headerInfo.ProjectName}");
 		        return null;
 	        }
 
@@ -152,7 +157,7 @@ namespace PravoAdder.Wrappers
 		        .GetByName(headerInfo.ResponsibleName.Replace(".", ""));
 	        if (responsible == null)
 	        {
-				Logger.Error($"Responsible {headerInfo.ResponsibleName} doesn't exist. Project name: {headerInfo.ProjectName}");
+				Logger.Error($"{DateTime.Now} | {count} | Responsible {headerInfo.ResponsibleName} doesn't exist. Project name: {headerInfo.ProjectName}");
 		        return null;
 	        }
 
@@ -173,12 +178,12 @@ namespace PravoAdder.Wrappers
 			};
 
 	        var project = ApiRouter.Projects.CreateProject(_httpAuthenticator, content);
-			if (project == null) Logger.Error($"Failed to add {headerInfo.ProjectName} project");
+			if (project == null) Logger.Error($"{DateTime.Now} | Failed to add {headerInfo.ProjectName} project");
 			return project;
 		}
 
         public async void AddInformationAsync(BlockInfo blockInfo,
-            IDictionary<int, string> excelRow, string projectId, int order)
+            Row excelRow, string projectId, int order)
         {		
 			var contentLines = new List<BlockLineInfo>();
 	        if (blockInfo.Lines == null || !blockInfo.Lines.Any()) return;
@@ -194,13 +199,13 @@ namespace PravoAdder.Wrappers
                         messageBuilder.AppendLine($"Excel row doesn't contain \"{fieldInfo.ColumnNumber}\" key.");
                         continue;
                     }
-                    var fieldData = excelRow[fieldInfo.ColumnNumber];
+                    var fieldData = excelRow[fieldInfo.ColumnNumber].Value;
 
                     if (string.IsNullOrEmpty(fieldData)) continue;
 
                     try
                     {
-                        var value = _fieldBuilder.CreateFieldValueFromData(fieldInfo, fieldData);
+                        var value = _fieldBuilder.CreateFieldValueFromData(fieldInfo, fieldData, excelRow.Vat);
                         var newFieldInfo = fieldInfo.CloneWithValue(value);
                         contentFields.Add(newFieldInfo);
                     }

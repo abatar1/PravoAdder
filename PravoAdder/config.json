@@ -1,12 +1,13 @@
 {
-	"Login": "User1@user.ru",
-	"BaseUri": "http://betarupost.casepro.pro",
-	"DataRowPosition": 2,
-	"InformationRowPosition": 1,
+	"Login": "am_casepro@rambler.ru",
+	"BaseUri": "https://gtlk.casepro.pro/",
+	"DataRowPosition": 5,
+	"InformationRowPosition": 2,
 	"XmlMappingPath": "mapping",
 	"AllowedColors": [
 		"FF92D050",
 		"FFFFFF00",
-		"FF70AD47"
+		"FF70AD47",
+		""
 	]
 }

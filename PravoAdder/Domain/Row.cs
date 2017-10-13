@@ -1,24 +1,36 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
 
 namespace PravoAdder.Domain
 {
-	public class Row : IEnumerable<KeyValuePair<int, FieldInfo>>
+	public class Row : IEnumerable<KeyValuePair<int, FieldAddress>>
 	{
-		public Row(IDictionary<int, FieldInfo> content, IList<string> participants = null)
+		public Row(IDictionary<int, FieldAddress> content, IList<string> participants)
 		{
 			Content = content;
 			Participants = participants;
 		}
 
-		public IDictionary<int, FieldInfo> Content { get; }
+		public Row(IDictionary<int, FieldAddress> content, KeyValuePair<string, string> vat)
+		{
+			Content = content;
+			Vat = vat;
+		}
+
+		public Row(IDictionary<int, FieldAddress> content)
+		{
+			Content = content;
+		}
+
+		public IDictionary<int, FieldAddress> Content { get; }
+		public ICollection<FieldAddress> Values => Content.Values;
+
 		public IList<string> Participants { get; }
-		public ICollection<FieldInfo> Values => Content.Values;
+		public KeyValuePair<string, string> Vat { get; }
 
-		public FieldInfo this[int index] => Content[index];
+		public FieldAddress this[int index] => Content[index];
 
-		public IEnumerator<KeyValuePair<int, FieldInfo>> GetEnumerator()
+		public IEnumerator<KeyValuePair<int, FieldAddress>> GetEnumerator()
 		{
 			return Content.GetEnumerator();
 		}

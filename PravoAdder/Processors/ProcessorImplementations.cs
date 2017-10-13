@@ -1,5 +1,4 @@
 ﻿using System;
-using PravoAdder.Api.Domain;
 
 namespace PravoAdder.Processors
 {
@@ -11,7 +10,7 @@ namespace PravoAdder.Processors
 			if (headerBlock == null) return null;	
 
 			var projectGroup = request.ApiEnviroment.AddProjectGroup(request.Settings, headerBlock);
-			var project = request.ApiEnviroment.AddProject(request.Settings, headerBlock, projectGroup?.Id);
+			var project = request.ApiEnviroment.AddProject(request.Settings, headerBlock, projectGroup?.Id, request.Count);
 
 			return string.IsNullOrEmpty(project?.Id) ? null : new EngineRequest
 			{

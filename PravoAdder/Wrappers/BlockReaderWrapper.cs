@@ -13,22 +13,25 @@ namespace PravoAdder.Wrappers
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private readonly BlocksConstructor _blockInfoReader;
 
-        public BlockReaderWrapper(Settings settings, HttpAuthenticator autentificator)
+        public BlockReaderWrapper(ApplicationArguments args, Settings settings, HttpAuthenticator autentificator)
         {
             TableReader tableReader;
-            switch (settings.BlockReadingMode)
+            switch (args.ReaderMode)
             {
                 case ReaderMode.Excel:
                     tableReader = new ExcelReader();
-                    Table = tableReader.Read(settings);
+                    Table = tableReader.Read(args, settings);
                     break;
 				case ReaderMode.XmlMap:
 					tableReader = new XmlWithMappingReader();
-					Table = tableReader.Read(settings);
-					_blockInfoReader = new BlocksConstructor(Table, settings, autentificator);
+					Table = tableReader.Read(args, settings);
 					break;
-                default:
-                    var message = $"Типа блоков {settings.BlockReadingMode} не существует.";
+				case ReaderMode.ExcelRule:
+					tableReader = new ExcelRuleReader();
+					Table = tableReader.Read(args, settings);
+					break;
+				default:
+                    var message = $"Типа блоков {args.ReaderMode} не существует.";
                     Logger.Error(message);
                     throw new ArgumentException(message);
             }
@@ -39,10 +42,10 @@ namespace PravoAdder.Wrappers
 
         public IList<CaseInfo> ReadBlockInfo()
         {
-            return _blockInfoReader.Read().ToList();
+            return _blockInfoReader.CreateCaseInfo().ToList();
         }
 
-        public HeaderBlockInfo ReadHeader(IDictionary<int, string> tableRow)
+        public HeaderBlockInfo ReadHeader(Row tableRow)
         {
             var headerBlock = _blockInfoReader.ReadHeaderBlock(tableRow);
 	        if (string.IsNullOrEmpty(headerBlock.ProjectName) || string.IsNullOrEmpty(headerBlock.ProjectTypeName)) return null;

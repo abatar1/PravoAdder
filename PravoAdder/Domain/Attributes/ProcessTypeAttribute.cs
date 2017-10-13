@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PravoAdder.Domain
+namespace PravoAdder.Domain.Attributes
 {
 	public class ProcessTypeAttribute : Attribute
 	{

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
@@ -7,18 +8,13 @@ namespace PravoAdder.Api
 {
 	public class ParticipantsApi
 	{
-		public Participant PutParticipant(HttpAuthenticator httpAuthenticator, string organizationName)
+		public Participant PutParticipant(HttpAuthenticator httpAuthenticator, string organizationName, string vad)
 		{
 			var content = new
 			{
 				Organization = organizationName,
-				Type = new
-				{
-					Id = "92ffb67f-fac0-e611-8b3a-902b343a9588",
-					action = "add",
-					Name = "Организация",
-					NameEn = "company"
-				}
+				Type = GetParticipantTypes(httpAuthenticator).First(p => p.Name == "Организация"),
+				INN = vad
 			};
 
 			return ApiHelper.GetItem<Participant>(content, "participants/PutParticipant", HttpMethod.Put,
@@ -32,9 +28,10 @@ namespace PravoAdder.Api
 
 		public List<ParticipantType> GetParticipantTypes(HttpAuthenticator httpAuthenticator)
 		{
-			return (List<ParticipantType>) ApiHelper
-				.GetItem(httpAuthenticator, "bootstrap/GetBootstrap", HttpMethod.Post, null).CaseMap.Modules.Participants
-				.ParticipantTypes;
+			IEnumerable<dynamic> content = ApiHelper
+				.GetItem(httpAuthenticator, "bootstrap/GetBootstrap", HttpMethod.Get, new Dictionary<string, string>())
+				["CaseMap.Modules.Main"]["CaseMap.Modules.Participants"]["ParticipantTypes"];
+			return content.Select(o => new ParticipantType(o)).ToList();
 		}
 	}
 }

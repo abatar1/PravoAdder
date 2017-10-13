@@ -62,6 +62,7 @@ namespace PravoAdder.Domain
 					blockfieldInfo.Type = "Value";
 					break;
 				case "Participant":
+				case "CalculationFormula":
 					blockfieldInfo.Type = fieldType;
 					break;
 				default:
@@ -69,6 +70,11 @@ namespace PravoAdder.Domain
 			}
 
 			return blockfieldInfo;
+		}
+
+		public override string ToString()
+		{
+			return Name;
 		}
 	}
 }

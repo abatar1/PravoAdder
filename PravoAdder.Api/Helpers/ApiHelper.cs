@@ -37,27 +37,31 @@ namespace PravoAdder.Api.Helpers
 		public static HttpRequestMessage CreateHttpRequest(object content, string requestUri, HttpMethod method,
 			Cookie cookie)
 		{
+			if (content == null) throw new ArgumentException("Cannot create http json request because content is null.");
+
 			HttpRequestMessage request;
 			if (content is IDictionary<string, string> dictionary)
 			{
-				var parametersBuilder = new StringBuilder();
-				foreach (var parameter in dictionary)
+				var parametersString = string.Empty;
+				if (dictionary.Count > 0)
 				{
-					parametersBuilder.Append($"{parameter.Key}={parameter.Value}&");
+					var parametersBuilder = new StringBuilder();
+					foreach (var parameter in dictionary)
+					{
+						parametersBuilder.Append($"{parameter.Key}={parameter.Value}&");
+					}
+					parametersString = parametersBuilder.ToString().Remove(parametersBuilder.Length - 1);
 				}
-
-				var parametersString = parametersBuilder.ToString().Remove(parametersBuilder.Length - 1);
+				
 				request = new HttpRequestMessage(method, $"{requestUri}?{parametersString}");
 			}
 			else
 			{
+				request = new HttpRequestMessage(method, requestUri);
 				var serializedContent = JsonConvert.SerializeObject(content);
-				if (serializedContent == null) return null;
-
-				request = new HttpRequestMessage(method, requestUri)
 				{
-					Content = new StringContent(serializedContent, Encoding.UTF8, "application/json")
-				};
+					request.Content = new StringContent(serializedContent, Encoding.UTF8, "application/json");
+				}				
 			}
 
 			request.Headers.Add("Cookie", cookie.ToString());
@@ -126,7 +130,7 @@ namespace PravoAdder.Api.Helpers
 		public static dynamic GetItem(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, IDictionary<string, string> parameters)
 		{
 			var request = CreateHttpRequest(parameters, $"api/{path}", httpMethod, httpAuthenticator.UserCookie);
-			return GetResponseFromRequest(request, httpAuthenticator).Result;
+			return GetResponseFromRequest(request, httpAuthenticator);
 		}
 
 		public static dynamic GetItem(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, dynamic content)

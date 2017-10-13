@@ -1,4 +1,6 @@
-﻿namespace PravoAdder.Domain
+﻿using PravoAdder.Domain.Attributes;
+
+namespace PravoAdder.Domain
 {
 	public class HeaderBlockInfo
 	{
@@ -25,5 +27,13 @@
 
 		[FieldName("Номер дела")]
 		public string ProjectNumber { get; set; }
+
+
+		public HeaderBlockInfo Format()
+		{
+			if (ProjectName.Length > 350) ProjectName = ProjectName.Remove(350);
+			if (FolderName.Length > 100) FolderName = FolderName.Remove(100);
+			return this;
+		}
 	}
 }

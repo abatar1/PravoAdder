@@ -5,21 +5,20 @@ namespace PravoAdder.Domain
 {
     public class Table
     {
-        private readonly IDictionary<int, FieldAddress> _info;
+        private readonly Row _info;
 
-        private readonly Dictionary<FieldAddress, List<int>> _infoRowContentSti;
+        private readonly IDictionary<FieldAddress, List<int>> _infoRowContentSti;
 
-        public Table(IList<IDictionary<int, string>> table, IDictionary<int, string> info)
+        public Table(IEnumerable<Row> table, Row info)
         {
-            _info = info
-                .ToDictionary(i => i.Key, i => new FieldAddress(i.Value));
+            _info = info;
             _infoRowContentSti = _info
                 .GroupBy(i => i.Value)
                 .ToDictionary(g => g.Key, g => g.Select(p => p.Key).ToList());
-            TableContent = table;
-        }
+			TableContent = table.ToList();
+		}
 
-        public IList<IDictionary<int, string>> TableContent { get; }
+        public List<Row> TableContent { get; }
 
         public bool IsComplexRepeat(FieldAddress fieldAddress)
         {
@@ -49,10 +48,10 @@ namespace PravoAdder.Domain
 	    {
 		    return _info.Values
 				.GroupBy(x => x.BlockName)
-				.First(x => x.Key == blockName)
-				.Select(x => x.RepeatBlockNumber)
+				.FirstOrDefault(x => x.Key == blockName)
+				?.Select(x => x.RepeatBlockNumber)
 			    .Distinct()
-				.ToList();
+				.ToList() ?? new List<int> {0};
 	    }
 
         public List<int> GetIndexes(FieldAddress fieldAddress, int blockNumber = 0)

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using PravoAdder.Domain;
+using PravoAdder.Domain.Attributes;
 using PravoAdder.Helpers;
 
 namespace PravoAdder.Wrappers
@@ -31,7 +32,7 @@ namespace PravoAdder.Wrappers
 				switch (property.Name)
 				{
 					case "Password":
-						property.SetValue(settingsObject, "123123");
+						property.SetValue(settingsObject, "1301Zakzak");
 						continue;
 					case "Overwrite":
 						property.SetValue(settingsObject, true);
@@ -43,7 +44,7 @@ namespace PravoAdder.Wrappers
 						property.SetValue(settingsObject, 1);
 						continue;
 					case "StartRow":
-						property.SetValue(settingsObject, 1430);
+						property.SetValue(settingsObject, 1701);
 						continue;
 					case "MaximumRows":
 						property.SetValue(settingsObject, int.MaxValue);
@@ -60,7 +61,10 @@ namespace PravoAdder.Wrappers
 	            var nameAttribute = LoadAttribute<DisplayNameAttribute>(property);
 				var displayName = nameAttribute != null ? nameAttribute.DisplayName : property.Name;
 
-				var propertyValue = LoadValue(displayName, property.PropertyType, ',');
+	            var requiredAttribute = LoadAttribute<IsRequiredAttribute>(property);
+	            var isRequired = requiredAttribute.IsRequiredValue;
+
+				var propertyValue = LoadValue(displayName, property.PropertyType, ',', isRequired);
                 property.SetValue(settingsObject, propertyValue);
 			}
 	        if (additionalSettings != null)
@@ -87,7 +91,7 @@ namespace PravoAdder.Wrappers
             return !string.IsNullOrEmpty(value.ToString()) && value.ToString() == defaultValue;
         }
 
-        private static dynamic LoadValue(string message, Type type, char separator)
+        private static dynamic LoadValue(string message, Type type, char separator, bool isRequired)
         {
 	        if (type == null) return null;
 		        
@@ -99,7 +103,7 @@ namespace PravoAdder.Wrappers
 
                 if (type == typeof(bool)) return data == "y";
 
-                if (!string.IsNullOrEmpty(data))
+                if (!isRequired || !string.IsNullOrEmpty(data))
                 {
 	                if (type.IsArray)
 	                {

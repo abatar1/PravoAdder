@@ -10,11 +10,11 @@ namespace PravoAdder.Readers
     {
 	    protected override FileInfo GetFileInfo(string name, params string[] stub)
 	    {
-		    var extentions = new[] {".xlsx", ".xlsb", ".xlsm"};
+			var extentions = new[] {".xlsx", ".xlsb", ".xlsm"};
 		    return base.GetFileInfo(name, extentions);
 	    }
 
-	    public override Table Read(Settings settings)
+	    public override Table Read(ApplicationArguments args, Settings settings)
         {
             var info = GetFileInfo(settings.SourceFileName);
 
@@ -26,19 +26,21 @@ namespace PravoAdder.Readers
                 var totalColumns = worksheet.Dimension.End.Column;
 
                 var infoRow = worksheet
-                    .Cells[settings.InformationRowPosition, 1, settings.InformationRowPosition, totalColumns];
+                    .Cells[settings.InformationRowPosition, 1, settings.InformationRowPosition, totalColumns]
+					.Where(c => c.Value != null)
+					.ToArray();
                 var colorColumnsPositions = infoRow
                     .Where(c => settings.AllowedColors.Contains(c.Style.Fill.BackgroundColor.Rgb))
                     .Select(c => c.Start.Column)
-                    .ToList();
+                    .ToArray();
                 var infoRowContent = infoRow
                     .Where(c => colorColumnsPositions.Contains(c.Start.Column))
                     .Select(c => FormatCell(c.Value) ?? string.Empty)
                     .Zip(colorColumnsPositions, (value, key) => new {value, key})
-                    .ToDictionary(key => key.key, value => value.value);
+                    .ToDictionary(key => key.key, value => new FieldAddress(value.value));
 
-                var table = new List<IDictionary<int, string>>();
-                for (var rowNum = settings.DataRowPosition + settings.StartRow - 1; rowNum <= totalRows; rowNum++)
+                var table = new List<Dictionary<int, FieldAddress>>();
+                for (var rowNum = settings.DataRowPosition + args.RowNum - 1; rowNum <= totalRows; rowNum++)
                 {
                     var row = new List<string>();
                     for (var columnNum = 1; columnNum <= totalColumns; columnNum++)
@@ -49,10 +51,10 @@ namespace PravoAdder.Readers
                     var coloredRow = row
                         .Zip(Enumerable.Range(1, totalColumns), (value, index) => new {value, index})
                         .Where(z => colorColumnsPositions.Contains(z.index))
-                        .ToDictionary(key => key.index, value => value.value);
+                        .ToDictionary(key => key.index, value => new FieldAddress(value.value));
                     table.Add(coloredRow);
                 }
-                return new Table(table, infoRowContent);
+                return new Table(table.Select(row => new Row(row)), new Row(infoRowContent));
             }
         }
     }

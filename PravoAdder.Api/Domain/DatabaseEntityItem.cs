@@ -18,7 +18,7 @@ namespace PravoAdder.Api.Domain
 		public DatabaseEntityItem(object data)
 		{
 			var dynamicData = data as dynamic;
-			Name = dynamicData?.Name?.ToString();
+			Name = dynamicData?.Name?.ToString() ?? dynamicData?.DisplayName;
 			Id = dynamicData?.Id?.ToString();
 		}
 

@@ -5,6 +5,7 @@ using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
 using PravoAdder.Domain;
+using PravoAdder.Domain.Attributes;
 
 namespace PravoAdder.Readers
 {
@@ -41,7 +42,7 @@ namespace PravoAdder.Readers
 		    return visualBlocks;
 	    }
 
-	    public IEnumerable<CaseInfo> Read()
+	    public IEnumerable<CaseInfo> CreateCaseInfo()
 	    {
 		    if (HeaderBlockInfo.ProjectTypeName == null) return null;
 
@@ -52,8 +53,9 @@ namespace PravoAdder.Readers
 		    var result = new Dictionary<int, List<BlockInfo>>();
 		    foreach (var block in visualBlocks)
 		    {
-			    var blockNumbers = block.IsRepeatable
-				    ? Table.GetRepeatBlockNumber(block.Name)
+			    var correctBlockName = block.Name.Split('-')[0].Trim();
+				var blockNumbers = block.IsRepeatable
+				    ? Table.GetRepeatBlockNumber(correctBlockName)
 				    : new List<int> {0};
 			    foreach (var blockNumber in blockNumbers)
 			    {
@@ -65,7 +67,7 @@ namespace PravoAdder.Readers
 
 					    foreach (var field in line.Fields)
 					    {
-						    var fieldAddress = new FieldAddress(block.Name, field.ProjectField.Name);
+						    var fieldAddress = new FieldAddress(correctBlockName, field.ProjectField.Name);
 						    var fieldCount = line.Fields.Count;
 
 						    if (line.LineType.SysName == "Repeated" && fieldCount > 1)
@@ -107,14 +109,14 @@ namespace PravoAdder.Readers
 				    }
 
 				    if (!result.ContainsKey(blockNumber)) result.Add(blockNumber, new List<BlockInfo>());
-				    result[blockNumber].Add(new BlockInfo(block.Name, block.Id, lines));
+				    result[blockNumber].Add(new BlockInfo(correctBlockName, block.Id, lines));
 			    }			  
 		    }
 		    return result
 				.Select(x => new CaseInfo {Blocks = x.Value, Order = x.Key});
 	    }
 
-        public HeaderBlockInfo ReadHeaderBlock(IDictionary<int, string> excelRow)
+        public HeaderBlockInfo ReadHeaderBlock(Row excelRow)
         {
             const string systemName = "Системный";
 	        var headerObject = new HeaderBlockInfo();
@@ -127,10 +129,10 @@ namespace PravoAdder.Readers
 		        var index = Table.TryGetIndex(new FieldAddress(systemName, fieldnameAttibute?.FieldName));
 		        if (index == 0) continue;
 
-				property.SetValue(headerObject, excelRow[index]);
+				property.SetValue(headerObject, excelRow[index].ToString());
 	        }
 	        HeaderBlockInfo = headerObject;
-	        return headerObject;
+	        return headerObject.Format();
         }
 
 	    public BlockInfo GetByName(IEnumerable<BlockInfo> blocks, string name)

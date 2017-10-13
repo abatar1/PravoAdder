@@ -6,7 +6,8 @@ namespace PravoAdder.Domain
 	{
 		All,
 		Excel,
-		XmlMap
+		XmlMap,
+		ExcelRule
 	}
 
 	[Flags]

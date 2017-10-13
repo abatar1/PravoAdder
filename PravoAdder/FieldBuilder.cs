@@ -27,7 +27,7 @@ namespace PravoAdder
 			_dictionaries = new ConcurrentDictionary<string, ConcurrentBag<DictionaryItem>>();
 		}
 
-		public object CreateFieldValueFromData(BlockFieldInfo fieldInfo, string fieldData)
+		public object CreateFieldValueFromData(BlockFieldInfo fieldInfo, string fieldData, KeyValuePair<string, string> vad)
 		{
 			if (string.IsNullOrEmpty(fieldData)) return null;
 
@@ -40,7 +40,7 @@ namespace PravoAdder
 					if (fieldData == "True") return "Да";
 					if (fieldData == "False") return "Нет";
 					return fieldData;
-				case "Formula":
+				case "CalculationFormula":
 					var calculationFormula = ApiRouter.CalculationFormulas
 						.GetCalculationFormulas(_httpAuthenticator)
 						.GetByName(fieldInfo.SpecialData);
@@ -53,6 +53,7 @@ namespace PravoAdder
 				case "Dictionary":
 					return GetDictionaryFromData(fieldData, fieldInfo);
 				case "Participant":
+					if (fieldData == vad.Key) return GetParticipantFromData(fieldData, vad.Value);
 					return GetParticipantFromData(fieldData);
 				default:
 					throw new ArgumentException("Unknown type of value.");
@@ -64,11 +65,11 @@ namespace PravoAdder
 			string correctIntValue;
 			if (!value.Contains(','))
 			{
-				correctIntValue = value;
+				correctIntValue = value.Trim();
 			}
 			else
 			{
-				var newValue = value.Replace(" ", "");
+				var newValue = value.Replace(" ", "").Trim();
 				var splitted = newValue.Split(',');
 				correctIntValue = splitted[1].All(c => c == '0') ? splitted[0] : newValue;
 			}
@@ -83,32 +84,26 @@ namespace PravoAdder
 
 		private static string FormatDictionaryItemName(string item)
 		{
-			return $"{item.First().ToString().ToUpper()}{item.Substring(1)}";
+			return $"{item.First().ToString().ToUpper()}{item.Substring(1)}".Trim();
 		}
 
-		private Participant GetParticipantFromData(string fieldData)
+		private Participant GetParticipantFromData(string fieldData, string vadId = null)
 		{
-			var participants = _participants.Value;
-			var correctFieldData = fieldData.Trim();		
-			Participant participant;
+			var correctFieldData = fieldData.Trim();
 
-			if (participants.All(p => !p.Name.Equals(correctFieldData)))
+			if (_participants.Value.All(p => !p.Name.Equals(correctFieldData)))
 			{
-				participant = ApiRouter.Participants.PutParticipant(_httpAuthenticator, fieldData);
+				var participant = ApiRouter.Participants.PutParticipant(_httpAuthenticator, fieldData, vadId);
 				if (participant == null) return null;
-
-				participants = ApiRouter.Participants.GetParticipants(_httpAuthenticator);
+				_participants.Value.Add(participant);
 			}
-
-			participant = participants
+			return _participants.Value
 				.First(p => p.Name == correctFieldData);
-
-			return Participant.TryParse(participant);
 		}
 
 		private DictionaryItem GetDictionaryFromData(string fieldData, BlockFieldInfo fieldInfo)
 		{
-			var dictionaryName = fieldInfo.SpecialData;
+			var dictionaryName = fieldInfo.SpecialData.Trim();
 			var correctName = FormatDictionaryItemName(fieldData);
 
 			lock (_dictionaryContainsKeyLock)
@@ -135,16 +130,16 @@ namespace PravoAdder
 
 			if (dictionaryName == "Currency")
 			{
-				if (_dictionaries[dictionaryName].All(d => !d.LetterCode.Equals(correctName))) return null;
+				if (_dictionaries[dictionaryName].All(d => !d.LetterCode.Equals(correctName, StringComparison.InvariantCultureIgnoreCase))) return null;
 
 				return _dictionaries[dictionaryName]
 					.First(d => d.LetterCode == correctName);
 			}
 
-			if (_dictionaries[dictionaryName].All(d => !d.Name.Equals(correctName)))
+			if (_dictionaries[dictionaryName].All(d => !d.Name.Equals(correctName, StringComparison.InvariantCultureIgnoreCase)))
 			{
 				var dictionaryItem = ApiRouter.Dictionary
-					.SaveDictionaryItem(_httpAuthenticator, fieldInfo.SpecialData, correctName);
+					.SaveDictionaryItem(_httpAuthenticator, dictionaryName, correctName);
 				if (dictionaryItem == null) return null;
 
 				_dictionaries[dictionaryName].Add(new DictionaryItem(correctName, dictionaryItem.Id));

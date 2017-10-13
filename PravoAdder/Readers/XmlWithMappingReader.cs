@@ -4,6 +4,7 @@ using System.Linq;
 using System.Xml.Linq;
 using Fclp.Internals.Extensions;
 using Newtonsoft.Json.Linq;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using PravoAdder.Domain;
 using PravoAdder.Helpers;
 
@@ -13,7 +14,7 @@ namespace PravoAdder.Readers
 	{
 		private Dictionary<string, HashSet<XmlAddress>> _matching;
 
-		public override Table Read(Settings settings)
+		public override Table Read(ApplicationArguments args, Settings settings)
 		{
 			var sourceInfo = GetFileInfo(settings.SourceFileName, ".xml");			
 			var mappingInfo = GetFileInfo(settings.XmlMappingPath, ".json");
@@ -33,17 +34,17 @@ namespace PravoAdder.Readers
 					.ToArray();
 			}
 
-			var table = new List<IDictionary<int, string>>();
+			var table = new List<Dictionary<int, FieldAddress>>();
 
 			foreach (var p in xdoc.Elements("Cases").Elements().Select((value, count) => new { Value = value, Count = count + 1}))
 			{
-				if (processedInfo!= null && processed.Contains(p.Count)) continue;
+				if (processedInfo!= null && processed.Contains(p.Count) || p.Count < args.RowNum) continue;
 				
 				var project = p.Value;		
 				var header = ReadHeaderFromX(project);
 				if (header == null) continue;
 
-				var row = new Dictionary<int, string>();
+				var row = new Dictionary<int, FieldAddress>();
 				row.AddRange(AdaptHeader(header));
 
 				var attributes = project.Elements("Attributes")
@@ -77,16 +78,16 @@ namespace PravoAdder.Readers
 
 			var infos = _matching
 				.SelectMany(match => match.Value)
-				.ToDictionary(value => value.Count, value => value.ToFieldAddress().ToString());
+				.ToDictionary(value => value.Count, value => value.ToFieldAddress());
 
-			return new Table(table, infos);
+			return new Table(table.Select(row => new Row(row)), new Row(infos));
 		}
 
-		private Dictionary<int, string> AdaptXElement(IEnumerable<XElement> xElements)
+		private Dictionary<int, FieldAddress> AdaptXElement(IEnumerable<XElement> xElements)
 		{
 			if (xElements == null) return null;
 
-			var row = new Dictionary<int, string>();
+			var row = new Dictionary<int, FieldAddress>();
 			var repeatCount = new Dictionary<string, int>();
 
 			foreach (var xElement in xElements)
@@ -94,7 +95,7 @@ namespace PravoAdder.Readers
 				var xmlTag = xElement.Elements("Tag").First().Value;
 				if (!_matching.ContainsKey(xmlTag)) continue;
 
-				var value = xElement.Elements("Value").First().Value;
+				var value = new FieldAddress(xElement.Elements("Value").First().Value);
 				foreach (var xmlAddress in _matching[xmlTag].Where(x => x.RepeatBlockNumber <= 1))
 				{				
 					if (row.ContainsKey(xmlAddress.Count))
@@ -154,9 +155,9 @@ namespace PravoAdder.Readers
 			return matching;
 		}
 
-		private Dictionary<int, string> AdaptHeader(HeaderBlockInfo headerInfo)
+		private Dictionary<int, FieldAddress> AdaptHeader(HeaderBlockInfo headerInfo)
 		{
-			var row = new Dictionary<int, string>();
+			var row = new Dictionary<int, FieldAddress>();
 			foreach (var property in headerInfo.GetType().GetProperties())
 			{
 				var value = property.GetValue(headerInfo);
@@ -165,7 +166,7 @@ namespace PravoAdder.Readers
 				var key = $"Sys_{property.Name}";
 				_matching[key].ForEach(address =>
 				{
-					row.Add(address.Count, value.ToString());
+					row.Add(address.Count, new FieldAddress(value.ToString()));
 				});			
 			}
 			return row;

@@ -32,11 +32,12 @@ namespace PravoAdder.Processors
 				projectGroups.Add(ProjectGroup.Empty);
 				Parallel.ForEach(projectGroups, parallelOptions, (projectGroup, state, index) =>
 				{
+					DateTime.TryParse(settings.DateTime, out var date);
 					var request = new EngineRequest
 					{
 						ApiEnviroment = migrationProcessController,
 						Item = projectGroup,
-						Date = DateTime.Parse(settings.DateTime),
+						Date = date,
 						Settings = settings
 					};
 					Processor.Invoke(request);					
