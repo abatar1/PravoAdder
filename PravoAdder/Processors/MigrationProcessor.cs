@@ -44,7 +44,8 @@ namespace PravoAdder.Processors
 						BlockReader = blockReaderController,
 						Settings = settings,
 						Count = (int) index + ApplicationArguments.RowNum,
-						AppArgs = ApplicationArguments
+						AppArgs = ApplicationArguments,
+						IsUpdate = ApplicationArguments.ProcessType == ProcessType.Update
 					};
 					var response = Processor.Invoke(request);
 					if (response == null) return;

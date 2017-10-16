@@ -7,6 +7,6 @@
 		public ReaderMode ReaderMode { get; set; }
 		public int RowNum { get; set; }
 		public int MaxDegreeOfParallelism { get; set; }
-		public bool Overwrite { get; set; }
+		public bool IsOverwrite { get; set; }
 	}
 }

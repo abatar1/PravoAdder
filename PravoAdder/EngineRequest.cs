@@ -12,9 +12,9 @@ namespace PravoAdder
 		public Counter Counter { get; set; } = new Counter();
 		public BlockReaderWrapper BlockReader { get; set; }
 		public Row ExcelRow { get; set; }		
-		public int Index { get; set; }
 		public DateTime Date { get; set; }
 		public int Count { get; set; }
+		public bool IsUpdate { get; set; }
 	}
 }
 

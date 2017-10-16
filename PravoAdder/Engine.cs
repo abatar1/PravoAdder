@@ -31,7 +31,7 @@ namespace PravoAdder
 				parser.Setup(arg => arg.RowNum)
 					.As('r', "row")
 					.SetDefault(1);
-				parser.Setup(arg => arg.Overwrite)
+				parser.Setup(arg => arg.IsOverwrite)
 					.As('o', "overwrite")
 					.SetDefault(true);
 			}
@@ -145,6 +145,24 @@ namespace PravoAdder
 						}
 
 						return new EngineResponse();
+					});
+				}
+				case ProcessType.Update:
+				{
+					return new MigrationProcessor(arguments, request =>
+					{
+						var engineMessage = ProcessorImplementations.AddProjectProcessor(request);
+						if (engineMessage == null) return null;
+
+						var blocksInfo = request.BlockReader.ReadBlockInfo();
+						foreach (var repeatBlock in blocksInfo)
+						{
+							foreach (var blockInfo in repeatBlock.Blocks)
+							{
+								request.ApiEnviroment.AddInformation(blockInfo, request.ExcelRow, engineMessage.Item.Id, repeatBlock.Order);
+							}
+						}
+						return engineMessage;
 					});
 				}
 

@@ -16,11 +16,13 @@ namespace PravoAdder.Wrappers
 		private readonly HttpAuthenticator _httpAuthenticator;
 	    private readonly FieldBuilder _fieldBuilder;
 	    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+	    private List<Project> _projects;
 
 		public ApiEnviroment(HttpAuthenticator httpAuthenticator)
         {
             _httpAuthenticator = httpAuthenticator;
 	        _fieldBuilder = new FieldBuilder(httpAuthenticator);
+			_projects = new List<Project>();
         }      
 
 	    public async void SynchronizeCase(string projectId, string syncNumber)
@@ -118,17 +120,33 @@ namespace PravoAdder.Wrappers
 	        return projectGroup;			
 		}
 
-        public Project AddProject(bool needOverwrite, HeaderBlockInfo headerInfo, string projectGroupId, int count)
+        public Project AddProject(bool needOverwrite, HeaderBlockInfo headerInfo, string projectGroupId, int count, bool isUpdate)
         {
-	        if (needOverwrite)
+	        if (isUpdate || needOverwrite)
 	        {
-		        var response = GetGroupedProjects(projectGroupId, headerInfo.FolderName);
-		        if (response != null)
+		        if (isUpdate)
 		        {
-					var projects = response.SelectMany(s => s.Projects).ToList();
-			        var projectResponse = projects.GetByName(headerInfo.ProjectName);
+			        if (!_projects.Any())
+			        {
+				        var response = GetGroupedProjects(projectGroupId, headerInfo.FolderName);
+				        if (response != null)
+						{
+							_projects = response.SelectMany(s => s.Projects).ToList();
+						}						
+			        }
+			        var projectResponse = _projects.GetByName(headerInfo.ProjectName);
 			        if (projectResponse != null) return projectResponse;
 				}
+		        else
+		        {
+					var response = GetGroupedProjects(projectGroupId, headerInfo.FolderName);
+			        if (response != null)
+			        {
+				        var projects = response.SelectMany(s => s.Projects).ToList();
+				        var projectResponse = projects.GetByName(headerInfo.ProjectName);
+				        if (projectResponse != null) return projectResponse;
+			        }
+				}		       
             }
 
 	        if (string.IsNullOrEmpty(headerInfo.ProjectName)) headerInfo.ProjectName = "Название проекта по-умолчанию";
