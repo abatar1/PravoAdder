@@ -7,7 +7,8 @@ namespace PravoAdder.Domain
 		All,
 		Excel,
 		XmlMap,
-		ExcelRule
+		ExcelRule,
+		ExcelReference
 	}
 
 	[Flags]
@@ -20,6 +21,7 @@ namespace PravoAdder.Domain
 		CleanByDate,
 		CleanEmptyFolders,
 		Test,
+		Task,
 		All
 	}
 }

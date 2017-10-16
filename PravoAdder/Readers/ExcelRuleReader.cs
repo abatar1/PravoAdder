@@ -8,7 +8,7 @@ using PravoAdder.Domain;
 
 namespace PravoAdder.Readers
 {
-	public class ExcelRuleReader : TableReader
+	public class ExcelRuleReader : TemplateTableReader
 	{
 		protected override FileInfo GetFileInfo(string name, params string[] stub)
 		{

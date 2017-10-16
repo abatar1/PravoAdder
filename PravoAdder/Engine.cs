@@ -165,9 +165,23 @@ namespace PravoAdder
 						return engineMessage;
 					});
 				}
+				case ProcessType.Task:
+				{
+					Console.Title = "Pravo.Tasks";
+					return new TaskProcessor(arguments, request =>
+					{
+						if (request.Task == null) return new EngineResponse();
 
+						request.ApiEnviroment.CreateTask(request.Task);
+						if (request.Task.IsArchive) request.ApiEnviroment.ArchiveProject(request.Task.Project.Id);
+						return new EngineResponse();
+					});
+
+				}
 				default:
+				{
 					return null;
+				}					
 			}
 		}
 	}

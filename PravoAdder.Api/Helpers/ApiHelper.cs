@@ -84,25 +84,14 @@ namespace PravoAdder.Api.Helpers
 			return request;
 		}
 
-		public static List<T> GetItems<T>(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, 
-			IDictionary<string, string> additionalContent = null)
+		public static List<T> GetItems<T>(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, Content content = null)
 		{
 			var count = 1;
 			var resultContainer = new List<T>();
 			do
 			{
-				var content = new ExpandoObject() as IDictionary<string, object>;			
-				content.Add("PageSize", ApiRouter.PageSize);
-				content.Add("Page", count);
-				if (additionalContent != null)
-				{
-					foreach (var pair in additionalContent)
-					{
-						content.Add(pair.Key, pair.Value);
-					}
-				}
-
-				var request = CreateHttpRequest(content, $"api/{path}", httpMethod,
+				var contentExp = Content.Get(content, count);
+				var request = CreateHttpRequest(contentExp, $"api/{path}", httpMethod,
 					httpAuthenticator.UserCookie);
 
 				var responseMessage = GetResponseFromRequest(request, httpAuthenticator);

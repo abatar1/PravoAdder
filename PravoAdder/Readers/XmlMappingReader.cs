@@ -4,13 +4,12 @@ using System.Linq;
 using System.Xml.Linq;
 using Fclp.Internals.Extensions;
 using Newtonsoft.Json.Linq;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using PravoAdder.Domain;
 using PravoAdder.Helpers;
 
 namespace PravoAdder.Readers
 {
-	public class XmlWithMappingReader : TableReader
+	public class XmlMappingReader : TemplateTableReader
 	{
 		private Dictionary<string, HashSet<XmlAddress>> _matching;
 

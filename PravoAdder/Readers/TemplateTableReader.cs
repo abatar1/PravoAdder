@@ -5,7 +5,7 @@ using PravoAdder.Domain;
 
 namespace PravoAdder.Readers
 {
-    public abstract class TableReader
+    public abstract class TemplateTableReader
     {
         public abstract Table Read(ApplicationArguments arg, Settings settings);
 

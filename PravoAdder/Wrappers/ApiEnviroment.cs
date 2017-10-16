@@ -23,9 +23,39 @@ namespace PravoAdder.Wrappers
             _httpAuthenticator = httpAuthenticator;
 	        _fieldBuilder = new FieldBuilder(httpAuthenticator);
 			_projects = new List<Project>();
-        }      
+        }
 
-	    public async void SynchronizeCase(string projectId, string syncNumber)
+		public void AttachParticipant(string name, string projectId)
+	    {
+		    var response = ApiRouter.Participants.PutParticipant(_httpAuthenticator, name, projectId);
+		    if (response == null) Logger.Error($"Failed to attach participant {name} to {projectId}");
+	    }
+
+	    public void CreateTask(Task task)
+	    {
+		    try
+		    {
+			    ApiRouter.Task.Create(_httpAuthenticator, task);
+		    }
+		    catch (Exception e)
+		    {
+			    Logger.Error($"Task create failed. Reason: {e.Message}");
+		    }
+	    }
+
+	    public void ArchiveProject(string projectId)
+	    {
+		    try
+		    {
+			    ApiRouter.Projects.ArchiveProject(_httpAuthenticator, projectId);
+		    }
+		    catch (Exception e)
+		    {
+			    Logger.Error($"Project archive failed. Reason: {e.Message}");
+		    }
+	    }
+
+		public async void SynchronizeCase(string projectId, string syncNumber)
 	    {
 		    var isSuccessResponse = await ApiRouter.Casebook.CheckCasebookCaseAsync(_httpAuthenticator, projectId, syncNumber);
 			if (!isSuccessResponse) Logger.Error($"Failed to synchronize case {projectId}");
@@ -83,7 +113,7 @@ namespace PravoAdder.Wrappers
 		    return response;
 	    }
 
-	    public List<GroupedProjects> GetGroupedProjects(string projectGroupId, string folderName = null)
+	    public IList<GroupedProjects> GetGroupedProjects(string projectGroupId, string folderName = null)
 	    {
 		    var response = ApiRouter.Projects.GetGroupedProjects(_httpAuthenticator, folderName, projectGroupId);
 		    if (response == null) Logger.Error($"No projects found at group {projectGroupId}");

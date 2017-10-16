@@ -6,44 +6,50 @@ using System.Threading.Tasks;
 
 namespace PravoAdder.Api
 {
-    public class RetryHandler : DelegatingHandler
-    {
-        private static int _maxRetries;
+	public class RetryHandler : DelegatingHandler
+	{
+		private static int _maxRetries;
 
-        public RetryHandler(HttpMessageHandler innerHandler, int maxRetries)
-            : base(innerHandler)
-        {
-	        _maxRetries = maxRetries;
-        }
+		public RetryHandler(HttpMessageHandler innerHandler, int maxRetries)
+			: base(innerHandler)
+		{
+			_maxRetries = maxRetries;
+		}
 
-        protected override async Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
-        {
-	        for (var i = 0; i < _maxRetries; i++)
-	        {
+		protected override async Task<HttpResponseMessage> SendAsync(
+			HttpRequestMessage request,
+			CancellationToken cancellationToken)
+		{
+			var cancellationTokenSource = new CancellationTokenSource();
+			for (var i = 0; i < _maxRetries; i++)
+			{
 				try
 				{
-			        var responseTask = base.SendAsync(request, CancellationToken.None);
-					if (responseTask.Wait(TimeSpan.FromMinutes(5)))
+					var responseTask = base.SendAsync(request, cancellationTokenSource.Token);
+					if (!responseTask.Wait(TimeSpan.FromMinutes(2)))
 					{
-						var response = responseTask.Result;
-						if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Forbidden)
-						{
-							return response;
-						}
+						throw new TimeoutException();
 					}
-					else
+
+					var response = responseTask.Result;
+					if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Forbidden)
 					{
-						break;
+						return response;
 					}
-		        }
-		        catch (Exception)
-		        {
-					Thread.Sleep(TimeSpan.FromSeconds(10));
-				}		        
+				}
+				catch (TimeoutException)
+				{
+					cancellationTokenSource.Cancel();
+					throw new Exception("Timeout Api error");
+				}
+				catch (Exception)
+				{
+					//
+				}
+				Thread.Sleep(TimeSpan.FromSeconds(10));
 			}
-			throw new Exception();
+
+			throw new Exception("Api error");
 		}
-    }
+	}
 }

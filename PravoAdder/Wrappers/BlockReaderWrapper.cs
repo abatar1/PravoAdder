@@ -15,7 +15,7 @@ namespace PravoAdder.Wrappers
 
         public BlockReaderWrapper(ApplicationArguments args, Settings settings, HttpAuthenticator autentificator)
         {
-            TableReader tableReader;
+            TemplateTableReader tableReader;
             switch (args.ReaderMode)
             {
                 case ReaderMode.Excel:
@@ -23,13 +23,17 @@ namespace PravoAdder.Wrappers
                     Table = tableReader.Read(args, settings);
                     break;
 				case ReaderMode.XmlMap:
-					tableReader = new XmlWithMappingReader();
+					tableReader = new XmlMappingReader();
 					Table = tableReader.Read(args, settings);
 					break;
 				case ReaderMode.ExcelRule:
 					tableReader = new ExcelRuleReader();
 					Table = tableReader.Read(args, settings);
 					break;
+	            case ReaderMode.ExcelReference:
+		            tableReader = new ExcelReferenceReader();
+		            Table = tableReader.Read(args, settings);
+		            break;
 				default:
                     var message = $"Типа блоков {args.ReaderMode} не существует.";
                     Logger.Error(message);

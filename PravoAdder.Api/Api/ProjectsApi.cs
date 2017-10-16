@@ -8,26 +8,32 @@ namespace PravoAdder.Api
 {
 	public class ProjectsApi
 	{
-		public List<GroupedProjects> GetGroupedProjects(HttpAuthenticator httpAuthenticator, string folderName, string projectGroupid)
+		public IList<GroupedProjects> GetGroupedProjects(HttpAuthenticator httpAuthenticator, string folderName, string projectGroupid)
 		{
 			var projectFolder = ApiRouter.ProjectFolders
 				.GetProjectFolders(httpAuthenticator)
 				.FirstOrDefault(folder => folder.Name == folderName);
 
-			Dictionary<string, string> additionalContent = null;
+			Dictionary<string, string> parameters = null;
 			if (projectFolder == null && folderName != null)
 			{
 				projectFolder = ApiRouter.ProjectFolders.InsertProjectFolder(folderName, httpAuthenticator);
-				additionalContent = new Dictionary<string, string> { ["FolderId"] = projectFolder.Id };
+				parameters = new Dictionary<string, string> { ["FolderId"] = projectFolder.Id };
 			}
 			else if (projectFolder != null && folderName != null)
 			{
-				additionalContent = new Dictionary<string, string> { ["FolderId"] = projectFolder.Id };
+				parameters = new Dictionary<string, string> { ["FolderId"] = projectFolder.Id };
 			}
-
+			var content = new Content(parameters);
 			return ApiHelper.GetItems<GroupedProjects>(httpAuthenticator, "Projects/GetGroupedProjects",
-				HttpMethod.Post, additionalContent)
-				.ToList();
+				HttpMethod.Post, content);
+		}
+
+		public Project GetProject(HttpAuthenticator httpAuthenticator, string projectId)
+		{
+			var parameters = new Dictionary<string, string> { ["ProjectId"] = projectId };
+			var response = ApiHelper.GetItem(httpAuthenticator, "Projects/GetProject", HttpMethod.Get, parameters);
+			return new Project(response);
 		}
 
 		public Project CreateProject(HttpAuthenticator httpAuthenticator, dynamic content)
@@ -46,6 +52,12 @@ namespace PravoAdder.Api
 		{
 			var parameters = new Dictionary<string, string> { ["Id"] = projectId };
 			ApiHelper.GetItem(httpAuthenticator, "projects/Archive", HttpMethod.Put, parameters);
+		}
+
+		public void RestoreProject(HttpAuthenticator httpAuthenticator, string projectId)
+		{
+			var parameters = new Dictionary<string, string> { ["Id"] = projectId };
+			ApiHelper.GetItem(httpAuthenticator, "Projects/Restore", HttpMethod.Put, parameters);
 		}
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using PravoAdder.Api.Domain;
 using PravoAdder.Domain;
 using PravoAdder.Wrappers;
 
@@ -15,6 +16,7 @@ namespace PravoAdder
 		public DateTime Date { get; set; }
 		public int Count { get; set; }
 		public bool IsUpdate { get; set; }
+		public Task Task { get; set; }
 	}
 }
 

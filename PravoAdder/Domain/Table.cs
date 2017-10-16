@@ -5,28 +5,28 @@ namespace PravoAdder.Domain
 {
     public class Table
     {
-        private readonly Row _info;
-
         private readonly IDictionary<FieldAddress, List<int>> _infoRowContentSti;
 
-        public Table(IEnumerable<Row> table, Row info)
+        public Table(IEnumerable<Row> table, Row header)
         {
-            _info = info;
-            _infoRowContentSti = _info
-                .GroupBy(i => i.Value)
+			Header = header;
+			_infoRowContentSti = Header
+				.GroupBy(i => i.Value)
                 .ToDictionary(g => g.Key, g => g.Select(p => p.Key).ToList());
 			TableContent = table.ToList();
 		}
 
-        public List<Row> TableContent { get; }
+		public Row Header { get; }
+	    public List<Row> TableContent { get; }
+	    public string Name { get; set; }
 
-        public bool IsComplexRepeat(FieldAddress fieldAddress)
+		public bool IsComplexRepeat(FieldAddress fieldAddress)
         {
             _infoRowContentSti.TryGetValue(fieldAddress, out List<int> result);
             if (result == null) return false;
 
             return result
-                .Select(index => _info[index])
+                .Select(index => Header[index])
                 .Any(address => address.IsRepeatField && address.RepeatFieldNumber > 0);
         }
 
@@ -38,15 +38,15 @@ namespace PravoAdder.Domain
 
         public Dictionary<int, int> GetComplexIndexes(FieldAddress fieldAddress, int blockNumber = 0)
         {
-			return _info
-                .Where(x => x.Value.Equals(fieldAddress))
+			return Header
+				.Where(x => x.Value.Equals(fieldAddress))
 				.Where(i => i.Value.RepeatBlockNumber == blockNumber)
 				.ToDictionary(x => x.Value.RepeatFieldNumber, x => x.Key);
         }
 
 	    public List<int> GetRepeatBlockNumber(string blockName)
 	    {
-		    return _info.Values
+		    return Header.Values
 				.GroupBy(x => x.BlockName)
 				.FirstOrDefault(x => x.Key == blockName)
 				?.Select(x => x.RepeatBlockNumber)
@@ -62,7 +62,7 @@ namespace PravoAdder.Domain
 			var resultList = new List<int>();
             foreach (var index in result)
             {
-                var address = _info[index];
+                var address = Header[index];
 
 	            if (!address.IsRepeatBlock)
 	            {
@@ -70,8 +70,8 @@ namespace PravoAdder.Domain
 		            {
 			            return new List<int> { index };
 		            }
-					resultList.AddRange(_info
-			            .Where(i => i.Value.RepeatFieldNumber == address.RepeatFieldNumber && i.Value.Equals(fieldAddress))
+					resultList.AddRange(Header
+						.Where(i => i.Value.RepeatFieldNumber == address.RepeatFieldNumber && i.Value.Equals(fieldAddress))
 			            .Select(i => i.Key));
 				}
 	            else
@@ -82,7 +82,7 @@ namespace PravoAdder.Domain
 			            return new List<int> { index };
 					}
 
-					resultList.AddRange(_info
+					resultList.AddRange(Header
 						.Where(i => i.Value.RepeatFieldNumber == address.RepeatFieldNumber && i.Value.Equals(fieldAddress))
 						.Where(i => i.Value.RepeatBlockNumber == blockNumber)
 				        .Select(i => i.Key));

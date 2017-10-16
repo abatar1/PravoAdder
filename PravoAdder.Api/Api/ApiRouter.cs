@@ -13,6 +13,7 @@
 		public static CalculationFormulasApi CalculationFormulas;
 		public static ResponsiblesApi Responsibles;
 		public static CurrenciesApi Currencies;
+		public static TaskApi Task;
 
 		public static int PageSize = 50;
 
@@ -28,7 +29,8 @@
 			ProjectCustomValues = new ProjectCustomValuesApi();
 			CalculationFormulas = new CalculationFormulasApi();
 			Responsibles = new ResponsiblesApi();
-			Currencies = new CurrenciesApi();			
+			Currencies = new CurrenciesApi();
+			Task = new TaskApi();
 		}
 	}
 }
