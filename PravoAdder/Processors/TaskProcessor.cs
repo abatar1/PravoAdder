@@ -29,7 +29,7 @@ namespace PravoAdder.Processors
 			var authenticatorController = new AuthentificatorWrapper(settings);
 			using (var authenticator = authenticatorController.Authenticate())
 			{
-				var databaseWrapper = new ApiEnviroment(authenticator);
+				var apiEnviroment = new ApiEnviroment(authenticator);
 				var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = ApplicationArguments.MaxDegreeOfParallelism };
 				var counter = new Counter();
 				var taskReader = new TaskReader(authenticator);
@@ -37,7 +37,7 @@ namespace PravoAdder.Processors
 				{
 					var request = new EngineRequest
 					{
-						ApiEnviroment = databaseWrapper,
+						ApiEnviroment = apiEnviroment,
 						ExcelRow = excelRow,
 						Task = taskReader.Read(info, excelRow)
 					};

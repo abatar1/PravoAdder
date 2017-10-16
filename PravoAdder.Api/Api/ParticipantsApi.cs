@@ -17,8 +17,7 @@ namespace PravoAdder.Api
 				INN = vad
 			};
 
-			return ApiHelper.GetItem<Participant>(content, "participants/PutParticipant", HttpMethod.Put,
-				httpAuthenticator);
+			return ApiHelper.GetItem<Participant>(httpAuthenticator, "participants/PutParticipant", HttpMethod.Put, content);
 		}
 
 		public IList<Participant> GetParticipants(HttpAuthenticator httpAuthenticator)

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -28,7 +27,7 @@ namespace PravoAdder.Api.Helpers
 			}		
 		}
 
-		public static async Task<bool> TrySendAsync(HttpAuthenticator httpAuthenticator, object content, string path, HttpMethod httpMethod)
+		public static async Task<bool> TrySendAsync(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, object content)
 		{
 			try
 			{
@@ -108,7 +107,7 @@ namespace PravoAdder.Api.Helpers
 			return resultContainer.Count == 0 ? new List<T>() : resultContainer;
 		}	
 
-		public static T GetItem<T>(object content, string path, HttpMethod httpMethod, HttpAuthenticator httpAuthenticator)
+		public static T GetItem<T>(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, object content)
 			where T : DatabaseEntityItem, new()
 		{
 			var item = GetItem(httpAuthenticator, path, httpMethod, content);

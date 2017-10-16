@@ -15,7 +15,7 @@ namespace PravoAdder.Api.Domain
         private IDictionary<string, string> Parameters { get; }
 
 	    public IDictionary<string, object> Get(int count)
-	    {
+	    {		
 		    var result = new ExpandoObject() as IDictionary<string, object>;
 		    result.Add("PageSize", ApiRouter.PageSize);
 		    result.Add("Page", count);

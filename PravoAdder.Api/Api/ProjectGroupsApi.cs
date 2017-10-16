@@ -14,8 +14,7 @@ namespace PravoAdder.Api
 
 		public ProjectGroup ProjectGroups(HttpAuthenticator httpAuthenticator, object content)
 		{
-			return ApiHelper.GetItem<ProjectGroup>(content, "ProjectGroups", HttpMethod.Put,
-				httpAuthenticator);
+			return ApiHelper.GetItem<ProjectGroup>(httpAuthenticator, "ProjectGroups", HttpMethod.Put, content);
 		}
 
 		public void DeleteProjectGroup(HttpAuthenticator httpAuthenticator, string projectGroupId)

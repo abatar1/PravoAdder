@@ -19,8 +19,8 @@ namespace PravoAdder.Api
 				Name = name
 			};
 
-			return ApiHelper.GetItem<ProjectFolder>(content, "ProjectFolders/InsertProjectFolder", HttpMethod.Post,
-				httpAuthenticator);
+			return ApiHelper.GetItem<ProjectFolder>(httpAuthenticator, "ProjectFolders/InsertProjectFolder", HttpMethod.Post,
+				content);
 		}
 
 		public void Delete(HttpAuthenticator httpAuthenticator, string projectFolderId)

@@ -176,7 +176,14 @@ namespace PravoAdder
 						if (request.Task.IsArchive) request.ApiEnviroment.ArchiveProject(request.Task.Project.Id);
 						return new EngineResponse();
 					});
-
+				}
+				case ProcessType.Contact:
+				{
+					Console.Title = "Pravo.Contact";
+					return new ContactProcessor(arguments, request =>
+					{
+						return null;
+					});
 				}
 				default:
 				{

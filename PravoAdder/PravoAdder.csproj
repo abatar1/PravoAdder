@@ -75,6 +75,7 @@
     <Compile Include="Domain\Attributes\ProcessTypeAttribute.cs" />
     <Compile Include="Domain\Attributes\ReadingTypeAttribute.cs" />
     <Compile Include="Domain\Row.cs" />
+    <Compile Include="Processors\ContactProcessor.cs" />
     <Compile Include="Processors\ForEachProjectGroupProcessor.cs" />
     <Compile Include="Domain\ApplicationArguments.cs" />
     <Compile Include="Domain\Info\CaseInfo.cs" />

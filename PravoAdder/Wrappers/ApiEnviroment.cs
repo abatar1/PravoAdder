@@ -102,8 +102,8 @@ namespace PravoAdder.Wrappers
 	    public IList<ProjectGroup> GetProjectGroupItems()
 	    {
 		    var response = ApiRouter.ProjectGroups.GetProjectGroups(_httpAuthenticator);
-		    if (response == null) Logger.Error("No project groups found");
-		    return response;
+		    response.Add(ProjectGroup.Empty);
+			return response;
 	    }
 
 	    public IList<ProjectFolder> GetProjectFolderItems()

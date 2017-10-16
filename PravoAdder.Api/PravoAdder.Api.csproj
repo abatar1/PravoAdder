@@ -80,11 +80,13 @@
     <Compile Include="Api\ProjectTypesApi.cs" />
     <Compile Include="Api\ResponsiblesApi.cs" />
     <Compile Include="Api\TaskApi.cs" />
+    <Compile Include="Domain\ContactDetail.cs" />
     <Compile Include="Domain\DatabaseItems\CalculationFormula.cs" />
     <Compile Include="Domain\CalculationFormulaValue.cs" />
     <Compile Include="Domain\Content.cs" />
     <Compile Include="Domain\DatabaseItems\DatabaseEntityItem.cs" />
     <Compile Include="Domain\DatabaseItems\DictionaryItem.cs" />
+    <Compile Include="Domain\ExtendentParticipant.cs" />
     <Compile Include="Domain\LineType.cs" />
     <Compile Include="Domain\DatabaseItems\Participant.cs" />
     <Compile Include="Domain\ParticipantType.cs" />
@@ -103,7 +105,6 @@
     <Compile Include="Domain\VisualBlock.cs" />
     <Compile Include="Domain\VisualBlockField.cs" />
     <Compile Include="Domain\VisualBlockLine.cs" />
-    <Compile Include="EnviromentMessage.cs" />
     <Compile Include="Helpers\ApiHelper.cs" />
     <Compile Include="Helpers\DatabaseEntityItemHelper.cs" />
     <Compile Include="HttpAuthenticator.cs" />

@@ -14,7 +14,7 @@ namespace PravoAdder.Api
 				CasebookNumber = syncNumber
 			};
 
-			return await ApiHelper.TrySendAsync(httpAuthenticator, content, "Casebook/CheckCasebookCase", HttpMethod.Put);
+			return await ApiHelper.TrySendAsync(httpAuthenticator, "Casebook/CheckCasebookCase", HttpMethod.Put, content);
 		}
 	}
 }

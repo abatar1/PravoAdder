@@ -8,7 +8,7 @@ namespace PravoAdder.Api
     {
         public void Create(HttpAuthenticator authenticator, Task task)
         {
-            var result = ApiHelper.TrySendAsync(authenticator, task, "tasks", HttpMethod.Put).Result;
+            var result = ApiHelper.TrySendAsync(authenticator, "tasks", HttpMethod.Put, task).Result;
         }
     }
 }

@@ -24,7 +24,7 @@ namespace PravoAdder.Readers
 	    private TaskState GetState(string name)
 	    {
 	        var item = _taskStates.FirstOrDefault(t => t.Name == name);
-	        return new TaskState(item.Name, item.Id, item.SysName);
+	        return new TaskState(item?.Name, item?.Id, item?.SysName);
         }
 
 		public Task Read(Row info, Row row)

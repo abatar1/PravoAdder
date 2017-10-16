@@ -8,9 +8,7 @@ namespace PravoAdder.Api.Helpers
 	{
 		public static T GetByName<T>(this IList<T> container, string name) where T : DatabaseEntityItem
 		{
-			if (container == null) return null;
-			return container
-				.FirstOrDefault(i => i.Name == name);
+			return container?.FirstOrDefault(i => i.Name == name);
 		}
 	}
 }

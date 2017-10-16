@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Authentication;
 using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api
@@ -36,7 +37,7 @@ namespace PravoAdder.Api
             Client?.Dispose();
         }
 
-        protected EnviromentMessage Authentication(string login, string password)
+        protected void Authentication(string login, string password)
         {
             var authentication = new
             {
@@ -46,19 +47,13 @@ namespace PravoAdder.Api
 
             var response = Client.PostAsJsonAsync("authentication/account/login", authentication).Result;
 	        response.EnsureSuccessStatusCode();
-
-            if (!response.IsSuccessStatusCode)
-                return new EnviromentMessage(null, "Failed authentication request.", EnviromentMessageType.Error);
+            if (!response.IsSuccessStatusCode) throw new AuthenticationException("Failed to send authentication request.");
 
             UserCookie = CookieContainer.GetCookies(BaseAddress).Cast<Cookie>().FirstOrDefault();
-            if (UserCookie == null)
-                return new EnviromentMessage(null, "Cannot create new session", EnviromentMessageType.Error);
+            if (UserCookie == null) throw new AuthenticationException("Cannot create new session");
 
             var message = ApiHelper.ReadFromResponce(response);
-            if (!(bool) message.Succeeded)
-                return new EnviromentMessage(null, "Wrong login or password", EnviromentMessageType.Error);
-
-            return new EnviromentMessage(null, "Successful login", EnviromentMessageType.Success);
+            if (!(bool) message.Succeeded) throw new AuthenticationException("Wrong login or password");
         }
     }
 }

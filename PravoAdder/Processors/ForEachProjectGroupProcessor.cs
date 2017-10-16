@@ -29,7 +29,6 @@ namespace PravoAdder.Processors
 				var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = ApplicationArguments.MaxDegreeOfParallelism };
 
 				var projectGroups = migrationProcessController.GetProjectGroupItems();
-				projectGroups.Add(ProjectGroup.Empty);
 				Parallel.ForEach(projectGroups, parallelOptions, (projectGroup, state, index) =>
 				{
 					DateTime.TryParse(settings.DateTime, out var date);

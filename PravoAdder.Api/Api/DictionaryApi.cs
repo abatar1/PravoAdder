@@ -15,8 +15,8 @@ namespace PravoAdder.Api
 				Name = itemName
 			};
 
-			return ApiHelper.GetItem<DictionaryItem>(content, "Dictionary/SaveDictionaryItem", HttpMethod.Put,
-				httpAuthenticator);
+			return ApiHelper.GetItem<DictionaryItem>(httpAuthenticator, "Dictionary/SaveDictionaryItem", HttpMethod.Put,
+				content);
 		}
 
 		public List<DictionaryItem> GetDictionaryItems(HttpAuthenticator httpAuthenticator, string dictionaryName)
