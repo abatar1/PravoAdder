@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace PravoAdder.Api.Domain
+﻿namespace PravoAdder.Api.Domain
 {
     public class Participant : DatabaseEntityItem
 	{

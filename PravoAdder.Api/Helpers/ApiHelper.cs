@@ -90,15 +90,14 @@ namespace PravoAdder.Api.Helpers
 			var resultContainer = new List<T>();
 			do
 			{
-				var contentExp = Content.Get(content, count);
-				var request = CreateHttpRequest(contentExp, $"api/{path}", httpMethod,
+				var request = CreateHttpRequest(content?.Get(count), $"api/{path}", httpMethod,
 					httpAuthenticator.UserCookie);
 
 				var responseMessage = GetResponseFromRequest(request, httpAuthenticator);
 				if (responseMessage == null) return null;				
 
-				var newItems = new List<dynamic>(responseMessage.Result)
-					.Select(r => (T) Activator.CreateInstance(typeof(T), new object[] { r }));
+				var newItems = new List<object>(responseMessage.Result)
+					.Select(r => (T) Activator.CreateInstance(typeof(T), r));
 				resultContainer.AddRange(newItems);
 
 				count += 1;

@@ -14,28 +14,27 @@ namespace PravoAdder.Api.Domain
         private IDictionary<string, string> Json { get; }
         private IDictionary<string, string> Parameters { get; }
 
-        public static IDictionary<string, object> Get(Content content, int count)
-        {
-            var result = new ExpandoObject() as IDictionary<string, object>;
-            result.Add("PageSize", ApiRouter.PageSize);
-            result.Add("Page", count);
-            if (content == null) return result;
-            
-            if (content.Parameters != null)
-            {
-                foreach (var pair in content.Parameters)
-                {
-                    result.Add(pair.Key, pair.Value);
-                }
-            }
-            if (content.Json != null)
-            {
-                foreach (var pair in content.Json)
-                {
-                    result.Add(pair.Key, pair.Value);
-                }
-            }
-            return result;
-        }
+	    public IDictionary<string, object> Get(int count)
+	    {
+		    var result = new ExpandoObject() as IDictionary<string, object>;
+		    result.Add("PageSize", ApiRouter.PageSize);
+		    result.Add("Page", count);
+
+		    if (Parameters != null)
+		    {
+			    foreach (var pair in Parameters)
+			    {
+				    result.Add(pair.Key, pair.Value);
+			    }
+		    }
+		    if (Json != null)
+		    {
+			    foreach (var pair in Json)
+			    {
+				    result.Add(pair.Key, pair.Value);
+			    }
+		    }
+		    return result;
+	    }
     }
 }
