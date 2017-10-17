@@ -22,7 +22,7 @@ namespace PravoAdder.Domain
 		public string ProcessedIndexesFilePath { get; set; }
 
 		[DisplayName("Line number from which the data begins"), IsRequired(true)]
-		[ProcessType(ProcessType.Migration, ProcessType.Sync)]
+		[ProcessType(ProcessType.Migration, ProcessType.Sync, ProcessType.Participant, ProcessType.Task)]
 		[ReadingType(ReaderMode.Excel)]
 		public int DataRowPosition { get; set; }
 
@@ -36,16 +36,12 @@ namespace PravoAdder.Domain
 		[ReadingType(ReaderMode.XmlMap), IsRequired(true)]
 		public string XmlMappingPath { get; set; }
 
-		//[DisplayName("Overwrite project and project's folders?"), JsonIgnore, IsRequired(true)] 
-		//[ProcessType(ProcessType.All)]
-		//public bool Overwrite { get; set; }
-
 		[DisplayName("Write source filename"), JsonIgnore]
-		[ProcessType(ProcessType.Migration, ProcessType.Sync)]
+		[ProcessType(ProcessType.Migration, ProcessType.Sync, ProcessType.Participant, ProcessType.Task)]
 		public string SourceFileName { get; set; }
 
 		[DisplayName("Enter list allowed column's colors separated by commas (format:FFRRGGBB)"), IsRequired(true)]
-		[ProcessType(ProcessType.Migration, ProcessType.Sync)]
+		[ProcessType(ProcessType.Migration, ProcessType.Sync, ProcessType.Participant, ProcessType.Task)]
 		[ReadingType(ReaderMode.Excel)]
 		public string[] AllowedColors { get; set; }
 
@@ -57,7 +53,7 @@ namespace PravoAdder.Domain
 		[ProcessType(ProcessType.CleanByDate)]
 		public string DateTime { get; set; }
 
-		[DisplayName("Date time"), JsonIgnore, IsRequired(true)] 
+		[DisplayName("Ignore file path"), JsonIgnore, IsRequired(true)] 
 		[ProcessType(ProcessType.Migration), ReadingType(ReaderMode.XmlMap)]
 		public string IgnoreFilePath { get; set; }
 

@@ -22,7 +22,7 @@ namespace PravoAdder.Domain
 		CleanEmptyFolders,
 		Test,
 		Task,
-		Contact,
+		Participant,
 		All
 	}
 }

@@ -21,12 +21,12 @@ namespace PravoAdder.Api
 			return JsonConvert.DeserializeObject<List<VisualBlock>>(projectType.ToString());
 		}
 
-		public VisualBlock GetEntityCardVisualBlock(HttpAuthenticator httpAuthenticator, string entityId, string entityTypeId)
+		public VisualBlock GetEntityCardVisualBlock(HttpAuthenticator httpAuthenticator, string entityId, string entityTypeName)
 		{
 			var content = new
 			{
 				EntityId = entityId,
-				EntityTypeSysName = entityTypeId
+				EntityTypeSysName = entityTypeName
 			};
 			var response = ApiHelper.GetItem(httpAuthenticator, "EntityVisualBlocks/GetEntityCardVisualBlock",
 				HttpMethod.Post, content);

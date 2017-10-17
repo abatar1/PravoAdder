@@ -23,7 +23,9 @@ namespace PravoAdder
 				.As('t', "type")
 				.Required();
 			parser.Parse(args);
-			if (parser.Object.ProcessType == ProcessType.Migration || parser.Object.ProcessType == ProcessType.Sync)
+			var processType = parser.Object.ProcessType;
+			if (processType == ProcessType.Migration || processType == ProcessType.Sync ||
+			    processType == ProcessType.Participant || processType == ProcessType.Task)
 			{
 				parser.Setup(arg => arg.ReaderMode)
 					.As('m', "mode")
@@ -177,12 +179,14 @@ namespace PravoAdder
 						return new EngineResponse();
 					});
 				}
-				case ProcessType.Contact:
+				case ProcessType.Participant:
 				{
-					Console.Title = "Pravo.Contact";
-					return new ContactProcessor(arguments, request =>
+					Console.Title = "Pravo.Participant";
+					return new ParticipantProcessor(arguments, request =>
 					{
-						return null;
+						if (request.Participant == null) return new EngineResponse();
+						request.ApiEnviroment.PutExtendentParticipant(request.Participant);		
+						return new EngineResponse();
 					});
 				}
 				default:

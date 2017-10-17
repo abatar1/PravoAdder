@@ -17,6 +17,7 @@ namespace PravoAdder
 		public int Count { get; set; }
 		public bool IsUpdate { get; set; }
 		public Task Task { get; set; }
+		public ExtendentParticipant Participant { get; set; }
 	}
 }
 

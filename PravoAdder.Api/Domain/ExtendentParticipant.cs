@@ -1,28 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace PravoAdder.Api.Domain
 {
 	public class ExtendentParticipant
 	{
-		public ExtendentParticipant(ParticipantType participantType, Participant company, ContactDetail contactDetail,
-			string lastName, string firstName, string middleName, List<VisualBlockLine> visualBlockValueLines)
-		{
-			ParticipantType = participantType;
-			Company = company;
-			ContactDetail = contactDetail;
-			LastName = lastName;
-			FirstName = firstName;
-			MiddleName = middleName;
-			VisualBlockValueLines = visualBlockValueLines;
-		}
-
-		public ParticipantType ParticipantType { get; }
-		public Participant Company { get; }
-		public ContactDetail ContactDetail { get; }
-		public string LastName { get; }
-		public string FirstName { get; }
-		public string MiddleName { get; }
-		public List<VisualBlockLine> VisualBlockValueLines { get; }
+		public ParticipantType Type { get; set; }
+		public Participant Company { get; set; }
+		public ContactDetail ContactDetail { get; set; }
+		public string LastName { get; set; }
+		public string FirstName { get; set; }
+		public string MiddleName { get; set; }
+		public List<VisualBlockParticipantLine> VisualBlockValueLines { get; set; }
 	}
 }
