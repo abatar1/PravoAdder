@@ -75,6 +75,11 @@
     <Compile Include="Domain\Attributes\ProcessTypeAttribute.cs" />
     <Compile Include="Domain\Attributes\ReadingTypeAttribute.cs" />
     <Compile Include="Domain\Row.cs" />
+<<<<<<< HEAD
+=======
+    <Compile Include="Processors\ParticipantProcessor.cs" />
+    <Compile Include="Processors\ForEachProjectGroupProcessor.cs" />
+>>>>>>> e06ccc4eb4c20f5b0a884c8c73b5e112fbac295a
     <Compile Include="Domain\ApplicationArguments.cs" />
     <Compile Include="Domain\Info\CaseInfo.cs" />
     <Compile Include="Domain\XmlAddress.cs" />
@@ -88,8 +93,13 @@
     <Compile Include="Helpers\AttributeHelper.cs" />
     <Compile Include="Readers\ExcelRuleReader.cs" />
     <Compile Include="Readers\ExcelReferenceReader.cs" />
+<<<<<<< HEAD
     <Compile Include="Readers\ParticipantCreator.cs" />
     <Compile Include="Readers\TaskCreator.cs" />
+=======
+    <Compile Include="Readers\ParticipantConstructor.cs" />
+    <Compile Include="Readers\TaskConstructor.cs" />
+>>>>>>> e06ccc4eb4c20f5b0a884c8c73b5e112fbac295a
     <Compile Include="Wrappers\AuthentificatorWrapper.cs" />
     <Compile Include="Domain\Attributes\FieldNameAttribute.cs" />
     <Compile Include="Domain\Table.cs" />

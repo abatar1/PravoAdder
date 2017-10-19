@@ -32,6 +32,7 @@ namespace PravoAdder.Wrappers
 		    if (response == null) Logger.Error($"Failed to attach participant {name} to {projectId}");
 	    }
 
+<<<<<<< HEAD
 	    public List<Participant> GetParticipants()
 	    {
 		    try
@@ -58,6 +59,21 @@ namespace PravoAdder.Wrappers
 		}
 
 		public void CreateTask(Task task)
+=======
+	    public void PutExtendentParticipant(ExtendentParticipant participant)
+	    {
+			try
+			{
+				ApiRouter.Participants.PutParticipant(_httpAuthenticator, participant);
+			}
+			catch (Exception e)
+			{
+				Logger.Error($"Participant create failed. Reason: {e.Message}");
+			}
+		}
+
+	    public void CreateTask(Task task)
+>>>>>>> e06ccc4eb4c20f5b0a884c8c73b5e112fbac295a
 	    {
 		    try
 		    {

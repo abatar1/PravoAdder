@@ -32,10 +32,14 @@ namespace PravoAdder.Wrappers
 				switch (property.Name)
 				{
 					case "Password":
-						property.SetValue(settingsObject, "1301Zakzak");
+						property.SetValue(settingsObject, "123123");
 						continue;
 					case "SourceFileName":
+<<<<<<< HEAD
 						property.SetValue(settingsObject, "prod2cl");
+=======
+						property.SetValue(settingsObject, "produsa2");
+>>>>>>> e06ccc4eb4c20f5b0a884c8c73b5e112fbac295a
 						continue;
 					case "MaximumRows":
 						property.SetValue(settingsObject, int.MaxValue);

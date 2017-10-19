@@ -20,7 +20,16 @@ namespace PravoAdder.Api
 			return ApiHelper.GetItem<Participant>(httpAuthenticator, "participants/PutParticipant", HttpMethod.Put, content);
 		}
 
+<<<<<<< HEAD
 		public List<Participant> GetParticipants(HttpAuthenticator httpAuthenticator)
+=======
+		public bool PutParticipant(HttpAuthenticator httpAuthenticator, ExtendentParticipant participant)
+		{
+			return ApiHelper.TrySendAsync(httpAuthenticator, "participants/PutParticipant", HttpMethod.Put, participant).Result;
+		}
+
+		public IList<Participant> GetParticipants(HttpAuthenticator httpAuthenticator)
+>>>>>>> e06ccc4eb4c20f5b0a884c8c73b5e112fbac295a
 		{
 			return ApiHelper.GetItems<Participant>(httpAuthenticator, "ParticipantsSuggest/GetParticipants", HttpMethod.Post);
 		}

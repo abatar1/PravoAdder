@@ -23,7 +23,7 @@ namespace PravoAdder.Api.Domain
 		{
 		}
 
-		public string TypeName { get; }
-		public string NameEn { get; }
+		public string TypeName { get; set; }
+		public string NameEn { get; set; }
 	}
 }
