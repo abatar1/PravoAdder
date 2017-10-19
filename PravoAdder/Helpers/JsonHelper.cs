@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace PravoAdder.Helpers
@@ -13,6 +15,18 @@ namespace PravoAdder.Helpers
 				foreach (var cc in GetAllChildrens(c))
 					yield return cc;
 			}
+		}
+
+		public static T CloneJson<T>(this T source)
+		{
+			if (ReferenceEquals(source, null))
+			{
+				return default(T);
+			}
+
+			var deserializeSettings = new JsonSerializerSettings { ObjectCreationHandling = ObjectCreationHandling.Replace };
+
+			return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(source), deserializeSettings);
 		}
 	}
 }

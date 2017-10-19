@@ -2,6 +2,7 @@
 
 namespace PravoAdder.Api.Domain
 {
+	[Serializable]
 	public abstract class DatabaseEntityItem : IEquatable<DatabaseEntityItem>
 	{
 		public DatabaseEntityItem()

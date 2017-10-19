@@ -9,6 +9,11 @@ namespace PravoAdder.Domain.Attributes
             Ignore = needToIgnore;
         }
 
-        public bool Ignore { get; set; }
+	    public IgnoreAttribute()
+	    {
+		    Ignore = true;
+	    }
+
+		public bool Ignore { get; set; }
     }
 }

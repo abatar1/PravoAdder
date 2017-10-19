@@ -59,14 +59,15 @@ namespace PravoAdder.Readers
 
 				var keyIndex = GetIndexByName(infoRowContent, "Номер дела");
 				var responseIndex = GetIndexByName(infoRowContent, "Ответственный");
-				var vatIndex = GetIndexByName(infoRowContent, "VAT");
-				var folderIndex = GetIndexByName(infoRowContent, "Название папки");
+				var innIndex = GetIndexByName(infoRowContent, "ИНН");
+				var idParticipantIndex = GetIndexByName(infoRowContent, "ID контрагента");
 
 				var rgx = new Regex(@"^А\d{2}-[0-9]+/20\d{2}");
 				var groupedTable = table
 					.GroupBy(row => row.First(cell => cell.Key == keyIndex).Value)
 					.Where(row => row.Key != null && rgx.IsMatch(row.Key))
-					.Select(row => row.Last().Select(cell =>
+					.Select(row => row.Last()
+						.Select(cell => 
 						{
 							if (cell.Key == responseIndex)
 							{
@@ -77,13 +78,13 @@ namespace PravoAdder.Readers
 							}
 							return cell;
 						})
-						.ToDictionary(key => key.Key, value =>
+						.ToDictionary(key => key.Key, value => 
 						{
 							var isDate = DateTime.TryParseExact(value.Value, "dd.MM.yyyy h:mm:ss", System.Globalization.CultureInfo.InvariantCulture,
 								System.Globalization.DateTimeStyles.None, out var dateTime);
 							return new FieldAddress(FormatCell(isDate ? dateTime : (object) value.Value));
 						}))
-						.Select(row => new Row(row, new KeyValuePair<string, string>(row[folderIndex].Value, row[vatIndex].Value)))
+						.Select(row => new Row(row))
 					.ToList();
 				return new Table(groupedTable, new Row(infoRowContent));
 			}

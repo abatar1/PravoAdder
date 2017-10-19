@@ -19,10 +19,10 @@ namespace PravoAdder.Domain
 		Sync,
 		CleanAll,
 		CleanByDate,
-		CleanEmptyFolders,
-		Test,
-		Task,
-		Contact,
+		CreateTask,
+		CreateParticipant,
+		DistinctParticipant,
+		DeleteAllParticipant,
 		All
 	}
 }

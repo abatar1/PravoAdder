@@ -8,19 +8,19 @@ namespace PravoAdder.Api
 {
 	public class ParticipantsApi
 	{
-		public Participant PutParticipant(HttpAuthenticator httpAuthenticator, string organizationName, string vad)
+		public Participant PutParticipant(HttpAuthenticator httpAuthenticator, string name, string projectId = null)
 		{
 			var content = new
 			{
-				Organization = organizationName,
+				Organization = name,
 				Type = GetParticipantTypes(httpAuthenticator).First(p => p.Name == "Организация"),
-				INN = vad
+				IncludeInProjectId = projectId
 			};
 
 			return ApiHelper.GetItem<Participant>(httpAuthenticator, "participants/PutParticipant", HttpMethod.Put, content);
 		}
 
-		public IList<Participant> GetParticipants(HttpAuthenticator httpAuthenticator)
+		public List<Participant> GetParticipants(HttpAuthenticator httpAuthenticator)
 		{
 			return ApiHelper.GetItems<Participant>(httpAuthenticator, "ParticipantsSuggest/GetParticipants", HttpMethod.Post);
 		}
@@ -31,6 +31,17 @@ namespace PravoAdder.Api
 				.GetItem(httpAuthenticator, "bootstrap/GetBootstrap", HttpMethod.Get, new Dictionary<string, string>())
 				["CaseMap.Modules.Main"]["CaseMap.Modules.Participants"]["ParticipantTypes"];
 			return content.Select(o => new ParticipantType(o)).ToList();
+		}
+
+		public bool PutParticipant(HttpAuthenticator httpAuthenticator, ExtendentParticipant participant)
+		{
+			return ApiHelper.TrySendAsync(httpAuthenticator, "participants/PutParticipant", HttpMethod.Put, participant).Result;
+		}
+
+		public void DeleteParticipant(HttpAuthenticator httpAuthenticator, string participantId)
+		{
+			ApiHelper.GetItem(httpAuthenticator, $"participants/DeleteParticipant/{participantId}", HttpMethod.Delete,
+				new Dictionary<string, string>());
 		}
 	}
 }

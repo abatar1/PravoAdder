@@ -1,17 +1,25 @@
 ﻿using System;
-using System.Linq;
 using Fclp;
+using NLog;
 using PravoAdder.Domain;
 using PravoAdder.Processors;
-using NLog;
-using PravoAdder.Api.Domain;
 
 namespace PravoAdder
 {
 	public class Engine
 	{
-		private ApplicationArguments _arguments;
+		private static ApplicationArguments _arguments;
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+		private Engine(ApplicationArguments arguments)
+		{
+			_arguments = arguments;
+		}
+
+		public Engine()
+		{
+			
+		}
 
 		public Engine Initialize(string[] args)
 		{
@@ -23,7 +31,8 @@ namespace PravoAdder
 				.As('t', "type")
 				.Required();
 			parser.Parse(args);
-			if (parser.Object.ProcessType == ProcessType.Migration || parser.Object.ProcessType == ProcessType.Sync)
+			var processType = parser.Object.ProcessType;
+			if (processType == ProcessType.Migration || processType == ProcessType.Sync || processType == ProcessType.CreateParticipant)
 			{
 				parser.Setup(arg => arg.ReaderMode)
 					.As('m', "mode")
@@ -35,7 +44,13 @@ namespace PravoAdder
 					.As('o', "overwrite")
 					.SetDefault(true);
 			}
-			parser.Setup(arg => arg.MaxDegreeOfParallelism)
+			if (parser.Object.ProcessType == ProcessType.CreateParticipant)
+			{
+				parser.Setup(arg => arg.ParticipantType)
+					.As('z', "participantType")
+					.Required();
+			}
+			parser.Setup(arg => arg.ParallelOptions)
 				.As('p', "parallel")
 				.SetDefault(1);
 			parser.Setup(arg => arg.ConfigFilename)
@@ -44,152 +59,106 @@ namespace PravoAdder
 
 			var result = parser.Parse(args);
 			if (result.HasErrors) throw new ArgumentException();
-			_arguments = parser.Object;
 
-			return this;
+			return new Engine(parser.Object);
 		}
 
 		public Engine Run()
 		{
-			var processor = CreateProcessor(_arguments);
-			processor.Run();
+			CreateConveyor(_arguments).Run();
 			Logger.Info($"{DateTime.Now} | {_arguments.ProcessType} successfully processed. Press any key to continue.");
 			Console.ReadKey();
+			return new Engine(_arguments);
+		}	
 
-			return this;
-		}
-
-		private static IProcessor CreateProcessor(ApplicationArguments arguments)
+		private static ProcessConveyor CreateConveyor(ApplicationArguments arguments)
 		{
-			switch (arguments.ProcessType)
-			{
+			var conveyor = new ProcessConveyor(arguments);
+			var processType = arguments.ProcessType;
+
+			Console.Title = $"Pravo.{Enum.GetName(typeof(ProcessType), processType)}";
+
+			switch (processType)
+			{					
 				case ProcessType.Migration:
 				{
-					Console.Title = "Pravo.Migration";
-
-					return new MigrationProcessor(arguments, request =>
-					{
-						var engineMessage = ProcessorImplementations.AddProjectProcessor(request);
-						if (engineMessage == null) return null;
-
-						var blocksInfo = request.BlockReader.ReadBlockInfo();
-						foreach (var repeatBlock in blocksInfo)
-						{
-							foreach (var blockInfo in repeatBlock.Blocks)
-							{
-								request.ApiEnviroment.AddInformation(blockInfo, request.ExcelRow, engineMessage.Item.Id, repeatBlock.Order);
-							}
-						}
-						return engineMessage;
-					});
-				}
-				case ProcessType.Sync:
-				{
-					Console.Title = "Pravo.Sync";
-
-					return new MigrationProcessor(arguments, request =>
-					{						
-						var engineMessage = ProcessorImplementations.AddProjectProcessor(request);
-						if (engineMessage == null) return null;
-
-						if (!string.IsNullOrEmpty(engineMessage.HeaderBlock.SynchronizationNumber))
-						{
-							request.ApiEnviroment.SynchronizeCase(engineMessage.Item.Id, engineMessage.HeaderBlock.SynchronizationNumber);
-						}
-
-						return engineMessage;
-					});
-				}
-				case ProcessType.CleanAll:
-				{
-					Console.Title = "Pravo.CleanAll";
-
-					return new ForEachProjectGroupProcessor(arguments, request =>
-					{
-						var projects = request.ApiEnviroment.GetGroupedProjects(request.Item.Id).SelectMany(s => s.Projects);
-						
-						foreach (var p in projects.Select((project, count) => new {Project = project, Count = count}))
-						{
-							request.ApiEnviroment.DeleteProjectItem(p.Project.Id);
-							request.Counter.ProcessCount(p.Count, 0, p.Project, 70);
-						}
-						if (!request.Item.Equals(ProjectGroup.Empty)) request.ApiEnviroment.DeleteProjectGroupItem(request.Item.Id);
-
-						var folders = request.ApiEnviroment.GetProjectFolderItems();
-						foreach (var f in folders.Select((folder, count) => new { Folder = folder, Count = count }))
-						{
-							if (request.ApiEnviroment.GetGroupedProjects(null, f.Folder.Name) == null)
-							{
-								continue;
-							}						
-							request.ApiEnviroment.DeleteFolderItem(f.Folder.Id);
-							request.Counter.ProcessCount(f.Count, 0, f.Folder, 70);
-						}
-
-						return new EngineResponse();
-					});
-				}
-				case ProcessType.CleanByDate:
-				{
-					Console.Title = "Pravo.CleanByDate";
-
-					return new ForEachProjectGroupProcessor(arguments, request =>
-					{
-						var projects = request.ApiEnviroment.GetGroupedProjects(request.Item.Id)
-							.SelectMany(s => s.Projects)
-							.Where(p => p.CreationDate == request.Date);
-						foreach (var p in projects.Select((project, count) => new { Project = project, Count = count }))
-						{
-							request.ApiEnviroment.DeleteProjectItem(p.Project.Id);
-							request.Counter.ProcessCount(p.Count, 0, p.Project, 70);
-						}
-
-						return new EngineResponse();
-					});
+					conveyor.AddRange(GroupedProcessors.LoadWithTable);
+					conveyor.Add(SingleProcessors.TryCreateProject, 1);
+					conveyor.Add(SingleProcessors.AddInformation, 1);
+					conveyor.Add(SingleProcessors.ProcessCount, 1);
+					conveyor.Add(ForEachProcessors.Row);
+					break;
 				}
 				case ProcessType.Update:
 				{
-					return new MigrationProcessor(arguments, request =>
-					{
-						var engineMessage = ProcessorImplementations.AddProjectProcessor(request);
-						if (engineMessage == null) return null;
-
-						var blocksInfo = request.BlockReader.ReadBlockInfo();
-						foreach (var repeatBlock in blocksInfo)
-						{
-							foreach (var blockInfo in repeatBlock.Blocks)
-							{
-								request.ApiEnviroment.AddInformation(blockInfo, request.ExcelRow, engineMessage.Item.Id, repeatBlock.Order);
-							}
-						}
-						return engineMessage;
-					});
+					conveyor.AddRange(GroupedProcessors.LoadWithTable);
+					conveyor.Add(SingleProcessors.UpdateProject, 1);
+					conveyor.Add(SingleProcessors.ProcessCount, 1);
+					conveyor.Add(ForEachProcessors.Row);
+					break;
 				}
-				case ProcessType.Task:
+				case ProcessType.Sync:
 				{
-					Console.Title = "Pravo.Tasks";
-					return new TaskProcessor(arguments, request =>
-					{
-						if (request.Task == null) return new EngineResponse();
-
-						request.ApiEnviroment.CreateTask(request.Task);
-						if (request.Task.IsArchive) request.ApiEnviroment.ArchiveProject(request.Task.Project.Id);
-						return new EngineResponse();
-					});
+					conveyor.AddRange(GroupedProcessors.LoadWithTable);
+					conveyor.Add(SingleProcessors.TryCreateProject, 1);
+					conveyor.Add(SingleProcessors.SynchronizeProject, 1);
+					conveyor.Add(SingleProcessors.ProcessCount, 1);
+					conveyor.Add(ForEachProcessors.Row);
+					break;
 				}
-				case ProcessType.Contact:
+				case ProcessType.CleanAll:
 				{
-					Console.Title = "Pravo.Contact";
-					return new ContactProcessor(arguments, request =>
-					{
-						return null;
-					});
+					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
+					conveyor.Add(SingleProcessors.DeleteProject, 2);
+					conveyor.Add(SingleProcessors.ProcessCount, 2);
+					conveyor.Add(ForEachProcessors.Project, 1);
+					conveyor.Add(SingleProcessors.DeleteProjectGroup, 1);
+					conveyor.Add(ForEachProcessors.ProjectGroup);
+					conveyor.Add(SingleProcessors.DeleteFolder, 1);
+					conveyor.Add(SingleProcessors.ProcessCount, 1);
+					conveyor.Add(ForEachProcessors.Folder);
+					break;
 				}
-				default:
+				case ProcessType.CleanByDate:
 				{
-					return null;
-				}					
+					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
+					conveyor.Add(SingleProcessors.DeleteProject, 2);
+					conveyor.Add(SingleProcessors.ProcessCount, 2);
+					conveyor.Add(ForEachProcessors.Project, 1);
+					conveyor.Add(ForEachProcessors.ProjectGroup);
+					break;
+				}
+				case ProcessType.CreateTask:
+				{
+					conveyor.AddRange(GroupedProcessors.LoadWithTable);
+					conveyor.Add(SingleProcessors.CreateTask, 1);
+					conveyor.Add(SingleProcessors.ProcessCount, 1);
+					conveyor.Add(ForEachProcessors.Row);
+					break;
+				}
+				case ProcessType.CreateParticipant:
+				{
+					conveyor.AddRange(GroupedProcessors.LoadWithTable);
+					conveyor.Add(SingleProcessors.CreateParticipant, 1);
+					conveyor.Add(SingleProcessors.ProcessCount, 1);
+					conveyor.Add(ForEachProcessors.Row);
+					break;
+				}
+				case ProcessType.DeleteAllParticipant:
+				{
+					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
+					conveyor.Add(SingleProcessors.DeleteParticipant, 1);
+					conveyor.Add(ForEachProcessors.Participant);
+					break;
+				}
+				case ProcessType.DistinctParticipant:
+				{
+					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
+					conveyor.Add(SingleProcessors.DistinctParticipants);
+					break;
+				}
 			}
-		}
+			return conveyor;
+		}		
 	}
 }

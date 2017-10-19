@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace PravoAdder.Domain
 {
+	[Serializable]
     public class Table
     {
         private readonly IDictionary<FieldAddress, List<int>> _infoRowContentSti;

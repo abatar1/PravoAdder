@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Newtonsoft.Json;
 using PravoAdder.Domain.Attributes;
@@ -36,12 +37,8 @@ namespace PravoAdder.Domain
 		[ReadingType(ReaderMode.XmlMap), IsRequired(true)]
 		public string XmlMappingPath { get; set; }
 
-		//[DisplayName("Overwrite project and project's folders?"), JsonIgnore, IsRequired(true)] 
-		//[ProcessType(ProcessType.All)]
-		//public bool Overwrite { get; set; }
-
 		[DisplayName("Write source filename"), JsonIgnore]
-		[ProcessType(ProcessType.Migration, ProcessType.Sync)]
+		[ProcessType(ProcessType.Migration, ProcessType.Sync, ProcessType.CreateParticipant)]
 		public string SourceFileName { get; set; }
 
 		[DisplayName("Enter list allowed column's colors separated by commas (format:FFRRGGBB)"), IsRequired(true)]

@@ -5,7 +5,7 @@
 		private static void Main(string[] args)
 		{
 			var engine = new Engine();
-			engine.Initialize(args).Run();			
+			engine.Initialize(args).Run();
 		}
 	}
 }

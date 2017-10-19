@@ -10,6 +10,7 @@ using PravoAdder.Domain;
 
 namespace PravoAdder.Wrappers
 {
+	[Serializable]
     public class ApiEnviroment
     {
 	    private const int MaxWordLength = 350;
@@ -31,7 +32,32 @@ namespace PravoAdder.Wrappers
 		    if (response == null) Logger.Error($"Failed to attach participant {name} to {projectId}");
 	    }
 
-	    public void CreateTask(Task task)
+	    public List<Participant> GetParticipants()
+	    {
+		    try
+		    {
+			    return ApiRouter.Participants.GetParticipants(_httpAuthenticator);
+		    }
+		    catch (Exception e)
+		    {
+			    Logger.Error($"Participants get failed. Reason: {e.Message}");
+			    return null;
+		    }
+	    }
+
+	    public void DeleteParticipant(string participantId)
+	    {
+			try
+			{
+				ApiRouter.Participants.DeleteParticipant(_httpAuthenticator, participantId);
+			}
+			catch (Exception e)
+			{
+				Logger.Error($"Participant delete failed. Reason: {e.Message}");
+			}
+		}
+
+		public void CreateTask(Task task)
 	    {
 		    try
 		    {
@@ -43,7 +69,19 @@ namespace PravoAdder.Wrappers
 		    }
 	    }
 
-	    public void ArchiveProject(string projectId)
+	    public void PutExtendentParticipant(ExtendentParticipant participant)
+	    {
+		    try
+		    {
+			    ApiRouter.Participants.PutParticipant(_httpAuthenticator, participant);
+		    }
+		    catch (Exception e)
+		    {
+			    Logger.Error($"Participant create failed. Reason: {e.Message}");
+		    }
+	    }
+
+		public void ArchiveProject(string projectId)
 	    {
 		    try
 		    {
@@ -99,18 +137,18 @@ namespace PravoAdder.Wrappers
 		    }
 		}
 
-	    public IList<ProjectGroup> GetProjectGroupItems()
+	    public List<ProjectGroup> GetProjectGroupItems()
 	    {
 		    var response = ApiRouter.ProjectGroups.GetProjectGroups(_httpAuthenticator);
 		    response.Add(ProjectGroup.Empty);
-			return response;
+			return response.ToList();
 	    }
 
-	    public IList<ProjectFolder> GetProjectFolderItems()
+	    public List<ProjectFolder> GetProjectFolderItems()
 	    {
 		    var response = ApiRouter.ProjectFolders.GetProjectFolders(_httpAuthenticator);
 		    if (response == null) Logger.Error("No project folders found");
-		    return response;
+		    return response?.ToList();
 	    }
 
 	    public IList<GroupedProjects> GetGroupedProjects(string projectGroupId, string folderName = null)
@@ -255,7 +293,7 @@ namespace PravoAdder.Wrappers
 
                     try
                     {
-                        var value = _fieldBuilder.CreateFieldValueFromData(fieldInfo, fieldData, excelRow.Vat);
+                        var value = _fieldBuilder.CreateFieldValueFromData(fieldInfo, fieldData);
 	                    if (value is CalculationFormulaValue)
 	                    {
 							calculationIds.Add(((CalculationFormulaValue) value).CalculationFormulaId);

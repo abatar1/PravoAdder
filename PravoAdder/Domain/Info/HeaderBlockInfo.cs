@@ -1,7 +1,9 @@
-﻿using PravoAdder.Domain.Attributes;
+﻿using System;
+using PravoAdder.Domain.Attributes;
 
 namespace PravoAdder.Domain
 {
+	[Serializable]
 	public class HeaderBlockInfo
 	{
 		[FieldName("Название папки")]

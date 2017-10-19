@@ -9,8 +9,6 @@ using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
 using PravoAdder.Domain;
 
-// ReSharper disable InconsistentlySynchronizedField
-
 namespace PravoAdder
 {
 	public class FieldBuilder
@@ -19,7 +17,7 @@ namespace PravoAdder
 		private readonly object _dictionaryContainsKeyLock = new object();
 
 		private static Lazy<IList<Participant>> _participants;	
-		private static IDictionary<string, ConcurrentBag<DictionaryItem>> _dictionaries;
+		private static ConcurrentDictionary<string, ConcurrentBag<DictionaryItem>> _dictionaries;
 		private static List<CalculationFormula> _formulas;
 
 		public FieldBuilder(HttpAuthenticator httpAuthenticator)
@@ -29,7 +27,7 @@ namespace PravoAdder
 			_dictionaries = new ConcurrentDictionary<string, ConcurrentBag<DictionaryItem>>();
 		}
 
-		public object CreateFieldValueFromData(BlockFieldInfo fieldInfo, string fieldData, KeyValuePair<string, string> vad)
+		public object CreateFieldValueFromData(BlockFieldInfo fieldInfo, string fieldData)
 		{
 			if (string.IsNullOrEmpty(fieldData)) return null;
 
@@ -47,7 +45,6 @@ namespace PravoAdder
 				case "Dictionary":
 					return GetDictionaryFromData(fieldData, fieldInfo);
 				case "Participant":
-					if (fieldData == vad.Key) return GetParticipantFromData(fieldData, vad.Value);
 					return GetParticipantFromData(fieldData);
 				default:
 					throw new ArgumentException("Unknown type of value.");
@@ -104,13 +101,13 @@ namespace PravoAdder
 			};
 		}
 
-		private Participant GetParticipantFromData(string fieldData, string vadId = null)
+		private Participant GetParticipantFromData(string fieldData)
 		{
 			var correctFieldData = fieldData.Trim();
 
 			if (_participants.Value.All(p => !p.Name.Equals(correctFieldData)))
 			{
-				var participant = ApiRouter.Participants.PutParticipant(_httpAuthenticator, fieldData, vadId);
+				var participant = ApiRouter.Participants.PutParticipant(_httpAuthenticator, fieldData);
 				if (participant == null) return null;
 				_participants.Value.Add(participant);
 			}
@@ -123,46 +120,38 @@ namespace PravoAdder
 			var dictionaryName = fieldInfo.SpecialData.Trim();
 			var correctName = FormatDictionaryItemName(fieldData);
 
-			lock (_dictionaryContainsKeyLock)
-			{
-				if (!_dictionaries.ContainsKey(dictionaryName))
-				{
-					List<DictionaryItem> dictionaryItems;
-					if (dictionaryName == "Currency")
-					{
-						dictionaryItems = ApiRouter.Currencies
-							.GetCurrencies(_httpAuthenticator);
-					}
-					else
-					{
-						dictionaryItems = ApiRouter.Dictionary
-							.GetDictionaryItems(_httpAuthenticator, fieldInfo.SpecialData)
-							.Select(d => new DictionaryItem(FormatDictionaryItemName(d.Name), d.Id))
-							.ToList();
-					}
-					
-					_dictionaries.Add(dictionaryName, new ConcurrentBag<DictionaryItem>(dictionaryItems));
-				}
-			}
-
+			List<DictionaryItem> dictionaryItems;
 			if (dictionaryName == "Currency")
 			{
-				if (_dictionaries[dictionaryName].All(d => !d.LetterCode.Equals(correctName, StringComparison.InvariantCultureIgnoreCase))) return null;
+				dictionaryItems = ApiRouter.Currencies.GetCurrencies(_httpAuthenticator);
+			}
+			else
+			{
+				dictionaryItems = ApiRouter.Dictionary.GetDictionaryItems(_httpAuthenticator, fieldInfo.SpecialData)
+					.Select(d => new DictionaryItem(FormatDictionaryItemName(d.Name), d.Id))
+					.ToList();
+			}
+			_dictionaries.AddOrUpdate(dictionaryName, new ConcurrentBag<DictionaryItem>(dictionaryItems),
+				(s, bag) => new ConcurrentBag<DictionaryItem>(bag.Concat(dictionaryItems)));
 
-				return _dictionaries[dictionaryName]
-					.First(d => d.LetterCode == correctName);
+			if (!_dictionaries.TryGetValue(dictionaryName, out var itemsBag)) return null;
+
+			bool InvEqual(string s1, string s2) => s1.Equals(s2, StringComparison.InvariantCultureIgnoreCase);
+			if (dictionaryName == "Currency")
+			{
+				if (itemsBag.All(d => !InvEqual(d.LetterCode, correctName))) return null;
+				return itemsBag.First(d => d.LetterCode == correctName);
 			}
 
-			if (_dictionaries[dictionaryName].All(d => !d.Name.Equals(correctName, StringComparison.InvariantCultureIgnoreCase)))
+			if (itemsBag.All(d => !InvEqual(d.Name, correctName)))
 			{
-				var dictionaryItem = ApiRouter.Dictionary
-					.SaveDictionaryItem(_httpAuthenticator, dictionaryName, correctName);
+				var dictionaryItem = ApiRouter.Dictionary.SaveDictionaryItem(_httpAuthenticator, dictionaryName, correctName);
 				if (dictionaryItem == null) return null;
 
 				_dictionaries[dictionaryName].Add(new DictionaryItem(correctName, dictionaryItem.Id));
 			}
 
-			return _dictionaries[dictionaryName]
+			return itemsBag
 				.First(d => d.Name == correctName);
 		}
 	}

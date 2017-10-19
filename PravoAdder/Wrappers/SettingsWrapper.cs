@@ -20,11 +20,11 @@ namespace PravoAdder.Wrappers
 
             foreach (var property in settingsObject.GetType().GetProperties())
             {
-	            var processTypeAttribute = LoadAttribute<ProcessTypeAttribute>(property);
+	            var processTypeAttribute = AttributeHelper.LoadAttribute<ProcessTypeAttribute>(property);
 	            if (!processTypeAttribute.ProcessTypes.Contains(applicationArguments.ProcessType) &&
 	                !processTypeAttribute.ProcessTypes.Contains(ProcessType.All)) continue;
 
-	            var readingTypeAttribute = LoadAttribute<ReadingTypeAttribute>(property);
+	            var readingTypeAttribute = AttributeHelper.LoadAttribute<ReadingTypeAttribute>(property);
 	            if (readingTypeAttribute != null &&
 	                !readingTypeAttribute.ReadingTypes.Contains(_blockReadingMode)) continue;
 
@@ -35,7 +35,7 @@ namespace PravoAdder.Wrappers
 						property.SetValue(settingsObject, "1301Zakzak");
 						continue;
 					case "SourceFileName":
-						property.SetValue(settingsObject, "prod");
+						property.SetValue(settingsObject, "prod2cl");
 						continue;
 					case "MaximumRows":
 						property.SetValue(settingsObject, int.MaxValue);
@@ -43,16 +43,16 @@ namespace PravoAdder.Wrappers
 				}
 #endif
 	            	          
-	            var ignoreAttibute = LoadAttribute<IgnoreAttribute>(property);
+	            var ignoreAttibute = AttributeHelper.LoadAttribute<IgnoreAttribute>(property);
                 if (ignoreAttibute != null && ignoreAttibute.Ignore) continue;
               
                 var value = property.GetValue(settingsObject);
                 if (!IsEmptyValue(property.PropertyType, value) && property.PropertyType != typeof(bool)) continue;
 
-	            var nameAttribute = LoadAttribute<DisplayNameAttribute>(property);
+	            var nameAttribute = AttributeHelper.LoadAttribute<DisplayNameAttribute>(property);
 				var displayName = nameAttribute != null ? nameAttribute.DisplayName : property.Name;
 
-	            var requiredAttribute = LoadAttribute<IsRequiredAttribute>(property);
+	            var requiredAttribute = AttributeHelper.LoadAttribute<IsRequiredAttribute>(property);
 	            var isRequired = requiredAttribute.IsRequiredValue;
 
 				var propertyValue = LoadValue(displayName, property.PropertyType, ',', isRequired);
@@ -65,13 +65,6 @@ namespace PravoAdder.Wrappers
                
             settingsObject.Save(applicationArguments.ConfigFilename);
             return settingsObject;
-		}
-
-	    private static T LoadAttribute<T>(MemberInfo property) where T : Attribute
-	    {
-		    return (T) property
-			    .GetCustomAttributes(typeof(T))
-			    .FirstOrDefault();
 		}
 
 		private static bool IsEmptyValue(Type type, object value)

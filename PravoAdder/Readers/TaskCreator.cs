@@ -7,7 +7,7 @@ using PravoAdder.Domain;
 
 namespace PravoAdder.Readers
 {
-	public class TaskReader
+	public class TaskCreator
 	{
 		private readonly HttpAuthenticator _authenticator;
 	    private IList<DictionaryItem> _taskStates;
@@ -15,7 +15,7 @@ namespace PravoAdder.Readers
 	    private readonly Dictionary<string, IList<Project>> _projects;
 	    private IList<Responsible> _responsibles;
 
-		public TaskReader(HttpAuthenticator authenticator)
+		public TaskCreator(HttpAuthenticator authenticator)
 		{
 			_authenticator = authenticator;
             _projects = new Dictionary<string, IList<Project>>();
@@ -27,9 +27,9 @@ namespace PravoAdder.Readers
 	        return new TaskState(item?.Name, item?.Id, item?.SysName);
         }
 
-		public Task Read(Row info, Row row)
+		public Task Create(Row info, Row row)
 		{
-		    var task = new Task {Id = null};
+			var task = new Task {Id = null};
 
 		    foreach (var valuePair in row.Content)
 		    {

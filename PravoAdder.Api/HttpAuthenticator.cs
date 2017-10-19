@@ -8,6 +8,7 @@ using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api
 {
+	[Serializable]
     public class HttpAuthenticator : IDisposable
     {
         public HttpAuthenticator(string baseUri)

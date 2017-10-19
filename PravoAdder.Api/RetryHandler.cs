@@ -31,7 +31,7 @@ namespace PravoAdder.Api
 						throw new TimeoutException();
 					}
 
-					var response = responseTask.Result;
+					var response = await responseTask;
 					if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Forbidden)
 					{
 						return response;

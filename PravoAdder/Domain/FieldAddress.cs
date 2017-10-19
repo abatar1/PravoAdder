@@ -5,6 +5,7 @@ using Fclp;
 
 namespace PravoAdder.Domain
 {
+	[Serializable]
     public class FieldAddress : IEquatable<FieldAddress>
     {
 		public FieldAddress(string address)

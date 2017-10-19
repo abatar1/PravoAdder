@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using PravoAdder.Api;
@@ -9,7 +10,7 @@ using PravoAdder.Domain.Attributes;
 
 namespace PravoAdder.Readers
 {
-    public class BlocksConstructor
+    public class CaseCreator
     {
 	    private readonly IDictionary<string, List<VisualBlock>> _visualBlocks;
 		private readonly object _visualBlocksLocker = new object();
@@ -19,7 +20,7 @@ namespace PravoAdder.Readers
 	    public readonly Settings Settings;
 	    public HeaderBlockInfo HeaderBlockInfo;
 
-		public BlocksConstructor(Table excelTable, Settings settings, HttpAuthenticator httpAuthenticator)
+		public CaseCreator(Table excelTable, Settings settings, HttpAuthenticator httpAuthenticator)
         {
 	        Settings = settings;
 	        Table = excelTable;
@@ -42,7 +43,7 @@ namespace PravoAdder.Readers
 		    return visualBlocks;
 	    }
 
-	    public IEnumerable<CaseInfo> CreateCaseInfo()
+	    public IEnumerable<CaseInfo> Create()
 	    {
 		    if (HeaderBlockInfo.ProjectTypeName == null) return null;
 

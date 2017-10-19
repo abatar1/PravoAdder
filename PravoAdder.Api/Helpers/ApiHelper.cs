@@ -89,7 +89,8 @@ namespace PravoAdder.Api.Helpers
 			var resultContainer = new List<T>();
 			do
 			{
-				var request = CreateHttpRequest(content?.Get(count), $"api/{path}", httpMethod,
+				if (content == null) content = new Content();
+				var request = CreateHttpRequest(content.Get(count), $"api/{path}", httpMethod,
 					httpAuthenticator.UserCookie);
 
 				var responseMessage = GetResponseFromRequest(request, httpAuthenticator);

@@ -4,6 +4,7 @@ using PravoAdder.Api.Domain;
 
 namespace PravoAdder.Wrappers
 {
+	[Serializable]
 	public class Counter
 	{
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
@@ -16,7 +17,7 @@ namespace PravoAdder.Wrappers
 
 		public void ProcessCount(int current, int total, DatabaseEntityItem item, int sliceNum = int.MaxValue)
 		{
-			var itemName = item.Name;
+			var itemName = item?.Name;
 			if (itemName != null && itemName.Length > sliceNum)
 			{
 				var lastSpacePosition = itemName.LastIndexOf(' ', sliceNum);
@@ -25,7 +26,7 @@ namespace PravoAdder.Wrappers
 
 			_count += 1;
 			Logger.Info(
-				$"{DateTime.Now} | Progress: {current}/{total} ({_count}) | Name: {itemName} | Id: {item.Id}");
+				$"{DateTime.Now} | Progress: {current + 1}/{total} ({_count}) | Name: {itemName} | Id: {item?.Id}");
 		}
 	}
 }

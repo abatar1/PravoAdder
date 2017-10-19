@@ -148,7 +148,7 @@ namespace PravoAdder.Readers
 					.Zip(Enumerable.Range(1, mainTableInfo.TotalColumns), (value, index) => new { value, index })
 					.Where(z => mainTableInfo.ColorHeader.Contains(z.index))
 					.ToDictionary(key => key.index, value => new FieldAddress(value.value));
-				table.Add(new Row(coloredRow, participants.ToList()));
+				table.Add(new Row(coloredRow));
 			}
 
 			infos.ForEach(info => info.Value.Dispose());
