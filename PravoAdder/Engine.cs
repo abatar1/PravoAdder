@@ -32,12 +32,7 @@ namespace PravoAdder
 				.Required();
 			parser.Parse(args);
 			var processType = parser.Object.ProcessType;
-<<<<<<< HEAD
 			if (processType == ProcessType.Migration || processType == ProcessType.Sync || processType == ProcessType.CreateParticipant)
-=======
-			if (processType == ProcessType.Migration || processType == ProcessType.Sync ||
-			    processType == ProcessType.Participant || processType == ProcessType.Task)
->>>>>>> e06ccc4eb4c20f5b0a884c8c73b5e112fbac295a
 			{
 				parser.Setup(arg => arg.ReaderMode)
 					.As('m', "mode")
@@ -149,24 +144,12 @@ namespace PravoAdder
 					conveyor.Add(ForEachProcessors.Row);
 					break;
 				}
-<<<<<<< HEAD
 				case ProcessType.DeleteAllParticipant:
 				{
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
 					conveyor.Add(SingleProcessors.DeleteParticipant, 1);
 					conveyor.Add(ForEachProcessors.Participant);
 					break;
-=======
-				case ProcessType.Participant:
-				{
-					Console.Title = "Pravo.Participant";
-					return new ParticipantProcessor(arguments, request =>
-					{
-						if (request.Participant == null) return new EngineResponse();
-						request.ApiEnviroment.PutExtendentParticipant(request.Participant);		
-						return new EngineResponse();
-					});
->>>>>>> e06ccc4eb4c20f5b0a884c8c73b5e112fbac295a
 				}
 				case ProcessType.DistinctParticipant:
 				{

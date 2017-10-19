@@ -1,8 +1,5 @@
 ﻿using System.Collections.Generic;
-<<<<<<< HEAD
 using Newtonsoft.Json;
-=======
->>>>>>> e06ccc4eb4c20f5b0a884c8c73b5e112fbac295a
 
 namespace PravoAdder.Api.Domain
 {
@@ -14,7 +11,6 @@ namespace PravoAdder.Api.Domain
 		public string LastName { get; set; }
 		public string FirstName { get; set; }
 		public string MiddleName { get; set; }
-<<<<<<< HEAD
 		public string Organization { get; set; }
 
 		[JsonIgnore]
@@ -33,8 +29,6 @@ namespace PravoAdder.Api.Domain
 				return string.Empty;
 			}
 		}
-=======
->>>>>>> e06ccc4eb4c20f5b0a884c8c73b5e112fbac295a
 		public List<VisualBlockParticipantLine> VisualBlockValueLines { get; set; }
 	}
 }
