@@ -18,12 +18,17 @@ namespace PravoAdder.Processors
 			{
 				if (continuationProcessor != null && continuationProcessor(item)) return;
 
-				foreach (var childConveyer in message.Child)
+				for (int i = 0; i < message.Child.Count; i++)
 				{
+					var childConveyer = message.Child[i];
 					var itemizedMessage = messageProcessor(childConveyer.Message, item);
-					itemizedMessage.Count = (int) index;
+					itemizedMessage.Count = (int)index;
 					itemizedMessage.Total = items.Count;
-					childConveyer.Processor.Invoke(itemizedMessage);
+					var newMessage = childConveyer.Processor.Invoke(itemizedMessage);
+					if (i < message.Child.Count - 1)
+					{
+						message.Child[i + 1].Message.Item = newMessage.Item;
+					}
 				}
 			});
 			return new EngineMessage();
@@ -31,7 +36,7 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> Row = message =>
 		{
-			var rows = message.Table.TableContent;
+			var rows = message.Table.TableContent.Where(r => r.Values.First().Value == "А10-737/2017").ToList();
 			return ProcessForEach(rows, message, (msg, item) =>
 			{
 				msg.Row = (Row) item;
