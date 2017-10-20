@@ -44,7 +44,13 @@ namespace PravoAdder
 					.As('o', "overwrite")
 					.SetDefault(true);
 			}
-			if (parser.Object.ProcessType == ProcessType.CreateParticipant)
+			if (processType == ProcessType.CleanByDate || processType == ProcessType.DeleteParticipantByDate)
+			{
+				parser.Setup(arg => arg.ParticipantType)
+					.As('d', "date")
+					.Required();
+			}
+			if (processType == ProcessType.CreateParticipant)
 			{
 				parser.Setup(arg => arg.ParticipantType)
 					.As('z', "participantType")
@@ -65,100 +71,11 @@ namespace PravoAdder
 
 		public Engine Run()
 		{
-			CreateConveyor(_arguments).Run();
+			ProcessConveyor.Create(_arguments).Run();
 			Logger.Info($"{DateTime.Now} | {_arguments.ProcessType} successfully processed. Press any key to continue.");
 			Console.ReadKey();
 			return new Engine(_arguments);
 		}	
-
-		private static ProcessConveyor CreateConveyor(ApplicationArguments arguments)
-		{
-			var conveyor = new ProcessConveyor(arguments);
-			var processType = arguments.ProcessType;
-
-			Console.Title = $"Pravo.{Enum.GetName(typeof(ProcessType), processType)}";
-
-			switch (processType)
-			{					
-				case ProcessType.Migration:
-				{
-					conveyor.AddRange(GroupedProcessors.LoadWithTable);
-					conveyor.Add(SingleProcessors.TryCreateProject, 1);
-					conveyor.Add(SingleProcessors.AddInformation, 1);
-					conveyor.Add(SingleProcessors.ProcessCount, 1);
-					conveyor.Add(ForEachProcessors.Row);
-					break;
-				}
-				case ProcessType.Update:
-				{
-					conveyor.AddRange(GroupedProcessors.LoadWithTable);
-					conveyor.Add(SingleProcessors.UpdateProject, 1);
-					conveyor.Add(SingleProcessors.ProcessCount, 1);
-					conveyor.Add(ForEachProcessors.Row);
-					break;
-				}
-				case ProcessType.Sync:
-				{
-					conveyor.AddRange(GroupedProcessors.LoadWithTable);
-					conveyor.Add(SingleProcessors.TryCreateProject, 1);
-					conveyor.Add(SingleProcessors.SynchronizeProject, 1);
-					conveyor.Add(SingleProcessors.ProcessCount, 1);
-					conveyor.Add(ForEachProcessors.Row);
-					break;
-				}
-				case ProcessType.CleanAll:
-				{
-					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
-					conveyor.Add(SingleProcessors.DeleteProject, 2);
-					conveyor.Add(SingleProcessors.ProcessCount, 2);
-					conveyor.Add(ForEachProcessors.Project, 1);
-					conveyor.Add(SingleProcessors.DeleteProjectGroup, 1);
-					conveyor.Add(ForEachProcessors.ProjectGroup);
-					conveyor.Add(SingleProcessors.DeleteFolder, 1);
-					conveyor.Add(SingleProcessors.ProcessCount, 1);
-					conveyor.Add(ForEachProcessors.Folder);
-					break;
-				}
-				case ProcessType.CleanByDate:
-				{
-					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
-					conveyor.Add(SingleProcessors.DeleteProject, 2);
-					conveyor.Add(SingleProcessors.ProcessCount, 2);
-					conveyor.Add(ForEachProcessors.Project, 1);
-					conveyor.Add(ForEachProcessors.ProjectGroup);
-					break;
-				}
-				case ProcessType.CreateTask:
-				{
-					conveyor.AddRange(GroupedProcessors.LoadWithTable);
-					conveyor.Add(SingleProcessors.CreateTask, 1);
-					conveyor.Add(SingleProcessors.ProcessCount, 1);
-					conveyor.Add(ForEachProcessors.Row);
-					break;
-				}
-				case ProcessType.CreateParticipant:
-				{
-					conveyor.AddRange(GroupedProcessors.LoadWithTable);
-					conveyor.Add(SingleProcessors.CreateParticipant, 1);
-					conveyor.Add(SingleProcessors.ProcessCount, 1);
-					conveyor.Add(ForEachProcessors.Row);
-					break;
-				}
-				case ProcessType.DeleteAllParticipant:
-				{
-					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
-					conveyor.Add(SingleProcessors.DeleteParticipant, 1);
-					conveyor.Add(ForEachProcessors.Participant);
-					break;
-				}
-				case ProcessType.DistinctParticipant:
-				{
-					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
-					conveyor.Add(SingleProcessors.DistinctParticipants);
-					break;
-				}
-			}
-			return conveyor;
-		}		
+	
 	}
 }

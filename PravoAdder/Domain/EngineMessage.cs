@@ -22,7 +22,6 @@ namespace PravoAdder.Domain
 		public HeaderBlockInfo HeaderBlock { get; set; }
 		public Counter Counter { get; set; }
 		public ParallelOptions ParallelOptions { get; set; }	
-		public string DateTime { get; set; }
 
 		public HttpAuthenticator Authenticator { get; set; }
 		public ApiEnviroment ApiEnviroment { get; set; }

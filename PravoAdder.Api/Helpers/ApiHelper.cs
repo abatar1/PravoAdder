@@ -126,5 +126,10 @@ namespace PravoAdder.Api.Helpers
 			var request = CreateHttpRequest(content, $"api/{path}", httpMethod, httpAuthenticator.UserCookie);
 			return GetResponseFromRequest(request, httpAuthenticator).Result;
 		}
+
+		public static Dictionary<string, string> CreateParameters(params Tuple<string, string>[] pairs)
+		{
+			return pairs.ToDictionary(pair => pair.Item1, pair => pair.Item2);
+		}
 	}
 }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 using PravoAdder.Domain;
 using PravoAdder.Domain.Attributes;
 using PravoAdder.Helpers;
@@ -32,7 +31,7 @@ namespace PravoAdder.Wrappers
 				switch (property.Name)
 				{
 					case "Password":
-						property.SetValue(settingsObject, "1301Zakzak");
+						property.SetValue(settingsObject, "123123");
 						continue;
 					case "SourceFileName":
 						property.SetValue(settingsObject, "prod2cl");

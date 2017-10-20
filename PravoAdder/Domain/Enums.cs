@@ -23,6 +23,7 @@ namespace PravoAdder.Domain
 		CreateParticipant,
 		DistinctParticipant,
 		DeleteAllParticipant,
+		DeleteParticipantByDate,
 		All
 	}
 }

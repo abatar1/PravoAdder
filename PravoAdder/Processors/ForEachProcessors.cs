@@ -54,7 +54,7 @@ namespace PravoAdder.Processors
 		{
 			var projects = message.ApiEnviroment.GetGroupedProjects(message.Item.Id)
 				.SelectMany(s => s.Projects)
-				.Where(p => p.CreationDate == DateTime.Parse(message.DateTime))
+				.Where(p => p.CreationDate == DateTime.Parse(message.ApplicationArguments.Date))
 				.ToList();
 			return ProcessForEach(projects, message, (msg, item) =>
 			{
@@ -90,6 +90,16 @@ namespace PravoAdder.Processors
 			return ProcessForEach(participants, message, (msg, item) =>
 			{
 				msg.Item = (Participant) item;
+				return msg;
+			});
+		};
+
+		public static Func<EngineMessage, EngineMessage> ParticipantByDate = message =>
+		{
+			var participants = message.ApiEnviroment.GetParticipants();
+			return ProcessForEach(participants, message, (msg, item) =>
+			{
+				msg.Item = (Participant)item;
 				return msg;
 			});
 		};

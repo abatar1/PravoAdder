@@ -25,6 +25,12 @@ namespace PravoAdder.Api
 			return ApiHelper.GetItems<Participant>(httpAuthenticator, "ParticipantsSuggest/GetParticipants", HttpMethod.Post);
 		}
 
+		public Participant GetParticipant(HttpAuthenticator httpAuthenticator, string participantId)
+		{
+			var parameters = new Dictionary<string, string> { ["participantId"] = participantId };
+			return ApiHelper.GetItem<Participant>(httpAuthenticator, "participants/GetParticipant", HttpMethod.Get, parameters);
+		}
+
 		public List<ParticipantType> GetParticipantTypes(HttpAuthenticator httpAuthenticator)
 		{
 			IEnumerable<dynamic> content = ApiHelper
