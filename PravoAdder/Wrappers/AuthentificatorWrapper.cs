@@ -10,10 +10,12 @@ namespace PravoAdder.Wrappers
 	{
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private readonly Settings _settings;
+		private readonly ApplicationArguments _arguments;
 
-        public AuthentificatorWrapper(Settings settings) : base(settings.BaseUri)
+        public AuthentificatorWrapper(Settings settings, ApplicationArguments args) : base(settings.BaseUri)
         {
             _settings = settings;
+	        _arguments = args;
         }
 
         public HttpAuthenticator Authenticate()
@@ -23,7 +25,7 @@ namespace PravoAdder.Wrappers
                 Logger.Info($"Login as {_settings.Login} to {_settings.BaseUri}...");
 	            try
 	            {
-		            Authentication(_settings.Login, _settings.Password);
+		            Authentication(_settings.Login, _arguments.Password);
 		            return this;
 	            }
 	            catch (AuthenticationException e)

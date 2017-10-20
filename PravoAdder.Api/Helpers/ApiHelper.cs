@@ -115,7 +115,7 @@ namespace PravoAdder.Api.Helpers
 			return (T) Activator.CreateInstance(typeof(T), new object[] {item});
 		}
 
-		public static dynamic GetItem(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, IDictionary<string, string> parameters)
+		public static dynamic GetItem(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, (string, string)[] parameters)
 		{
 			var request = CreateHttpRequest(parameters, $"api/{path}", httpMethod, httpAuthenticator.UserCookie);
 			return GetResponseFromRequest(request, httpAuthenticator);

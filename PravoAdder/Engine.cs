@@ -30,10 +30,24 @@ namespace PravoAdder
 			parser.Setup(arg => arg.ProcessType)
 				.As('t', "type")
 				.Required();
+			parser.Setup(arg => arg.Password)
+				.As('p', "password")
+				.Required();
+			parser.Setup(arg => arg.ParallelOptions)
+				.As('a', "async")
+				.SetDefault(1);
+			parser.Setup(arg => arg.ConfigFileName)
+				.As('c', "config")
+				.SetDefault("config.json");
 			parser.Parse(args);
+
 			var processType = parser.Object.ProcessType;
-			if (processType == ProcessType.Migration || processType == ProcessType.Sync || processType == ProcessType.CreateParticipant)
+			if (processType == ProcessType.Migration || processType == ProcessType.Sync ||
+			    processType == ProcessType.CreateParticipant || processType == ProcessType.Analyze)
 			{
+				parser.Setup(arg => arg.SourceFileName)
+					.As('s', "sourcefile")
+					.Required();
 				parser.Setup(arg => arg.ReaderMode)
 					.As('m', "mode")
 					.Required();
@@ -55,13 +69,7 @@ namespace PravoAdder
 				parser.Setup(arg => arg.ParticipantType)
 					.As('z', "participantType")
 					.Required();
-			}
-			parser.Setup(arg => arg.ParallelOptions)
-				.As('p', "parallel")
-				.SetDefault(1);
-			parser.Setup(arg => arg.ConfigFilename)
-				.As('c', "config")
-				.SetDefault("config.json");
+			}		
 
 			var result = parser.Parse(args);
 			if (result.HasErrors) throw new ArgumentException();

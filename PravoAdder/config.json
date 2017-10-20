@@ -1,8 +1,8 @@
 {
-	"Login": "g.guy@case.one",
-	"BaseUri": "https://lawofficesofthomasscarter.case.one",
-	"DataRowPosition": 2,
-	"InformationRowPosition": 1,
+	"Login": "am_casepro@rambler.ru",
+	"BaseUri": "https://gtlk.casepro.pro/",
+	"DataRowPosition": 5,
+	"InformationRowPosition": 2,
 	"XmlMappingPath": "mapping",
 	"AllowedColors": [
 		"FF92D050",

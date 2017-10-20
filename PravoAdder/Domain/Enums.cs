@@ -17,6 +17,7 @@ namespace PravoAdder.Domain
 		Migration,
 		Update,
 		Sync,
+		Analyze,
 		CleanAll,
 		CleanByDate,
 		CreateTask,

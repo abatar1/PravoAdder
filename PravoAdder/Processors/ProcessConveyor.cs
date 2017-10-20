@@ -135,7 +135,11 @@ namespace PravoAdder.Processors
 				case ProcessType.DistinctParticipant:					
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
 					conveyor.Add(SingleProcessors.DistinctParticipants);
-					break;					
+					break;			
+				case ProcessType.Analyze:
+					conveyor.AddRange(GroupedProcessors.LoadWithTable);
+					conveyor.Add(SingleProcessors.AnalyzeHeader);
+					break;
 			}
 			return conveyor;
 		}

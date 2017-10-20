@@ -18,7 +18,7 @@ namespace PravoAdder.Processors
 			{
 				if (continuationProcessor != null && continuationProcessor(item)) return;
 
-				for (int i = 0; i < message.Child.Count; i++)
+				for (var i = 0; i < message.Child.Count; i++)
 				{
 					var childConveyer = message.Child[i];
 					var itemizedMessage = messageProcessor(childConveyer.Message, item);
@@ -92,7 +92,7 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> Participant = message =>
 		{
-			var participants = message.ApiEnviroment.GetParticipants();
+			var participants = ApiRouter.Participants.GetParticipants(message.Authenticator);
 			return ProcessForEach(participants, message, (msg, item) =>
 			{
 				msg.Item = (Participant) item;
@@ -103,7 +103,7 @@ namespace PravoAdder.Processors
 		public static Func<EngineMessage, EngineMessage> ParticipantByDate = message =>
 		{
 			var neededDatetime = DateTime.Parse(message.ApplicationArguments.Date).ToString("d");
-			var participants = message.ApiEnviroment.GetParticipants()
+			var participants = ApiRouter.Participants.GetParticipants(message.Authenticator)
 				.Select(p => ApiRouter.Participants.GetParticipant(message.Authenticator, p.Id))
 				.Where(p => DateTime.Parse(p.CreationDate).ToString("d") == neededDatetime)
 				.ToList();

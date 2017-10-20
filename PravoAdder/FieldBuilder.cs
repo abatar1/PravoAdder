@@ -14,8 +14,6 @@ namespace PravoAdder
 	public class FieldBuilder
 	{
 		private readonly HttpAuthenticator _httpAuthenticator;
-		private readonly object _dictionaryContainsKeyLock = new object();
-
 		private static Lazy<IList<Participant>> _participants;	
 		private static ConcurrentDictionary<string, ConcurrentBag<DictionaryItem>> _dictionaries;
 		private static List<CalculationFormula> _formulas;
@@ -31,7 +29,6 @@ namespace PravoAdder
 		{
 			if (string.IsNullOrEmpty(fieldData)) return null;
 
-			fieldData = fieldData.Replace("\"", "");
 			switch (fieldInfo.Type)
 			{
 				case "Value":

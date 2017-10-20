@@ -16,7 +16,7 @@ namespace PravoAdder.Readers
 
 	    public override Table Read(ApplicationArguments args, Settings settings)
         {
-            var info = GetFileInfo(settings.SourceFileName);
+            var info = GetFileInfo(args.SourceFileName);
 
             using (var xlPackage = new ExcelPackage(info))
             {

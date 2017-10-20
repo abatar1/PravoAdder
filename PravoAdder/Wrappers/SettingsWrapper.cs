@@ -15,7 +15,7 @@ namespace PravoAdder.Wrappers
 		public Settings LoadSettingsFromConsole(ApplicationArguments applicationArguments, Dictionary<string, dynamic> additionalSettings = null)
         {
             Console.WriteLine("Reading config files...");
-            var settingsObject = SettingsHelper.Read(applicationArguments.ConfigFilename);
+            var settingsObject = SettingsHelper.Read(applicationArguments.ConfigFileName);
 
             foreach (var property in settingsObject.GetType().GetProperties())
             {
@@ -26,21 +26,6 @@ namespace PravoAdder.Wrappers
 	            var readingTypeAttribute = AttributeHelper.LoadAttribute<ReadingTypeAttribute>(property);
 	            if (readingTypeAttribute != null &&
 	                !readingTypeAttribute.ReadingTypes.Contains(_blockReadingMode)) continue;
-
-#if DEBUG
-				switch (property.Name)
-				{
-					case "Password":
-						property.SetValue(settingsObject, "123123");
-						continue;
-					case "SourceFileName":
-						property.SetValue(settingsObject, "prod2cl");
-						continue;
-					case "MaximumRows":
-						property.SetValue(settingsObject, int.MaxValue);
-						continue;
-				}
-#endif
 	            	          
 	            var ignoreAttibute = AttributeHelper.LoadAttribute<IgnoreAttribute>(property);
                 if (ignoreAttibute != null && ignoreAttibute.Ignore) continue;
@@ -62,7 +47,7 @@ namespace PravoAdder.Wrappers
 				settingsObject.AdditionalSettings = new Dictionary<string, dynamic>(additionalSettings);
 			}
                
-            settingsObject.Save(applicationArguments.ConfigFilename);
+            settingsObject.Save(applicationArguments.ConfigFileName);
             return settingsObject;
 		}
 

@@ -45,7 +45,7 @@ namespace PravoAdder.Domain
 					if (!string.IsNullOrEmpty(key)) IsKey = true;
 				})
 				.SetDefault(string.Empty);
-
+			
 			var result = parser.Parse(GetCommandsFromString(address));
 			if (result.HasErrors)
 			{

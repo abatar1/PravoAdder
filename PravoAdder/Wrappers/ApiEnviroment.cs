@@ -10,7 +10,6 @@ using PravoAdder.Domain;
 
 namespace PravoAdder.Wrappers
 {
-	[Serializable]
     public class ApiEnviroment
     {
 	    private const int MaxWordLength = 350;
@@ -25,91 +24,6 @@ namespace PravoAdder.Wrappers
 	        _fieldBuilder = new FieldBuilder(httpAuthenticator);
 			_projects = new List<Project>();
         }
-
-		public void AttachParticipant(string name, string projectId)
-	    {
-		    var response = ApiRouter.Participants.PutParticipant(_httpAuthenticator, name, projectId);
-		    if (response == null) Logger.Error($"Failed to attach participant {name} to {projectId}");
-	    }
-
-	    public List<Participant> GetParticipants()
-	    {
-		    try
-		    {
-			    return ApiRouter.Participants.GetParticipants(_httpAuthenticator);
-		    }
-		    catch (Exception e)
-		    {
-			    Logger.Error($"Participants get failed. Reason: {e.Message}");
-			    return null;
-		    }
-	    }
-
-	    public void DeleteParticipant(string participantId)
-	    {
-			try
-			{
-				ApiRouter.Participants.DeleteParticipant(_httpAuthenticator, participantId);
-			}
-			catch (Exception e)
-			{
-				Logger.Error($"Participant delete failed. Reason: {e.Message}");
-			}
-		}
-
-		public void CreateTask(Task task)
-	    {
-		    try
-		    {
-			    ApiRouter.Task.Create(_httpAuthenticator, task);
-		    }
-		    catch (Exception e)
-		    {
-			    Logger.Error($"Task create failed. Reason: {e.Message}");
-		    }
-	    }
-
-	    public void PutExtendentParticipant(ExtendentParticipant participant)
-	    {
-		    try
-		    {
-			    ApiRouter.Participants.PutParticipant(_httpAuthenticator, participant);
-		    }
-		    catch (Exception e)
-		    {
-			    Logger.Error($"Participant create failed. Reason: {e.Message}");
-		    }
-	    }
-
-		public void ArchiveProject(string projectId)
-	    {
-		    try
-		    {
-			    ApiRouter.Projects.ArchiveProject(_httpAuthenticator, projectId);
-		    }
-		    catch (Exception e)
-		    {
-			    Logger.Error($"Project archive failed. Reason: {e.Message}");
-		    }
-	    }
-
-		public async void SynchronizeCase(string projectId, string syncNumber)
-	    {
-		    var isSuccessResponse = await ApiRouter.Casebook.CheckCasebookCaseAsync(_httpAuthenticator, projectId, syncNumber);
-			if (!isSuccessResponse) Logger.Error($"Failed to synchronize case {projectId}");
-		}
-
-	    public void DeleteFolderItem(string folderId)
-	    {
-		    try
-		    {
-				ApiRouter.ProjectFolders.Delete(_httpAuthenticator, folderId);
-		    }
-			catch (Exception e)
-		    {
-				Logger.Error($"Folder deleting failed. Reason: {e.Message}");
-		    }
-		}
 
 	    public void DeleteProjectGroupItem(string projectGroupId)
 	    {

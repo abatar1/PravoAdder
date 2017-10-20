@@ -1,10 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Fclp.Internals.Extensions;
+using NLog.Targets;
+using OfficeOpenXml;
+using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Domain;
+using PravoAdder.Domain.Attributes;
 using PravoAdder.Helpers;
 using PravoAdder.Readers;
 using PravoAdder.Wrappers;
@@ -14,7 +21,7 @@ namespace PravoAdder.Processors
 	public class SingleProcessors
 	{
 		public static Func<EngineMessage, EngineMessage> UpdateProject = message =>
-		{			
+		{
 			var response = TryCreateProject(message);
 			return null;
 		};
@@ -25,9 +32,10 @@ namespace PravoAdder.Processors
 			if (headerBlock == null) return null;
 
 			var projectGroup = message.ApiEnviroment.AddProjectGroup(message.ApplicationArguments.IsOverwrite, headerBlock);
-			var project = message.ApiEnviroment.AddProject(message.ApplicationArguments.IsOverwrite, headerBlock, projectGroup?.Id, message.Count, message.IsUpdate);
+			var project = message.ApiEnviroment.AddProject(message.ApplicationArguments.IsOverwrite, headerBlock,
+				projectGroup?.Id, message.Count, message.IsUpdate);
 
-			return new EngineMessage { HeaderBlock = headerBlock, Item = project };
+			return new EngineMessage {HeaderBlock = headerBlock, Item = project};
 		};
 
 		public static Func<EngineMessage, EngineMessage> LoadSettings = message =>
@@ -36,19 +44,19 @@ namespace PravoAdder.Processors
 			return new EngineMessage
 			{
 				Settings = settingsController.LoadSettingsFromConsole(message.ApplicationArguments),
-				ParallelOptions = new ParallelOptions { MaxDegreeOfParallelism = message.ApplicationArguments.ParallelOptions }
+				ParallelOptions = new ParallelOptions {MaxDegreeOfParallelism = message.ApplicationArguments.ParallelOptions}
 			};
 		};
 
 		public static Func<EngineMessage, EngineMessage> LoadTable = message =>
 		{
 			TableEnviroment.Initialize(message.ApplicationArguments, message.Settings);
-			return new EngineMessage { Table = TableEnviroment.Table, Settings = message.Settings };
+			return new EngineMessage {Table = TableEnviroment.Table, Settings = message.Settings};
 		};
 
 		public static Func<EngineMessage, EngineMessage> InitializeApp = message =>
 		{
-			var authenticatorController = new AuthentificatorWrapper(message.Settings);
+			var authenticatorController = new AuthentificatorWrapper(message.Settings, message.ApplicationArguments);
 			var authenticator = authenticatorController.Authenticate();
 			var processType = message.ApplicationArguments.ProcessType;
 
@@ -79,7 +87,7 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> DeleteParticipant = message =>
 		{
-			message.ApiEnviroment.DeleteParticipant(message.Item.Id);
+			ApiRouter.Participants.DeleteParticipant(message.Authenticator, message.Item.Id);
 			return new EngineMessage();
 		};
 
@@ -127,8 +135,8 @@ namespace PravoAdder.Processors
 		public static Func<EngineMessage, EngineMessage> CreateTask = message =>
 		{
 			var task = message.TaskCreator.Create(message.Table.Header, message.Row);
-			message.ApiEnviroment.CreateTask(task);
-			if (task.IsArchive) message.ApiEnviroment.ArchiveProject(task.Project.Id);
+			ApiRouter.Task.Create(message.Authenticator, task);
+			if (task.IsArchive) ApiRouter.Projects.ArchiveProject(message.Authenticator, task.Project.Id);
 			return new EngineMessage();
 		};
 
@@ -136,26 +144,26 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> CreateParticipant = message =>
 		{
-			if (_participants == null) _participants = message.ApiEnviroment.GetParticipants();
+			if (_participants == null) _participants = ApiRouter.Participants.GetParticipants(message.Authenticator);
 
 			var newParticipant = message.ParticipantCreator.Create(message.Table.Header, message.Row);
 			if (_participants.FirstOrDefault(p => p.Name == newParticipant.FullName) != null) return null;
-			message.ApiEnviroment.PutExtendentParticipant(newParticipant);
+			ApiRouter.Participants.PutParticipant(message.Authenticator, newParticipant);
 			return new EngineMessage();
 		};
 
 		public static Func<EngineMessage, EngineMessage> DistinctParticipants = message =>
 		{
-			var response = message.ApiEnviroment.GetParticipants();
+			var response = ApiRouter.Participants.GetParticipants(message.Authenticator);
 			var counter = message.Counter.CloneJson();
 			response.GroupBy(p => p.Name).ForEach(g =>
 			{
 				if (g.Count() > 1)
 				{
 					var gCount = g.Count() - 1;
-					g.Skip(1).Select((p, c) => new { Participant = p, Count = c }).ForEach(pair =>
+					g.Skip(1).Select((p, c) => new {Participant = p, Count = c}).ForEach(pair =>
 					{
-						message.ApiEnviroment.DeleteParticipant(pair.Participant.Id);
+						ApiRouter.Participants.DeleteParticipant(message.Authenticator, pair.Participant.Id);
 
 						var countMessage = new EngineMessage
 						{
@@ -168,6 +176,56 @@ namespace PravoAdder.Processors
 					});
 				}
 			});
+			return new EngineMessage();
+		};
+
+		public static Func<EngineMessage, EngineMessage> AnalyzeHeader = message =>
+		{
+			var types = ApiRouter.ProjectTypes.GetProjectTypes(message.Authenticator);
+			var blockTypes = new Dictionary<string, List<(string, List<string>)>>();
+			var errorKeys = new List<int>();
+			foreach (var cell in message.Table.Header)
+			{
+				if (cell.Value.BlockName == "Системный")
+				{
+					var systemHeaderName = typeof(HeaderBlockInfo).GetProperties()
+						.Select(p => p.LoadAttribute<FieldNameAttribute>().FieldName)
+						.FirstOrDefault(p => cell.Value.FieldName == p);
+					if (systemHeaderName != null) continue;
+				}
+
+				var wasAchieved = false;
+				foreach (var type in types)
+				{
+					if (!blockTypes.ContainsKey(type.Name))
+					{
+						var blocks = (from block in ApiRouter.ProjectTypes.GetVisualBlocks(message.Authenticator, type.Id)
+							let fields = block.Lines.SelectMany(line => line.Fields.Select(field => field.ProjectField.Name)).ToList()
+							select (block.Name, fields)).ToList();
+						blockTypes.Add(type.Name, blocks);
+					}
+					var blockName = blockTypes[type.Name]
+						.FirstOrDefault(block => block.Item1 == cell.Value.BlockName && block.Item2.Contains(cell.Value.FieldName)).Item1;
+					if (blockName != null)
+					{
+						wasAchieved = true;
+						break;
+					}			
+				}
+				if (!wasAchieved)
+				{
+					errorKeys.Add(cell.Key);			
+				}
+			}
+			using (var xlPackage = new ExcelPackage(new FileInfo(message.ApplicationArguments.SourceFileName + ".xlsx")))
+			{
+				var worksheet = xlPackage.Workbook.Worksheets.First();
+				foreach (var key in errorKeys)
+				{
+					worksheet.Cells[message.Settings.InformationRowPosition, key].Style.Fill.BackgroundColor.SetColor(Color.Red);
+				}			
+				xlPackage.Save();
+			}
 			return new EngineMessage();
 		};
 	}

@@ -4,9 +4,9 @@ using System.Reflection;
 
 namespace PravoAdder.Helpers
 {
-	public class AttributeHelper
+	public static class AttributeHelper
 	{
-		public static T LoadAttribute<T>(MemberInfo property) where T : Attribute
+		public static T LoadAttribute<T>(this MemberInfo property) where T : Attribute
 		{
 			return (T)property
 				.GetCustomAttributes(typeof(T))

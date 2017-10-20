@@ -11,9 +11,6 @@ namespace PravoAdder.Domain
 		[ProcessType(ProcessType.All), IsRequired(true)]
 		public string Login { get; set; }
 
-		[JsonIgnore, ProcessType(ProcessType.All), IsRequired(true)]
-		public string Password { get; set; }
-
 		[DisplayName("Base uri"), IsRequired(true)]
 		[ProcessType(ProcessType.All)]
 		public string BaseUri { get; set; }
@@ -37,18 +34,10 @@ namespace PravoAdder.Domain
 		[ReadingType(ReaderMode.XmlMap), IsRequired(true)]
 		public string XmlMappingPath { get; set; }
 
-		[DisplayName("Write source filename"), JsonIgnore]
-		[ProcessType(ProcessType.Migration, ProcessType.Sync, ProcessType.CreateParticipant)]
-		public string SourceFileName { get; set; }
-
 		[DisplayName("Enter list allowed column's colors separated by commas (format:FFRRGGBB)"), IsRequired(true)]
 		[ProcessType(ProcessType.Migration, ProcessType.Sync)]
 		[ReadingType(ReaderMode.Excel)]
 		public string[] AllowedColors { get; set; }
-
-		[DisplayName("Number of maximum rows"), JsonIgnore, IsRequired(true)]
-		[ProcessType(ProcessType.Migration)]
-		public int MaximumRows { get; set; }
 
 		[DisplayName("Date time"), JsonIgnore, IsRequired(true)]
 		[ProcessType(ProcessType.CleanByDate)]
