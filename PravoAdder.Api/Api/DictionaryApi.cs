@@ -26,7 +26,7 @@ namespace PravoAdder.Api
 
 		public IList<DictionaryItem> GetDefaultDictionaryItems(HttpAuthenticator httpAuthenticator, string dictionaryName)
 		{
-			var content = new Content(null, new Dictionary<string, string> { ["SystemName"] = dictionaryName });
+			var content = new Content(ApiHelper.CreateParameters(("SystemName", dictionaryName)));
 			return ApiHelper.GetItems<DictionaryItem>(httpAuthenticator, "dictionary/getdictionaryitems", HttpMethod.Post, content);
 		}
 	}

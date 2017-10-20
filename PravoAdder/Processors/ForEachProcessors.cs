@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Domain;
 
@@ -96,7 +97,12 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> ParticipantByDate = message =>
 		{
-			var participants = message.ApiEnviroment.GetParticipants();
+			var neededDatetime = DateTime.Parse(message.ApplicationArguments.Date).ToString("d");
+			var participants = message.ApiEnviroment.GetParticipants()
+				.Select(p => ApiRouter.Participants.GetParticipant(message.Authenticator, p.Id))
+				.Where(p => DateTime.Parse(p.CreationDate).ToString("d") == neededDatetime)
+				.ToList();
+
 			return ProcessForEach(participants, message, (msg, item) =>
 			{
 				msg.Item = (Participant)item;

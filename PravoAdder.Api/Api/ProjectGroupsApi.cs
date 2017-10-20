@@ -19,14 +19,14 @@ namespace PravoAdder.Api
 
 		public void DeleteProjectGroup(HttpAuthenticator httpAuthenticator, string projectGroupId)
 		{
-			var parameters = new Dictionary<string, string> { ["Id"] = projectGroupId };
+			var parameters = ApiHelper.CreateParameters(("Id", projectGroupId));
 			ApiHelper.GetItem(httpAuthenticator, "ProjectGroups/DeleteProjectGroup", HttpMethod.Delete,
 				parameters);
 		}
 
 		public void ArchiveProjectGroup(HttpAuthenticator httpAuthenticator, string projectGroupId)
 		{
-			var parameters = new Dictionary<string, string> { ["Id"] = projectGroupId };
+			var parameters = ApiHelper.CreateParameters(("Id", projectGroupId));
 			ApiHelper.GetItem(httpAuthenticator, "ProjectGroups/Archive", HttpMethod.Put,
 				parameters);
 		}

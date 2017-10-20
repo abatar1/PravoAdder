@@ -25,7 +25,7 @@ namespace PravoAdder.Api
 
 		public void Delete(HttpAuthenticator httpAuthenticator, string projectFolderId)
 		{
-			var parameters = new Dictionary<string, string> { ["FolderId"] = projectFolderId };
+			var parameters = ApiHelper.CreateParameters(("FolderId", projectFolderId));
 			ApiHelper.GetItem(httpAuthenticator, "ProjectFolders/DeleteProjectFolder", HttpMethod.Delete, parameters);
 		}
 	}

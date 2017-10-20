@@ -19,27 +19,12 @@
 			TypeId = dynamicData?.TypeId?.ToString() ?? dynamicData?.Type?.Id;
 			TypeName = dynamicData?.TypeName?.ToString() ?? dynamicData?.Type?.Name;
 			Inn = dynamicData?.INN?.ToString();
+			CreationDate = dynamicData?.CreationDate?.ToString();
 		}
 
-		public string TypeName { get; private set; }
-        public string TypeId { get; private set; }
-		public string Inn { get; private set; }
-
-        public Participant ChangeName(string newName)
-        {
-            return new Participant(newName, Id, TypeName, TypeId, Inn);
-        }
-
-        public static Participant TryParse(dynamic participant)
-        {
-            return new Participant
-            {
-                Id = participant.Id.ToString(),
-                Name = participant.Name.ToString(),
-                TypeId = participant.TypeId.ToString(),
-                TypeName = participant.TypeName.ToString(),
-				Inn = participant.INN.ToString()
-            };
-        }
+		public string TypeName { get; }
+        public string TypeId { get; }
+		public string Inn { get; }
+		public string CreationDate { get; }
     }
 }

@@ -46,7 +46,7 @@ namespace PravoAdder
 			}
 			if (processType == ProcessType.CleanByDate || processType == ProcessType.DeleteParticipantByDate)
 			{
-				parser.Setup(arg => arg.ParticipantType)
+				parser.Setup(arg => arg.Date)
 					.As('d', "date")
 					.Required();
 			}
@@ -75,7 +75,6 @@ namespace PravoAdder
 			Logger.Info($"{DateTime.Now} | {_arguments.ProcessType} successfully processed. Press any key to continue.");
 			Console.ReadKey();
 			return new Engine(_arguments);
-		}	
-	
+		}		
 	}
 }

@@ -27,7 +27,7 @@ namespace PravoAdder.Api
 
 		public Participant GetParticipant(HttpAuthenticator httpAuthenticator, string participantId)
 		{
-			var parameters = new Dictionary<string, string> { ["participantId"] = participantId };
+			var parameters = ApiHelper.CreateParameters(("participantId", participantId));
 			return ApiHelper.GetItem<Participant>(httpAuthenticator, "participants/GetParticipant", HttpMethod.Get, parameters);
 		}
 

@@ -127,7 +127,7 @@ namespace PravoAdder.Api.Helpers
 			return GetResponseFromRequest(request, httpAuthenticator).Result;
 		}
 
-		public static Dictionary<string, string> CreateParameters(params Tuple<string, string>[] pairs)
+		public static Dictionary<string, string> CreateParameters(params (string, string)[] pairs)
 		{
 			return pairs.ToDictionary(pair => pair.Item1, pair => pair.Item2);
 		}

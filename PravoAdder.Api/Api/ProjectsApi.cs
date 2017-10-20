@@ -18,11 +18,11 @@ namespace PravoAdder.Api
 			if (projectFolder == null && folderName != null)
 			{
 				projectFolder = ApiRouter.ProjectFolders.InsertProjectFolder(folderName, httpAuthenticator);
-				parameters = new Dictionary<string, string> { ["FolderId"] = projectFolder.Id };
+				parameters = ApiHelper.CreateParameters(("FolderId", projectFolder.Id));
 			}
 			else if (projectFolder != null && folderName != null)
 			{
-				parameters = new Dictionary<string, string> { ["FolderId"] = projectFolder.Id };
+				parameters = ApiHelper.CreateParameters(("FolderId", projectFolder.Id));
 			}
 			var content = new Content(parameters);
 			return ApiHelper.GetItems<GroupedProjects>(httpAuthenticator, "Projects/GetGroupedProjects",
@@ -31,7 +31,7 @@ namespace PravoAdder.Api
 
 		public Project GetProject(HttpAuthenticator httpAuthenticator, string projectId)
 		{
-			var parameters = new Dictionary<string, string> { ["ProjectId"] = projectId };
+			var parameters = ApiHelper.CreateParameters(("ProjectId", projectId));
 			var response = ApiHelper.GetItem(httpAuthenticator, "Projects/GetProject", HttpMethod.Get, parameters);
 			return new Project(response);
 		}
@@ -43,19 +43,19 @@ namespace PravoAdder.Api
 
 		public void DeleteProject(HttpAuthenticator httpAuthenticator, string projectId)
 		{
-			var parameters = new Dictionary<string, string> { ["Id"] = projectId };
+			var parameters = ApiHelper.CreateParameters(("Id", projectId));
 			ApiHelper.GetItem(httpAuthenticator, "Projects/DeleteProject", HttpMethod.Delete, parameters);
 		}
 
 		public void ArchiveProject(HttpAuthenticator httpAuthenticator, string projectId)
 		{
-			var parameters = new Dictionary<string, string> { ["Id"] = projectId };
+			var parameters = ApiHelper.CreateParameters(("Id", projectId));
 			ApiHelper.GetItem(httpAuthenticator, "projects/Archive", HttpMethod.Put, parameters);
 		}
 
 		public void RestoreProject(HttpAuthenticator httpAuthenticator, string projectId)
 		{
-			var parameters = new Dictionary<string, string> { ["Id"] = projectId };
+			var parameters = ApiHelper.CreateParameters(("Id", projectId));
 			ApiHelper.GetItem(httpAuthenticator, "Projects/Restore", HttpMethod.Put, parameters);
 		}
 	}

@@ -16,7 +16,6 @@ namespace PravoAdder.Api
 		public List<VisualBlock> GetVisualBlocks(HttpAuthenticator httpAuthenticator, string projectTypeId)
 		{
 			var parameters = ApiHelper.CreateParameters(("projectTypeId", projectTypeId));
-			//var parameters = new Dictionary<string, string> { ["projectTypeId"] = projectTypeId };
 			var projectType = ApiHelper.GetItem(httpAuthenticator, "ProjectTypes/GetProjectType", HttpMethod.Get,
 				parameters).Result.VisualBlocks;
 			return JsonConvert.DeserializeObject<List<VisualBlock>>(projectType.ToString());
