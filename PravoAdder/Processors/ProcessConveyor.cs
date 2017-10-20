@@ -123,11 +123,13 @@ namespace PravoAdder.Processors
 				case ProcessType.DeleteAllParticipant:
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
 					conveyor.Add(SingleProcessors.DeleteParticipant, 1);
+					conveyor.Add(SingleProcessors.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.Participant);
 					break;		
 				case ProcessType.DeleteParticipantByDate:
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
 					conveyor.Add(SingleProcessors.DeleteParticipant, 1);
+					conveyor.Add(SingleProcessors.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.ParticipantByDate);
 					break;
 				case ProcessType.DistinctParticipant:					
