@@ -24,8 +24,7 @@ namespace PravoAdder.Wrappers
 			}
 
 			_count += 1;
-			Logger.Info(
-				$"{DateTime.Now} | Progress: {current + 1}/{total} ({_count}) | Name: {itemName} | Id: {item?.Id}");
+			Logger.Info($"{DateTime.Now} | Progress: {current + 1}/{total} ({_count}) | Name: {itemName} | Id: {item.Id}");
 		}
 	}
 }

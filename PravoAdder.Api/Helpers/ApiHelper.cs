@@ -112,6 +112,7 @@ namespace PravoAdder.Api.Helpers
 			where T : DatabaseEntityItem, new()
 		{
 			var item = GetItem(httpAuthenticator, path, httpMethod, content);
+			if (!(bool) item.IsSuccess) return null;
 			return (T) Activator.CreateInstance(typeof(T), new object[] {item.Result});
 		}
 

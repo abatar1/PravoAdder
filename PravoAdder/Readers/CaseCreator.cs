@@ -70,7 +70,7 @@ namespace PravoAdder.Readers
 						    var fieldAddress = new FieldAddress(correctBlockName, field.ProjectField.Name);
 						    var fieldCount = line.Fields.Count;
 
-						    if (line.LineType.SysName == "Repeated" && fieldCount > 1)
+						    if (line.IsRepeated && fieldCount > 1)
 						    {
 							    var complexIndexes = Table.GetComplexIndexes(fieldAddress, blockNumber);
 							    foreach (var key in complexIndexes.Keys)
@@ -87,7 +87,7 @@ namespace PravoAdder.Readers
 
 						    var indexes = Table.GetIndexes(fieldAddress, blockNumber);
 						    if (indexes == null || indexes.Count == 0) continue;
-						    if (line.LineType.SysName == "Repeated" && fieldCount == 1)
+						    if (line.IsRepeated && fieldCount == 1)
 						    {
 							    simpleRepeatsLines = indexes
 								    .Select(i => new BlockLineInfo
@@ -98,7 +98,7 @@ namespace PravoAdder.Readers
 								    })
 								    .ToList();
 						    }
-						    if (line.LineType.SysName == "Simple")
+						    if (line.IsSimple)
 						    {
 							    if (simpleRepeatsLines.Count == 0) simpleRepeatsLines.Add(new BlockLineInfo(line.Id, 0));
 							    simpleRepeatsLines[0].Fields.Add(BlockFieldInfo.Create(field, indexes.First()));

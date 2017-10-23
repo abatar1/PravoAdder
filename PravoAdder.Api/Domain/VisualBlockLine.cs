@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace PravoAdder.Api.Domain
 {
@@ -8,5 +9,11 @@ namespace PravoAdder.Api.Domain
 		public string BlockLineId { get; set; }
 		public List<VisualBlockField> Fields { get; set; }
 		public LineType LineType { get; set; }
+
+		[JsonIgnore]
+		public bool IsSimple => LineType.SysName == "Simple";
+
+		[JsonIgnore]
+		public bool IsRepeated => LineType.SysName == "Repeated";
 	}
 }

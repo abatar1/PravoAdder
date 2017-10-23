@@ -100,6 +100,7 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> ProcessCount = message =>
 		{
+			if (message.Item == null) return message;
 			message.Counter.ProcessCount(message.Count, message.Total, message.Item, 70);
 			return message;
 		};
