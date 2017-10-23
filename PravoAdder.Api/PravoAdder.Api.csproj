@@ -71,6 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\ApiRouter.cs" />
+    <Compile Include="Api\BootstrapApi.cs" />
     <Compile Include="Api\CalculationFormulasApi.cs" />
     <Compile Include="Api\CasebookApi.cs" />
     <Compile Include="Api\CurrenciesApi.cs" />

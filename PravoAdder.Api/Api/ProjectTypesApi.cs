@@ -17,7 +17,7 @@ namespace PravoAdder.Api
 		{
 			var parameters = ApiHelper.CreateParameters(("projectTypeId", projectTypeId));
 			var projectType = ApiHelper.GetItem(httpAuthenticator, "ProjectTypes/GetProjectType", HttpMethod.Get,
-				parameters).VisualBlocks;
+				parameters).Result.VisualBlocks;
 			return JsonConvert.DeserializeObject<List<VisualBlock>>(projectType.ToString());
 		}
 
@@ -29,7 +29,7 @@ namespace PravoAdder.Api
 				EntityTypeSysName = entityTypeId
 			};
 			var response = ApiHelper.GetItem(httpAuthenticator, "EntityVisualBlocks/GetEntityCardVisualBlock",
-				HttpMethod.Post, content);
+				HttpMethod.Post, content).Result;
 
 			return JsonConvert.DeserializeObject<VisualBlock>(response.ToString());
 		}

@@ -4,6 +4,7 @@ using System.Linq;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Domain;
+using PravoAdder.Helpers;
 
 namespace PravoAdder.Readers
 {
@@ -44,12 +45,18 @@ namespace PravoAdder.Readers
 			{
 				var fieldName = info[valuePair.Key].FieldName;
 				var value = valuePair.Value.Value?.Trim();
+				if (string.IsNullOrEmpty(value)) continue;
 
 				var contactProperty = contactProperties.FirstOrDefault(p => p.Name == fieldName);
 				if (contactProperty != null)
 				{
 					contactProperty.SetValue(participant.ContactDetail, value);
 					continue;
+				}
+
+				if (fieldName == "INN")
+				{
+					participant.INN = value;
 				}
 
 				if (_currentType == Person)
@@ -67,8 +74,7 @@ namespace PravoAdder.Readers
 					if (fieldName == "Company Name")
 					{
 						if (_participants == null) _participants = ApiRouter.Participants.GetParticipants(_authenticator);
-						var company = _participants.FirstOrDefault(p => p.Name == value);
-						if (company == null) company = new Participant {Name = value};
+						var company = _participants.FirstOrDefault(p => p.Name == value) ?? new Participant {Name = value};
 						participant.Company = company;
 					}
 				}
@@ -83,7 +89,7 @@ namespace PravoAdder.Readers
 
 				if (_visualBlock == null)
 				{
-					var participantTypeId = _participantTypes.First(p => p.TypeName == "Person").Id;
+					var participantTypeId = _participantTypes.First(p => p.TypeName == _currentType).Id;
 					_visualBlock = ApiRouter.ProjectTypes.GetEntityCardVisualBlock(_authenticator, participantTypeId, "Participant");
 				}
 				foreach (var line in _visualBlock.Lines)
@@ -93,7 +99,7 @@ namespace PravoAdder.Readers
 
 					var newField = new VisualBlockParticipantField
 					{
-						Value = value,
+						Value = FieldBuilder.CreateFieldValueFromData(_authenticator, field, value),
 						VisualBlockProjectFieldId = field.Id
 					};
 
@@ -121,7 +127,6 @@ namespace PravoAdder.Readers
 					}
 				}			
 			}
-
 			return participant;
 		}
 	}

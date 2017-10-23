@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Fclp.Internals.Extensions;
-using NLog.Targets;
 using OfficeOpenXml;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
@@ -23,7 +21,7 @@ namespace PravoAdder.Processors
 		public static Func<EngineMessage, EngineMessage> UpdateProject = message =>
 		{
 			var response = TryCreateProject(message);
-			return null;
+			return new EngineMessage {Item = response.Item};
 		};
 
 		public static Func<EngineMessage, EngineMessage> TryCreateProject = message =>
@@ -76,19 +74,19 @@ namespace PravoAdder.Processors
 		public static Func<EngineMessage, EngineMessage> DeleteProject = message =>
 		{
 			message.ApiEnviroment.DeleteProjectItem(message.Item.Id);
-			return new EngineMessage();
+			return message;
 		};
 
 		public static Func<EngineMessage, EngineMessage> DeleteFolder = message =>
 		{
 			message.ApiEnviroment.DeleteProjectItem(message.Item.Id);
-			return new EngineMessage();
+			return message;
 		};
 
 		public static Func<EngineMessage, EngineMessage> DeleteParticipant = message =>
 		{
 			ApiRouter.Participants.DeleteParticipant(message.Authenticator, message.Item.Id);
-			return new EngineMessage();
+			return message;
 		};
 
 		public static Func<EngineMessage, EngineMessage> DeleteProjectGroup = message =>
@@ -97,17 +95,19 @@ namespace PravoAdder.Processors
 			{
 				message.ApiEnviroment.DeleteProjectGroupItem(message.Item.Id);
 			}
-			return new EngineMessage();
+			return message;
 		};
 
 		public static Func<EngineMessage, EngineMessage> ProcessCount = message =>
 		{
 			message.Counter.ProcessCount(message.Count, message.Total, message.Item, 70);
-			return new EngineMessage();
+			return message;
 		};
 
 		public static Func<EngineMessage, EngineMessage> AddInformation = message =>
 		{
+			if (message.Item == null) return message;
+
 			var blocksInfo = message.CaseCreator.Create();
 			foreach (var repeatBlock in blocksInfo)
 			{
@@ -116,7 +116,7 @@ namespace PravoAdder.Processors
 					message.ApiEnviroment.AddInformation(blockInfo, message.Row, message.Item.Id, repeatBlock.Order);
 				}
 			}
-			return new EngineMessage();
+			return message;
 		};
 
 		public static Func<EngineMessage, EngineMessage> SynchronizeProject = message =>
@@ -129,7 +129,7 @@ namespace PravoAdder.Processors
 					message.ApiEnviroment.AddInformation(blockInfo, message.Row, message.Item.Id, repeatBlock.Order);
 				}
 			}
-			return new EngineMessage();
+			return message;
 		};
 
 		public static Func<EngineMessage, EngineMessage> CreateTask = message =>
@@ -137,7 +137,7 @@ namespace PravoAdder.Processors
 			var task = message.TaskCreator.Create(message.Table.Header, message.Row);
 			ApiRouter.Task.Create(message.Authenticator, task);
 			if (task.IsArchive) ApiRouter.Projects.ArchiveProject(message.Authenticator, task.Project.Id);
-			return new EngineMessage();
+			return message;
 		};
 
 		private static List<Participant> _participants;
@@ -147,9 +147,10 @@ namespace PravoAdder.Processors
 			if (_participants == null) _participants = ApiRouter.Participants.GetParticipants(message.Authenticator);
 
 			var newParticipant = message.ParticipantCreator.Create(message.Table.Header, message.Row);
-			if (_participants.FirstOrDefault(p => p.Name == newParticipant.FullName) != null) return null;
-			ApiRouter.Participants.PutParticipant(message.Authenticator, newParticipant);
-			return new EngineMessage();
+			var existedParticipant = _participants.FirstOrDefault(p => p.Name == newParticipant.FullName);
+			if (existedParticipant != null) return new EngineMessage {Item = existedParticipant};
+			var participantResponse = ApiRouter.Participants.PutParticipant(message.Authenticator, newParticipant);
+			return new EngineMessage {Item = participantResponse};
 		};
 
 		public static Func<EngineMessage, EngineMessage> DistinctParticipants = message =>
@@ -176,7 +177,7 @@ namespace PravoAdder.Processors
 					});
 				}
 			});
-			return new EngineMessage();
+			return message;
 		};
 
 		public static Func<EngineMessage, EngineMessage> AnalyzeHeader = message =>
@@ -186,11 +187,11 @@ namespace PravoAdder.Processors
 			var errorKeys = new List<int>();
 			foreach (var cell in message.Table.Header)
 			{
-				if (cell.Value.BlockName == "Системный")
+				if (cell.Value.IsSystem)
 				{
 					var systemHeaderName = typeof(HeaderBlockInfo).GetProperties()
-						.Select(p => p.LoadAttribute<FieldNameAttribute>().FieldName)
-						.FirstOrDefault(p => cell.Value.FieldName == p);
+						.Select(p => p.LoadAttribute<FieldNameAttribute>().FieldNames)
+						.FirstOrDefault(p => p.Contains(cell.Value.FieldName));
 					if (systemHeaderName != null) continue;
 				}
 
@@ -226,7 +227,7 @@ namespace PravoAdder.Processors
 				}			
 				xlPackage.Save();
 			}
-			return new EngineMessage();
+			return message;
 		};
 	}
 }

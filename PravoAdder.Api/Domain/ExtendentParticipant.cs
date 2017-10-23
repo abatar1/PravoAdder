@@ -8,6 +8,7 @@ namespace PravoAdder.Api.Domain
 		public ParticipantType Type { get; set; }
 		public Participant Company { get; set; }
 		public ContactDetail ContactDetail { get; set; }
+		public string INN { get; set; }
 		public string LastName { get; set; }
 		public string FirstName { get; set; }
 		public string MiddleName { get; set; }

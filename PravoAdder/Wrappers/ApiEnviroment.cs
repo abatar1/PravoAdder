@@ -7,6 +7,7 @@ using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
 using PravoAdder.Domain;
+using PravoAdder.Helpers;
 
 namespace PravoAdder.Wrappers
 {
@@ -14,14 +15,12 @@ namespace PravoAdder.Wrappers
     {
 	    private const int MaxWordLength = 350;
 		private readonly HttpAuthenticator _httpAuthenticator;
-	    private readonly FieldBuilder _fieldBuilder;
 	    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 	    private List<Project> _projects;
 
 		public ApiEnviroment(HttpAuthenticator httpAuthenticator)
         {
             _httpAuthenticator = httpAuthenticator;
-	        _fieldBuilder = new FieldBuilder(httpAuthenticator);
 			_projects = new List<Project>();
         }
 
@@ -207,7 +206,7 @@ namespace PravoAdder.Wrappers
 
                     try
                     {
-                        var value = _fieldBuilder.CreateFieldValueFromData(fieldInfo, fieldData);
+                        var value = FieldBuilder.CreateFieldValueFromData(_httpAuthenticator, fieldInfo, fieldData);
 	                    if (value is CalculationFormulaValue)
 	                    {
 							calculationIds.Add(((CalculationFormulaValue) value).CalculationFormulaId);

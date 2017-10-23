@@ -112,7 +112,7 @@ namespace PravoAdder.Api.Helpers
 			where T : DatabaseEntityItem, new()
 		{
 			var item = GetItem(httpAuthenticator, path, httpMethod, content);
-			return (T) Activator.CreateInstance(typeof(T), new object[] {item});
+			return (T) Activator.CreateInstance(typeof(T), new object[] {item.Result});
 		}
 
 		public static dynamic GetItem(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, (string, string)[] parameters)
@@ -124,7 +124,7 @@ namespace PravoAdder.Api.Helpers
 		public static dynamic GetItem(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, object content)
 		{
 			var request = CreateHttpRequest(content, $"api/{path}", httpMethod, httpAuthenticator.UserCookie);
-			return GetResponseFromRequest(request, httpAuthenticator).Result;
+			return GetResponseFromRequest(request, httpAuthenticator);
 		}
 
 		public static Dictionary<string, string> CreateParameters(params (string, string)[] pairs)

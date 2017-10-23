@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using PravoAdder.Api;
@@ -117,26 +116,33 @@ namespace PravoAdder.Readers
 				.Select(x => new CaseInfo {Blocks = x.Value, Order = x.Key});
 	    }
 
-        public HeaderBlockInfo ReadHeaderBlock(Row excelRow)
-        {
-            const string systemName = "Системный";
-	        var headerObject = new HeaderBlockInfo();
-	        foreach (var property in headerObject.GetType().GetProperties())
-	        {
-		        var fieldnameAttibute = (FieldNameAttribute) property
-			        .GetCustomAttributes(typeof(FieldNameAttribute), true)
-			        .FirstOrDefault();
+	    public HeaderBlockInfo ReadHeaderBlock(Row excelRow)
+	    {
+		    var headerObject = new HeaderBlockInfo();
+		    foreach (var property in headerObject.GetType().GetProperties())
+		    {
+			    var fieldnameAttibute = (FieldNameAttribute)property
+				    .GetCustomAttributes(typeof(FieldNameAttribute), true)
+				    .FirstOrDefault();
+			    if (fieldnameAttibute == null) continue;
 
-		        var index = Table.TryGetIndex(new FieldAddress(systemName, fieldnameAttibute?.FieldName));
-		        if (index == 0) continue;
+			    var langNames = FieldAddress.SystemNames.Zip(fieldnameAttibute.FieldNames,
+				    (block, field) => new { Block = block, Field = field });
+			    foreach (var name in langNames)
+			    {
+				    var index = Table.TryGetIndex(new FieldAddress(name.Block, name.Field));
+				    if (index == 0) continue;
 
-				property.SetValue(headerObject, excelRow[index].ToString());
-	        }
-	        HeaderBlockInfo = headerObject;
-	        return headerObject.Format();
-        }
+				    property.SetValue(headerObject, excelRow[index].ToString());
+				    break;
+			    }
+		    }
+		    if (string.IsNullOrEmpty(headerObject.ProjectName) || string.IsNullOrEmpty(headerObject.ProjectTypeName)) return null;
+		    HeaderBlockInfo = headerObject;
+		    return headerObject;
+	    }
 
-	    public BlockInfo GetByName(IEnumerable<BlockInfo> blocks, string name)
+		public BlockInfo GetByName(IEnumerable<BlockInfo> blocks, string name)
 	    {
 		    return blocks
 			    .FirstOrDefault(block => block.Name == name);

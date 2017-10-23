@@ -32,7 +32,7 @@ namespace PravoAdder.Api
 		public Project GetProject(HttpAuthenticator httpAuthenticator, string projectId)
 		{
 			var parameters = ApiHelper.CreateParameters(("ProjectId", projectId));
-			var response = ApiHelper.GetItem(httpAuthenticator, "Projects/GetProject", HttpMethod.Get, parameters);
+			var response = ApiHelper.GetItem(httpAuthenticator, "Projects/GetProject", HttpMethod.Get, parameters).Result;
 			return new Project(response);
 		}
 

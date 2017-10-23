@@ -4,11 +4,11 @@ namespace PravoAdder.Domain.Attributes
 {
 	public class FieldNameAttribute : Attribute
 	{
-		public FieldNameAttribute(string name)
+		public FieldNameAttribute(params string[] names)
 		{
-			FieldName = name;
+			FieldNames = names;
 		}
 
-		public string FieldName { get; set; }
+		public string[] FieldNames { get; set; }
 	}
 }

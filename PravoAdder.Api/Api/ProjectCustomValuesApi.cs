@@ -10,7 +10,7 @@ namespace PravoAdder.Api
 	{
 		public VisualBlock Create(HttpAuthenticator httpAuthenticator, dynamic content)
 		{
-			var response = ApiHelper.GetItem(httpAuthenticator, "ProjectCustomValues/Create", HttpMethod.Post, content);
+			var response = ApiHelper.GetItem(httpAuthenticator, "ProjectCustomValues/Create", HttpMethod.Post, content).Result;
 			return JsonConvert.DeserializeObject<VisualBlock>(response.ToString());
 		}
 

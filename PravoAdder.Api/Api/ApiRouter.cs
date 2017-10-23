@@ -14,6 +14,7 @@
 		public static ResponsiblesApi Responsibles;
 		public static CurrenciesApi Currencies;
 		public static TaskApi Task;
+		public static BootstrapApi Bootstrap;
 
 		public static int PageSize = 50;
 
@@ -31,6 +32,7 @@
 			Responsibles = new ResponsiblesApi();
 			Currencies = new CurrenciesApi();
 			Task = new TaskApi();
+			Bootstrap = new BootstrapApi();
 		}
 	}
 }

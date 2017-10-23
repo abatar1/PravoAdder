@@ -33,15 +33,14 @@ namespace PravoAdder.Api
 
 		public List<ParticipantType> GetParticipantTypes(HttpAuthenticator httpAuthenticator)
 		{
-			IEnumerable<dynamic> content = ApiHelper
-				.GetItem(httpAuthenticator, "bootstrap/GetBootstrap", HttpMethod.Get, new Dictionary<string, string>())
-				["CaseMap.Modules.Main"]["CaseMap.Modules.Participants"]["ParticipantTypes"];
-			return content.Select(o => new ParticipantType(o)).ToList();
+			var bootstrap = ApiRouter.Bootstrap.GetBootstrap(httpAuthenticator);
+			IEnumerable<dynamic> participantTypes = bootstrap["CaseMap.Modules.Main"]["CaseMap.Modules.Participants"]["ParticipantTypes"];
+			return participantTypes.Select(o => new ParticipantType(o)).ToList();
 		}
 
-		public bool PutParticipant(HttpAuthenticator httpAuthenticator, ExtendentParticipant participant)
+		public Participant PutParticipant(HttpAuthenticator httpAuthenticator, ExtendentParticipant participant)
 		{
-			return ApiHelper.TrySendAsync(httpAuthenticator, "participants/PutParticipant", HttpMethod.Put, participant).Result;
+			return ApiHelper.GetItem<Participant>(httpAuthenticator, "participants/PutParticipant", HttpMethod.Put, participant);
 		}
 
 		public void DeleteParticipant(HttpAuthenticator httpAuthenticator, string participantId)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Fclp;
 
@@ -131,6 +132,9 @@ namespace PravoAdder.Domain
 		public string Reference { get; private set; }
 
 		public bool IsKey { get; private set; }
+
+	    public bool IsSystem => SystemNames.Contains(BlockName);
+	    public static IReadOnlyList<string> SystemNames = new[] { "Системный", "Summary" };
 
 		public bool Equals(FieldAddress other)
 		{
