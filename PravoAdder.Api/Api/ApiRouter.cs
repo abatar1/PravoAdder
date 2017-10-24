@@ -15,6 +15,7 @@
 		public static CurrenciesApi Currencies;
 		public static TaskApi Task;
 		public static BootstrapApi Bootstrap;
+		public static NotesApi Notes;
 
 		public static int PageSize = 50;
 
@@ -33,6 +34,7 @@
 			Currencies = new CurrenciesApi();
 			Task = new TaskApi();
 			Bootstrap = new BootstrapApi();
+			Notes = new NotesApi();
 		}
 	}
 }

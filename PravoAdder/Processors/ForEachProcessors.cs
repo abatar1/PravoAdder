@@ -46,9 +46,7 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> Project = message =>
 		{
-			var projects = message.ApiEnviroment.GetGroupedProjects(message.Item.Id)
-				.SelectMany(s => s.Projects)
-				.ToList();
+			var projects = ApiRouter.Projects.GetProjects(message.Authenticator, message.Item.Id);
 			return ProcessForEach(projects, message, (msg, item) =>
 			{
 				msg.Item = (Project) item;
@@ -58,8 +56,7 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> ProjectByDate = message =>
 		{
-			var projects = message.ApiEnviroment.GetGroupedProjects(message.Item.Id)
-				.SelectMany(s => s.Projects)
+			var projects = ApiRouter.Projects.GetProjects(message.Authenticator, message.Item.Id)
 				.Where(p => p.CreationDate == DateTime.Parse(message.ApplicationArguments.Date))
 				.ToList();
 			return ProcessForEach(projects, message, (msg, item) =>
@@ -71,13 +68,14 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> Folder = message =>
 		{
-			var folders = message.ApiEnviroment.GetProjectFolderItems();
+			var folders = ApiRouter.ProjectFolders.GetProjectFolders(message.Authenticator);
 			return ProcessForEach(folders, message,
-				(msg, item) => {
+				(msg, item) =>
+				{
 					msg.Item = (ProjectFolder) item;
 					return msg;
 				},
-				item => message.ApiEnviroment.GetGroupedProjects(null, item.Name) == null);
+				item => ApiRouter.Projects.GetGroupedProjects(message.Authenticator, item.Name) == null);
 		};
 
 		public static Func<EngineMessage, EngineMessage> ProjectGroup = message =>

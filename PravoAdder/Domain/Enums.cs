@@ -25,6 +25,7 @@ namespace PravoAdder.Domain
 		DistinctParticipant,
 		DeleteAllParticipant,
 		DeleteParticipantByDate,
+		Notes,
 		All
 	}
 }

@@ -43,7 +43,7 @@ namespace PravoAdder
 
 			var processType = parser.Object.ProcessType;
 			if (processType == ProcessType.Migration || processType == ProcessType.Sync ||
-			    processType == ProcessType.CreateParticipant || processType == ProcessType.Analyze)
+			    processType == ProcessType.CreateParticipant || processType == ProcessType.Analyze || processType == ProcessType.Notes)
 			{
 				parser.Setup(arg => arg.SourceFileName)
 					.As('s', "sourcefile")

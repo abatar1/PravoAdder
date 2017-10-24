@@ -76,6 +76,7 @@
     <Compile Include="Api\CasebookApi.cs" />
     <Compile Include="Api\CurrenciesApi.cs" />
     <Compile Include="Api\DictionaryApi.cs" />
+    <Compile Include="Api\NotesApi.cs" />
     <Compile Include="Api\ParticipantsApi.cs" />
     <Compile Include="Api\ProjectCustomValuesApi.cs" />
     <Compile Include="Api\ProjectFoldersApi.cs" />
@@ -93,6 +94,7 @@
     <Compile Include="Domain\ExtendentParticipant.cs" />
     <Compile Include="Domain\LineType.cs" />
     <Compile Include="Domain\DatabaseItems\Participant.cs" />
+    <Compile Include="Domain\Note.cs" />
     <Compile Include="Domain\ParticipantType.cs" />
     <Compile Include="Domain\DatabaseItems\Project.cs" />
     <Compile Include="Domain\ProjectContainer.cs" />

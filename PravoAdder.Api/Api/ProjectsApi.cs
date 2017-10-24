@@ -8,7 +8,12 @@ namespace PravoAdder.Api
 {
 	public class ProjectsApi
 	{
-		public IList<GroupedProjects> GetGroupedProjects(HttpAuthenticator httpAuthenticator, string folderName, string projectGroupid)
+		public List<Project> GetProjects(HttpAuthenticator httpAuthenticator, string folderName = null)
+		{
+			return GetGroupedProjects(httpAuthenticator, folderName)?.SelectMany(g => g.Projects).ToList();
+		}
+
+		public List<GroupedProjects> GetGroupedProjects(HttpAuthenticator httpAuthenticator, string folderName = null)
 		{
 			var projectFolder = ApiRouter.ProjectFolders
 				.GetProjectFolders(httpAuthenticator)

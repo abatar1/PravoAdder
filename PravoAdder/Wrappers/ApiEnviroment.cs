@@ -57,20 +57,6 @@ namespace PravoAdder.Wrappers
 			return response.ToList();
 	    }
 
-	    public List<ProjectFolder> GetProjectFolderItems()
-	    {
-		    var response = ApiRouter.ProjectFolders.GetProjectFolders(_httpAuthenticator);
-		    if (response == null) Logger.Error("No project folders found");
-		    return response?.ToList();
-	    }
-
-	    public IList<GroupedProjects> GetGroupedProjects(string projectGroupId, string folderName = null)
-	    {
-		    var response = ApiRouter.Projects.GetGroupedProjects(_httpAuthenticator, folderName, projectGroupId);
-		    if (response == null) Logger.Error($"No projects found at group {projectGroupId}");
-			return response;
-	    }
-
 		public ProjectGroup AddProjectGroup(bool needOverwrite, HeaderBlockInfo headerInfo)
         {
 	        if (headerInfo.ProjectGroupName == null) return null;		
@@ -109,24 +95,16 @@ namespace PravoAdder.Wrappers
 		        {
 			        if (!_projects.Any())
 			        {
-				        var response = GetGroupedProjects(projectGroupId, headerInfo.FolderName);
-				        if (response != null)
-						{
-							_projects = response.SelectMany(s => s.Projects).ToList();
-						}						
+				        _projects = ApiRouter.Projects.GetProjects(_httpAuthenticator, headerInfo.FolderName);					
 			        }
 			        var projectResponse = _projects.GetByName(headerInfo.ProjectName);
 			        if (projectResponse != null) return projectResponse;
 				}
 		        else
 		        {
-					var response = GetGroupedProjects(projectGroupId, headerInfo.FolderName);
-			        if (response != null)
-			        {
-				        var projects = response.SelectMany(s => s.Projects).ToList();
-				        var projectResponse = projects.GetByName(headerInfo.ProjectName);
-				        if (projectResponse != null) return projectResponse;
-			        }
+			        var projects = ApiRouter.Projects.GetProjects(_httpAuthenticator, headerInfo.FolderName);
+			        var projectResponse = projects.GetByName(headerInfo.ProjectName);
+			        if (projectResponse != null) return projectResponse;
 				}		       
             }
 
@@ -153,12 +131,13 @@ namespace PravoAdder.Wrappers
 		        return null;
 	        }
 
-	        var responsible = ApiRouter.Responsibles.GetResponsibles(_httpAuthenticator)
-		        .GetByName(headerInfo.ResponsibleName.Replace(".", ""));
+	        var responsibleName = headerInfo.ResponsibleName.Replace(".", "");
+	        if (string.IsNullOrEmpty(responsibleName)) responsibleName = "empty_string";
+	        var responsible = ApiRouter.Responsibles.GetResponsibles(_httpAuthenticator).GetByName(responsibleName);
 	        if (responsible == null)
 	        {
 		        Logger.Error(
-			        $"{DateTime.Now} | {count} | Responsible {headerInfo.ResponsibleName} doesn't exist. Project name: {headerInfo.ProjectName}");
+			        $"{DateTime.Now} | {count} | Responsible {responsibleName} doesn't exist. Project name: {headerInfo.ProjectName}");
 		        return null;
 	        }
 

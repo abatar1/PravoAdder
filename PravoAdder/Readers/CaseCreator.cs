@@ -133,7 +133,7 @@ namespace PravoAdder.Readers
 				    var index = Table.TryGetIndex(new FieldAddress(name.Block, name.Field));
 				    if (index == 0) continue;
 
-				    property.SetValue(headerObject, excelRow[index].ToString());
+				    property.SetValue(headerObject, excelRow[index].ToString().Trim());
 				    break;
 			    }
 		    }

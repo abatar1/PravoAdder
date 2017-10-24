@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PravoAdder.Domain
 {
@@ -17,7 +18,7 @@ namespace PravoAdder.Domain
 		}
 
 		public IDictionary<int, FieldAddress> Content { get; }
-		public ICollection<FieldAddress> Values => Content.Values;
+		public List<FieldAddress> Values => Content.Values.ToList();
 
 		public Dictionary<string, string> Participants { get; }
 

@@ -7,7 +7,7 @@ namespace PravoAdder.Api
 {
 	public class ProjectFoldersApi
 	{
-		public IList<ProjectFolder> GetProjectFolders(HttpAuthenticator httpAuthenticator)
+		public List<ProjectFolder> GetProjectFolders(HttpAuthenticator httpAuthenticator)
 		{
 			return ApiHelper.GetItems<ProjectFolder>(httpAuthenticator, "ProjectFolders/GetProjectFolders", HttpMethod.Post);
 		}

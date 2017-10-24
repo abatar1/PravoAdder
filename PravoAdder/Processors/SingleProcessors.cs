@@ -181,6 +181,25 @@ namespace PravoAdder.Processors
 			return message;
 		};
 
+		private static List<Project> _projects;
+
+		public static Func<EngineMessage, EngineMessage> AddNote = message =>
+		{
+			var projectName = Table.GetValue(message.Table.Header, message.Row, "Case");
+			
+			if (_projects == null) _projects = ApiRouter.Projects.GetProjects(message.Authenticator);
+			var project = _projects.FirstOrDefault(p => projectName.Contains(p.Name));
+			if (project == null) return null;
+
+			var note = new Note
+			{
+				Project = project,
+				Text = Table.GetValue(message.Table.Header, message.Row, "Notes")
+			};
+			ApiRouter.Notes.Create(message.Authenticator, note);
+			return new EngineMessage {Item = project};
+		};
+
 		public static Func<EngineMessage, EngineMessage> AnalyzeHeader = message =>
 		{
 			var types = ApiRouter.ProjectTypes.GetProjectTypes(message.Authenticator);

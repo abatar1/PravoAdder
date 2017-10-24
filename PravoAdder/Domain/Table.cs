@@ -22,6 +22,12 @@ namespace PravoAdder.Domain
 	    public List<Row> TableContent { get; }
 	    public string Name { get; set; }
 
+	    public static string GetValue(Row header, Row tableRow, string name)
+	    {
+			var index = header.Content.First(h => h.Value.FieldName == name).Key;
+		    return tableRow[index].Value;
+		}
+
 		public bool IsComplexRepeat(FieldAddress fieldAddress)
         {
             _infoRowContentSti.TryGetValue(fieldAddress, out List<int> result);

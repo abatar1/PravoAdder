@@ -140,6 +140,12 @@ namespace PravoAdder.Processors
 					conveyor.AddRange(GroupedProcessors.LoadWithTable);
 					conveyor.Add(SingleProcessors.AnalyzeHeader);
 					break;
+				case ProcessType.Notes:
+					conveyor.AddRange(GroupedProcessors.LoadWithTable);
+					conveyor.Add(SingleProcessors.AddNote, 1);
+					conveyor.Add(SingleProcessors.ProcessCount, 1);
+					conveyor.Add(ForEachProcessors.Row);
+					break;
 			}
 			return conveyor;
 		}

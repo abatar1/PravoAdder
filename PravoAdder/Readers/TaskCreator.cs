@@ -42,10 +42,8 @@ namespace PravoAdder.Readers
 		            {
 		                if (!_projects.ContainsKey(folder.Name))
 		                {
-		                    _projects.Add(folder.Name, new List<Project>());		                
-		                    _projects[folder.Name] = ApiRouter.Projects.GetGroupedProjects(_authenticator, folder.Name, null)
-		                    .SelectMany(s => s.Projects)
-		                    .ToList();
+		                    _projects.Add(folder.Name, new List<Project>());
+			                _projects[folder.Name] = ApiRouter.Projects.GetProjects(_authenticator, folder.Name);
 		                }
 		                var project = _projects[folder.Name]
 		                    .FirstOrDefault(s => s.Name == value);
