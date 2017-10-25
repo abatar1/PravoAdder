@@ -4,7 +4,6 @@ using System.Linq;
 
 namespace PravoAdder.Domain
 {
-	[Serializable]
     public class Table
     {
         private readonly IDictionary<FieldAddress, List<int>> _infoRowContentSti;

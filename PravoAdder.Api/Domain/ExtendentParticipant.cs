@@ -3,9 +3,8 @@ using Newtonsoft.Json;
 
 namespace PravoAdder.Api.Domain
 {
-	public class ExtendentParticipant
+	public class ExtendentParticipant : DatabaseEntityItem
 	{
-		public string Id { get; set; }
 		public ParticipantType Type { get; set; }
 		public Participant Company { get; set; }
 		public ContactDetail ContactDetail { get; set; }

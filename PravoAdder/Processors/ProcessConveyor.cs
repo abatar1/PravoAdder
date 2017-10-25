@@ -148,6 +148,7 @@ namespace PravoAdder.Processors
 					break;
 				case ProcessType.EditParticipants:
 					conveyor.AddRange(GroupedProcessors.LoadWithTable);
+					conveyor.Add(SingleProcessors.EditParticipant, 1);
 					conveyor.Add(SingleProcessors.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.Row);
 					break;

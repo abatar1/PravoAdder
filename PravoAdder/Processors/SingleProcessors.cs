@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -65,7 +66,7 @@ namespace PravoAdder.Processors
 				ApiEnviroment = new ApiEnviroment(authenticator),
 				Counter = new Counter(),
 				TaskCreator = processType == ProcessType.CreateTask ? new TaskCreator(authenticator) : null,
-				ParticipantCreator = processType == ProcessType.CreateParticipant
+				ParticipantCreator = processType == ProcessType.CreateParticipants
 					? new ParticipantCreator(authenticator, message.ApplicationArguments.ParticipantType)
 					: null
 			};
@@ -141,7 +142,7 @@ namespace PravoAdder.Processors
 			return message;
 		};
 
-		private static List<Participant> _participants;
+		private static List<Participant> _participants;		
 
 		public static Func<EngineMessage, EngineMessage> CreateParticipant = message =>
 		{
@@ -179,6 +180,75 @@ namespace PravoAdder.Processors
 				}
 			});
 			return message;
+		};
+
+		private static List<Lazy<ExtendentParticipant>> _lazyParticipants;
+		private static List<VisualBlockLine> _blockLines;
+
+		private static ExtendentParticipant GetParticipantByKeyname(HttpAuthenticator authenticator, Row header, Row row, string uniqueIdFieldName)
+		{
+			if (_lazyParticipants == null)
+			{
+				_lazyParticipants = ApiRouter.Participants.GetParticipants(authenticator)
+					.Where(p => p.TypeName == ParticipantCreator.Person)
+					.Select(p => new Lazy<ExtendentParticipant>(() => ApiRouter.Participants.GetParticipant(authenticator, p.Id)))
+					.ToList();
+			}
+
+			var uniqueId = Table.GetValue(header, row, uniqueIdFieldName);
+			var participant = _lazyParticipants.FirstOrDefault(p =>
+				{
+					var visualBlock = p.Value.VisualBlockValueLines;
+					if (visualBlock == null) return false;
+					return visualBlock
+						.SelectMany(line => line.Values.Select(value => value.Value))
+						.Contains(uniqueId);
+				}
+			)?.Value;
+
+			return participant;
+		}
+
+		public static Func<EngineMessage, EngineMessage> EditParticipant = message =>
+		{
+			var participant = GetParticipantByKeyname(message.Authenticator, message.Table.Header, message.Row, "UniqueId");
+			if (participant == null) return null;
+
+			if (_blockLines == null)
+			{
+				var fParticipantId = _lazyParticipants.First().Value.Id;
+				_blockLines = ApiRouter.Participants.GetVisualBlock(message.Authenticator, fParticipantId).Lines.ToList();
+			}
+
+			const string noteFieldName = "Notes";
+			var noteText = Table.GetValue(message.Table.Header, message.Row, noteFieldName)?.Trim();
+			if (string.IsNullOrEmpty(noteText)) return null;
+
+			var editingLine = _blockLines.FirstOrDefault(line => line.Fields.Any(field =>
+				{
+					var isRequiredFieldName = field.ProjectField.Name.Contains(noteFieldName);
+					var doesAlreadyContains = participant.VisualBlockValueLines.FirstOrDefault(pl => pl.BlockLineId == line.Id) != null;
+					return isRequiredFieldName && !doesAlreadyContains;
+				}));
+			if (editingLine == null) return null;
+
+			var addingLine = new VisualBlockParticipantLine
+			{
+				BlockLineId = editingLine.Id,
+				Values = editingLine.Fields
+					.Select(f =>
+					{
+						var newField = new VisualBlockParticipantField {VisualBlockProjectFieldId = f.Id};
+						if (f.ProjectField.Name.Contains(noteFieldName)) newField.Value = noteText;
+						return newField;
+					})
+					.ToList()
+			};
+			participant.VisualBlockValueLines.Add(addingLine);
+
+			var result = ApiRouter.Participants.PutParticipant(message.Authenticator, participant);
+
+			return new EngineMessage {Item = result};
 		};
 
 		private static List<Project> _projects;

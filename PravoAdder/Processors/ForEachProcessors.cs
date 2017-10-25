@@ -16,6 +16,7 @@ namespace PravoAdder.Processors
 		{
 			Parallel.ForEach(items, message.ParallelOptions, (item, state, index) =>
 			{
+				if (index < message.ApplicationArguments.RowNum - 1) return;
 				if (continuationProcessor != null && continuationProcessor(item)) return;
 
 				for (var i = 0; i < message.Child.Count; i++)
