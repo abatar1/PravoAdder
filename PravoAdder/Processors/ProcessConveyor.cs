@@ -90,7 +90,7 @@ namespace PravoAdder.Processors
 					conveyor.Add(SingleProcessors.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.Row);
 					break;					
-				case ProcessType.CleanAll:					
+				case ProcessType.DeleteCases:					
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
 					conveyor.Add(SingleProcessors.DeleteProject, 2);
 					conveyor.Add(SingleProcessors.ProcessCount, 2);
@@ -101,7 +101,7 @@ namespace PravoAdder.Processors
 					conveyor.Add(SingleProcessors.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.Folder);
 					break;					
-				case ProcessType.CleanByDate:					
+				case ProcessType.DeleteCasesByDate:					
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
 					conveyor.Add(SingleProcessors.DeleteProject, 2);
 					conveyor.Add(SingleProcessors.ProcessCount, 2);
@@ -114,25 +114,25 @@ namespace PravoAdder.Processors
 					conveyor.Add(SingleProcessors.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.Row);
 					break;					
-				case ProcessType.CreateParticipant:					
+				case ProcessType.CreateParticipants:					
 					conveyor.AddRange(GroupedProcessors.LoadWithTable);
 					conveyor.Add(SingleProcessors.CreateParticipant, 1);
 					conveyor.Add(SingleProcessors.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.Row);
 					break;					
-				case ProcessType.DeleteAllParticipant:
+				case ProcessType.DeleteParticipants:
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
 					conveyor.Add(SingleProcessors.DeleteParticipant, 1);
 					conveyor.Add(SingleProcessors.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.Participant);
 					break;		
-				case ProcessType.DeleteParticipantByDate:
+				case ProcessType.DeleteParticipantsByDate:
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
 					conveyor.Add(SingleProcessors.DeleteParticipant, 1);
 					conveyor.Add(SingleProcessors.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.ParticipantByDate);
 					break;
-				case ProcessType.DistinctParticipant:					
+				case ProcessType.DistinctParticipants:					
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
 					conveyor.Add(SingleProcessors.DistinctParticipants);
 					break;			
@@ -143,6 +143,11 @@ namespace PravoAdder.Processors
 				case ProcessType.Notes:
 					conveyor.AddRange(GroupedProcessors.LoadWithTable);
 					conveyor.Add(SingleProcessors.AddNote, 1);
+					conveyor.Add(SingleProcessors.ProcessCount, 1);
+					conveyor.Add(ForEachProcessors.Row);
+					break;
+				case ProcessType.EditParticipants:
+					conveyor.AddRange(GroupedProcessors.LoadWithTable);
 					conveyor.Add(SingleProcessors.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.Row);
 					break;

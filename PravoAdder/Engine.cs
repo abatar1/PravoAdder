@@ -43,7 +43,8 @@ namespace PravoAdder
 
 			var processType = parser.Object.ProcessType;
 			if (processType == ProcessType.Migration || processType == ProcessType.Sync ||
-			    processType == ProcessType.CreateParticipant || processType == ProcessType.Analyze || processType == ProcessType.Notes)
+			    processType == ProcessType.CreateParticipants || processType == ProcessType.Analyze ||
+			    processType == ProcessType.Notes || processType == ProcessType.EditParticipants)
 			{
 				parser.Setup(arg => arg.SourceFileName)
 					.As('s', "sourcefile")
@@ -58,13 +59,13 @@ namespace PravoAdder
 					.As('o', "overwrite")
 					.SetDefault(true);
 			}
-			if (processType == ProcessType.CleanByDate || processType == ProcessType.DeleteParticipantByDate)
+			if (processType == ProcessType.DeleteCasesByDate || processType == ProcessType.DeleteParticipantsByDate)
 			{
 				parser.Setup(arg => arg.Date)
 					.As('d', "date")
 					.Required();
 			}
-			if (processType == ProcessType.CreateParticipant)
+			if (processType == ProcessType.CreateParticipants)
 			{
 				parser.Setup(arg => arg.ParticipantType)
 					.As('z', "participantType")

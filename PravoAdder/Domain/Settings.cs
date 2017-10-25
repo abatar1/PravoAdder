@@ -40,7 +40,7 @@ namespace PravoAdder.Domain
 		public string[] AllowedColors { get; set; }
 
 		[DisplayName("Date time"), JsonIgnore, IsRequired(true)]
-		[ProcessType(ProcessType.CleanByDate)]
+		[ProcessType(ProcessType.DeleteCasesByDate)]
 		public string DateTime { get; set; }
 
 		[DisplayName("Date time"), JsonIgnore, IsRequired(true)] 
