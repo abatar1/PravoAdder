@@ -113,6 +113,7 @@
     <Compile Include="Domain\VisualBlockLine.cs" />
     <Compile Include="Domain\VisualBlockParticipantField.cs" />
     <Compile Include="Domain\VisualBlockParticipantLine.cs" />
+    <Compile Include="Domain\VisualBlockWrapper.cs" />
     <Compile Include="Helpers\ApiHelper.cs" />
     <Compile Include="Helpers\DatabaseEntityItemHelper.cs" />
     <Compile Include="HttpAuthenticator.cs" />

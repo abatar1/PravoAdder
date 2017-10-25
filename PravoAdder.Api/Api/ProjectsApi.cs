@@ -37,8 +37,7 @@ namespace PravoAdder.Api
 		public Project GetProject(HttpAuthenticator httpAuthenticator, string projectId)
 		{
 			var parameters = ApiHelper.CreateParameters(("ProjectId", projectId));
-			var response = ApiHelper.GetItem(httpAuthenticator, "Projects/GetProject", HttpMethod.Get, parameters).Result;
-			return new Project(response);
+			return ApiHelper.GetItem<Project>(httpAuthenticator, "Projects/GetProject", HttpMethod.Get, parameters);
 		}
 
 		public Project CreateProject(HttpAuthenticator httpAuthenticator, dynamic content)
@@ -49,19 +48,19 @@ namespace PravoAdder.Api
 		public void DeleteProject(HttpAuthenticator httpAuthenticator, string projectId)
 		{
 			var parameters = ApiHelper.CreateParameters(("Id", projectId));
-			ApiHelper.GetItem(httpAuthenticator, "Projects/DeleteProject", HttpMethod.Delete, parameters);
+			ApiHelper.SendItem(httpAuthenticator, "Projects/DeleteProject", HttpMethod.Delete, parameters);
 		}
 
 		public void ArchiveProject(HttpAuthenticator httpAuthenticator, string projectId)
 		{
 			var parameters = ApiHelper.CreateParameters(("Id", projectId));
-			ApiHelper.GetItem(httpAuthenticator, "projects/Archive", HttpMethod.Put, parameters);
+			ApiHelper.SendItem(httpAuthenticator, "projects/Archive", HttpMethod.Put, parameters);
 		}
 
 		public void RestoreProject(HttpAuthenticator httpAuthenticator, string projectId)
 		{
 			var parameters = ApiHelper.CreateParameters(("Id", projectId));
-			ApiHelper.GetItem(httpAuthenticator, "Projects/Restore", HttpMethod.Put, parameters);
+			ApiHelper.SendItem(httpAuthenticator, "Projects/Restore", HttpMethod.Put, parameters);
 		}
 	}
 }

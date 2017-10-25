@@ -109,23 +109,28 @@ namespace PravoAdder.Api.Helpers
 		}	
 
 		public static T GetItem<T>(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, object content)
-			where T : DatabaseEntityItem, new()
+			where T : new()
 		{
 			var item = GetItem(httpAuthenticator, path, httpMethod, content);
-			if (!(bool) item.IsSuccess) return null;
-			return (T) Activator.CreateInstance(typeof(T), new object[] {item.Result});
-		}
+			if (!(bool) item.IsSuccess) return default(T);
 
-		public static dynamic GetItem(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, (string, string)[] parameters)
-		{
-			var request = CreateHttpRequest(parameters, $"api/{path}", httpMethod, httpAuthenticator.UserCookie);
-			return GetResponseFromRequest(request, httpAuthenticator);
+			if (typeof(T).BaseType?.Name != "DatabaseEntityItem")
+			{
+				return JsonConvert.DeserializeObject(item.Result.ToString(), typeof(T));
+			}
+			return (T) Activator.CreateInstance(typeof(T), new object[] {item.Result});
 		}
 
 		public static dynamic GetItem(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, object content)
 		{
 			var request = CreateHttpRequest(content, $"api/{path}", httpMethod, httpAuthenticator.UserCookie);
 			return GetResponseFromRequest(request, httpAuthenticator);
+		}
+
+		public static void SendItem(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, object content)
+		{
+			var request = CreateHttpRequest(content, $"api/{path}", httpMethod, httpAuthenticator.UserCookie);
+			httpAuthenticator.Client.SendAsync(request);
 		}
 
 		public static Dictionary<string, string> CreateParameters(params (string, string)[] pairs)

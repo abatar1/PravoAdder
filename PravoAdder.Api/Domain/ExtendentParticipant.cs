@@ -5,6 +5,7 @@ namespace PravoAdder.Api.Domain
 {
 	public class ExtendentParticipant
 	{
+		public string Id { get; set; }
 		public ParticipantType Type { get; set; }
 		public Participant Company { get; set; }
 		public ContactDetail ContactDetail { get; set; }

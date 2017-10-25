@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using Newtonsoft.Json;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
 
@@ -25,10 +26,16 @@ namespace PravoAdder.Api
 			return ApiHelper.GetItems<Participant>(httpAuthenticator, "ParticipantsSuggest/GetParticipants", HttpMethod.Post);
 		}
 
-		public Participant GetParticipant(HttpAuthenticator httpAuthenticator, string participantId)
+		public ExtendentParticipant GetParticipant(HttpAuthenticator httpAuthenticator, string participantId)
 		{
 			var parameters = ApiHelper.CreateParameters(("participantId", participantId));
-			return ApiHelper.GetItem<Participant>(httpAuthenticator, "participants/GetParticipant", HttpMethod.Get, parameters);
+			return ApiHelper.GetItem<ExtendentParticipant>(httpAuthenticator, "participants/GetParticipant", HttpMethod.Get, parameters);
+		}
+
+		public VisualBlock GetVisualBlock(HttpAuthenticator httpAuthenticator, string participantId)
+		{
+			var parameters = ApiHelper.CreateParameters(("participantId", participantId));
+			return ApiHelper.GetItem<VisualBlockWrapper>(httpAuthenticator, "participants/GetParticipant", HttpMethod.Get, parameters).VisualBlock;
 		}
 
 		public List<ParticipantType> GetParticipantTypes(HttpAuthenticator httpAuthenticator)
@@ -45,7 +52,7 @@ namespace PravoAdder.Api
 
 		public void DeleteParticipant(HttpAuthenticator httpAuthenticator, string participantId)
 		{
-			ApiHelper.GetItem(httpAuthenticator, $"participants/DeleteParticipant/{participantId}", HttpMethod.Delete,
+			ApiHelper.SendItem(httpAuthenticator, $"participants/DeleteParticipant/{participantId}", HttpMethod.Delete,
 				new Dictionary<string, string>());
 		}
 	}

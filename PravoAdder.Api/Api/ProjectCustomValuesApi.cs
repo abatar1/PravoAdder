@@ -1,6 +1,5 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
 
@@ -10,10 +9,8 @@ namespace PravoAdder.Api
 	{
 		public VisualBlock Create(HttpAuthenticator httpAuthenticator, dynamic content)
 		{
-			var response = ApiHelper.GetItem(httpAuthenticator, "ProjectCustomValues/Create", HttpMethod.Post, content).Result;
-			return JsonConvert.DeserializeObject<VisualBlock>(response.ToString());
+			return ApiHelper.GetItem<VisualBlock>(httpAuthenticator, "ProjectCustomValues/Create", HttpMethod.Post, content);
 		}
-
 
 		public async Task<bool> Update(HttpAuthenticator httpAuthenticator, dynamic content)
 		{
