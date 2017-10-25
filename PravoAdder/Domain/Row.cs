@@ -6,18 +6,18 @@ namespace PravoAdder.Domain
 {
 	public class Row : IEnumerable<KeyValuePair<int, FieldAddress>>
 	{
-		public Row(IDictionary<int, FieldAddress> content)
+		public Row(Dictionary<int, FieldAddress> content)
 		{
 			Content = content;
 		}
 
-		public Row(IDictionary<int, FieldAddress> content, KeyValuePair<string, string> participant)
+		public Row(Dictionary<int, FieldAddress> content, KeyValuePair<string, string> participant)
 		{
 			Content = content;
 			Participants = new Dictionary<string, string> {{participant.Key, participant.Value}};
 		}
 
-		public IDictionary<int, FieldAddress> Content { get; }
+		public Dictionary<int, FieldAddress> Content { get; }
 		public List<FieldAddress> Values => Content.Values.ToList();
 
 		public Dictionary<string, string> Participants { get; }
