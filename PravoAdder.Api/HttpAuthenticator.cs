@@ -20,7 +20,7 @@ namespace PravoAdder.Api
             {
                 CookieContainer = CookieContainer
             };
-            var retryHandler = new RetryHandler(clientHandler, 5);
+            var retryHandler = new RetryHandler(clientHandler, 5, TimeSpan.FromSeconds(30));
             Client = new HttpClient(retryHandler)
             {
                 BaseAddress = BaseAddress

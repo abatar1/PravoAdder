@@ -9,11 +9,13 @@ namespace PravoAdder.Api
 	public class RetryHandler : DelegatingHandler
 	{
 		private static int _maxRetries;
+		private static TimeSpan _waitingTimeSpan;
 
-		public RetryHandler(HttpMessageHandler innerHandler, int maxRetries)
+		public RetryHandler(HttpMessageHandler innerHandler, int maxRetries, TimeSpan waitingTimespan)
 			: base(innerHandler)
 		{
 			_maxRetries = maxRetries;
+			_waitingTimeSpan = waitingTimespan;
 		}
 
 		protected override async Task<HttpResponseMessage> SendAsync(
@@ -26,7 +28,7 @@ namespace PravoAdder.Api
 				try
 				{
 					var responseTask = base.SendAsync(request, cancellationTokenSource.Token);
-					if (!responseTask.Wait(TimeSpan.FromMinutes(2)))
+					if (!responseTask.Wait(_waitingTimeSpan))
 					{
 						throw new TimeoutException();
 					}
