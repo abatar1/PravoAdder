@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Fclp;
 using NLog;
 using PravoAdder.Domain;
@@ -21,6 +22,12 @@ namespace PravoAdder
 			
 		}
 
+		public static readonly ProcessType[] TableProcesses =
+		{
+			ProcessType.Migration, ProcessType.Sync, ProcessType.CreateParticipants, ProcessType.Analyze, ProcessType.Notes,
+			ProcessType.EditParticipants, ProcessType.RenameCases
+		};
+
 		public Engine Initialize(string[] args)
 		{
 			if (args.Length == 0) throw new ArgumentException();
@@ -42,9 +49,7 @@ namespace PravoAdder
 			parser.Parse(args);
 
 			var processType = parser.Object.ProcessType;
-			if (processType == ProcessType.Migration || processType == ProcessType.Sync ||
-			    processType == ProcessType.CreateParticipants || processType == ProcessType.Analyze ||
-			    processType == ProcessType.Notes || processType == ProcessType.EditParticipants)
+			if (TableProcesses.Contains(processType))
 			{
 				parser.Setup(arg => arg.SourceFileName)
 					.As('s', "sourcefile")

@@ -18,6 +18,8 @@ namespace PravoAdder.Api.Domain
 			ProjectGroupId = dynamicObj.ProjectGroupId;
 			ProjectTypeId = dynamicObj.ProjectTypeId;
 			IsArchive = dynamicObj.IsArchive ?? false;
+			Responsible = new Responsible(dynamicObj.Responsible);
+			ProjectType = new ProjectType(dynamicObj.ProjectType);
 		}
 
 		public Project()
@@ -28,5 +30,7 @@ namespace PravoAdder.Api.Domain
 		public string ProjectTypeId { get; }
 		public string ProjectGroupId { get; }
 		public bool IsArchive { get; }
+		public Responsible Responsible { get; }
+		public ProjectType ProjectType { get; }
 	}
 }

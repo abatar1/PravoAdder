@@ -121,7 +121,7 @@ namespace PravoAdder.Readers
 		    var headerObject = new HeaderBlockInfo();
 		    foreach (var property in headerObject.GetType().GetProperties())
 		    {
-			    var fieldnameAttibute = (FieldNameAttribute)property
+			    var fieldnameAttibute = (FieldNameAttribute) property
 				    .GetCustomAttributes(typeof(FieldNameAttribute), true)
 				    .FirstOrDefault();
 			    if (fieldnameAttibute == null) continue;

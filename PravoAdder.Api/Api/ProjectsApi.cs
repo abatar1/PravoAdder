@@ -40,7 +40,12 @@ namespace PravoAdder.Api
 			return ApiHelper.GetItem<Project>(httpAuthenticator, "Projects/GetProject", HttpMethod.Get, parameters);
 		}
 
-		public Project CreateProject(HttpAuthenticator httpAuthenticator, dynamic content)
+		public Project PutProject(HttpAuthenticator httpAuthenticator, Project project)
+		{
+			return ApiHelper.GetItem<Project>(httpAuthenticator, "projects", HttpMethod.Put, project);
+		}
+
+		public Project CreateProject(HttpAuthenticator httpAuthenticator, object content)
 		{
 			return ApiHelper.GetItem<Project>(httpAuthenticator, "Projects/CreateProject", HttpMethod.Post, content);
 		}

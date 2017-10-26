@@ -19,6 +19,7 @@ namespace PravoAdder.Domain
 		Sync,
 		Analyze,
 		DeleteCases,
+		RenameCases,
 		DeleteCasesByDate,
 		CreateTask,
 		CreateParticipants,
