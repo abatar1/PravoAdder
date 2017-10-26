@@ -10,7 +10,6 @@ namespace PravoAdder.Processors
 	public class ProjectProcessor
 	{
 		private static List<Project> _projects;
-		private static List<Participant> _participants;
 
 		public Func<EngineMessage, EngineMessage> Update = message =>
 		{
@@ -22,8 +21,8 @@ namespace PravoAdder.Processors
 			var headerBlock = message.CaseCreator.ReadHeaderBlock(message.Row);
 			if (headerBlock == null) return null;
 
-			var projectGroup = message.ApiEnviroment.AddProjectGroup(message.ApplicationArguments.IsOverwrite, headerBlock);
-			var project = message.ApiEnviroment.AddProject(message.ApplicationArguments.IsOverwrite, headerBlock,
+			var projectGroup = message.ApiEnviroment.AddProjectGroup(message.Args.IsOverwrite, headerBlock);
+			var project = message.ApiEnviroment.AddProject(message.Args.IsOverwrite, headerBlock,
 				projectGroup?.Id, message.Count, message.IsUpdate);
 
 			return new EngineMessage { HeaderBlock = headerBlock, Item = project };
@@ -103,14 +102,15 @@ namespace PravoAdder.Processors
 			if (project == null) return null;
 
 			var participantName = Table.GetValue(message.Table.Header, message.Row, "Participant");
-			if (_participants == null) _participants = ApiRouter.Participants.GetParticipants(message.Authenticator);
-			var participant = _participants.FirstOrDefault(p => p.Name == participantName);
-			if (participant == null) return null;
-			var extParticipant = ApiRouter.Participants.GetParticipant(message.Authenticator, participant.Id);
-			extParticipant.IncludeInProjectId = project.Id;
+			var detailedParticipant =
+				ParticipantProcessor.GetParticipantByName(message.Authenticator, message.Table.Header, message.Row,
+					participantName);
+			if (detailedParticipant == null) return null;
 
-			ApiRouter.Participants.PutParticipant(message.Authenticator, extParticipant);
-			message.Item = participant;
+			detailedParticipant.IncludeInProjectId = project.Id;
+
+			ApiRouter.Participants.PutParticipant(message.Authenticator, detailedParticipant);
+			message.Item = (Participant) detailedParticipant;
 			return message;
 		};
 	}

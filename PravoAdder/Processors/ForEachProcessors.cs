@@ -57,7 +57,7 @@ namespace PravoAdder.Processors
 		public static Func<EngineMessage, EngineMessage> ProjectByDate = message =>
 		{
 			var projects = ApiRouter.Projects.GetProjects(message.Authenticator, message.Item.Id)
-				.Where(p => p.CreationDate == DateTime.Parse(message.ApplicationArguments.Date))
+				.Where(p => p.CreationDate == DateTime.Parse(message.Args.Date))
 				.ToList();
 			return ProcessForEach(projects, message, (msg, item) =>
 			{
@@ -100,7 +100,7 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> ParticipantByDate = message =>
 		{
-			var neededDatetime = DateTime.Parse(message.ApplicationArguments.Date).ToString("d");
+			var neededDatetime = DateTime.Parse(message.Args.Date).ToString("d");
 			var participants = ApiRouter.Participants.GetParticipants(message.Authenticator)
 				.Select(p => ApiRouter.Participants.GetParticipant(message.Authenticator, p.Id))
 				.Where(p => DateTime.Parse(p.CreationDate).ToString("d") == neededDatetime)

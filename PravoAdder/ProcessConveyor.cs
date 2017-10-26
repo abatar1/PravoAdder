@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using PravoAdder.Domain;
+using PravoAdder.Processors;
 
-namespace PravoAdder.Processors
+namespace PravoAdder
 {
 	public class ProcessConveyor
 	{
@@ -12,13 +13,13 @@ namespace PravoAdder.Processors
 
 		public ProcessConveyor(ApplicationArguments arguments)
 		{
-			FirstMessage = new EngineMessage { ApplicationArguments = arguments };
+			FirstMessage = new EngineMessage { Args = arguments };
 			Conveyor = new List<ConveyorItem>();
 		}
 
 		public void Add(Func<EngineMessage, EngineMessage> processor, int depth = 0)
 		{
-			Conveyor.Add(new ConveyorItem { Depth = depth, Processor = processor, Message = new EngineMessage()});		
+			Conveyor.Add(new ConveyorItem {Depth = depth, Processor = processor, Message = new EngineMessage()});
 		}
 
 		public void AddRange(List<Func<EngineMessage, EngineMessage>> processors)
@@ -36,7 +37,10 @@ namespace PravoAdder.Processors
 			{
 				foreach (var conveyorIter in Conveyor)
 				{
-					if (conveyorСounter == 0 || conveyorIter.Depth == 0)
+					if (conveyorСounter == 0 && conveyorIter.Depth != 0)
+						throw new ConveyorException("Conveyor can't starts with process which depth more than 0.");
+
+					if (conveyorIter.Depth == 0)
 					{
 						messageConveyor.Concat(conveyorIter.Message);
 						var responseMessage = conveyorIter.Processor(messageConveyor);
@@ -146,9 +150,9 @@ namespace PravoAdder.Processors
 					conveyor.Add(SingleProcessors.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.Row);
 					break;
-				case ProcessType.EditParticipants:
+				case ProcessType.EditParticipantsByKey:
 					conveyor.AddRange(GroupedProcessors.LoadWithTable);
-					conveyor.Add(SingleProcessors.Participant.Edit, 1);
+					conveyor.Add(SingleProcessors.Participant.EditById, 1);
 					conveyor.Add(SingleProcessors.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.Row);
 					break;
@@ -161,6 +165,12 @@ namespace PravoAdder.Processors
 				case ProcessType.AttachParticipant:
 					conveyor.AddRange(GroupedProcessors.LoadWithTable);
 					conveyor.Add(SingleProcessors.Project.AttachParticipant, 1);
+					conveyor.Add(SingleProcessors.ProcessCount, 1);
+					conveyor.Add(ForEachProcessors.Row);
+					break;
+				case ProcessType.EditParticipants:
+					conveyor.AddRange(GroupedProcessors.LoadWithTable);
+					conveyor.Add(SingleProcessors.Participant.Edit, 1);
 					conveyor.Add(SingleProcessors.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.Row);
 					break;

@@ -16,12 +16,11 @@ namespace PravoAdder.Wrappers
 	    private const int MaxWordLength = 350;
 		private readonly HttpAuthenticator _httpAuthenticator;
 	    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-	    private List<Project> _projects;
+	    private static List<Project> _projects;
 
 		public ApiEnviroment(HttpAuthenticator httpAuthenticator)
         {
             _httpAuthenticator = httpAuthenticator;
-			_projects = new List<Project>();
         }
 
 	    public void DeleteProjectGroupItem(string projectGroupId)
@@ -93,7 +92,7 @@ namespace PravoAdder.Wrappers
 	        {
 		        if (isUpdate)
 		        {
-			        if (!_projects.Any())
+			        if (_projects == null)
 			        {
 				        _projects = ApiRouter.Projects.GetProjects(_httpAuthenticator, headerInfo.FolderName);					
 			        }
@@ -161,6 +160,7 @@ namespace PravoAdder.Wrappers
 			if (project == null) Logger.Error($"{DateTime.Now} | Failed to add {headerInfo.ProjectName} project");
 			return project;
 		}
+
 
         public void AddInformation(BlockInfo blockInfo, Row excelRow, string projectId, int order)
         {		

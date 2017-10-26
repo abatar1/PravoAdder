@@ -7,6 +7,7 @@ namespace PravoAdder.Api.Domain
 		public string Name { get; set; }
 		public string Id { get; set; }
 		public string SysName { get; set; }
+		public string DisplayName { get; set; }
 
 		public override string ToString()
 		{

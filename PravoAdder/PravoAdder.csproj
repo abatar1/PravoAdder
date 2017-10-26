@@ -87,9 +87,10 @@
     <Compile Include="Domain\ConveyorItem.cs" />
     <Compile Include="Engine.cs" />
     <Compile Include="Domain\EngineMessage.cs" />
+    <Compile Include="Processors\ConveyorException.cs" />
     <Compile Include="Processors\ForEachProcessors.cs" />
     <Compile Include="Processors\ParticipantProcessor.cs" />
-    <Compile Include="Processors\ProcessConveyor.cs" />
+    <Compile Include="ProcessConveyor.cs" />
     <Compile Include="Processors\ProjectProcessor.cs" />
     <Compile Include="Processors\SingleProcessors.cs" />
     <Compile Include="Helpers\FieldBuilder.cs" />

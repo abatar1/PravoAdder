@@ -16,28 +16,59 @@ namespace PravoAdder.Processors
 		private static List<VisualBlockLine> _blockLines;
 		private static List<Participant> _participants;
 
-		private static DetailedParticipant GetByKeyname(HttpAuthenticator authenticator, Row header, Row row, string uniqueIdFieldName)
+		private static void SetDetailedParticipant(HttpAuthenticator authenticator)
 		{
-			if (_detailedParticipants == null)
+			if (_participants == null) _participants = ApiRouter.Participants.GetParticipants(authenticator);
+			_detailedParticipants = _participants
+				.Where(p => p.TypeName == ParticipantCreator.Person)
+				.Select(p => new Lazy<DetailedParticipant>(() => ApiRouter.Participants.GetParticipant(authenticator, p.Id)))
+				.ToList();		
+		}
+
+		private static DetailedParticipant EditParticipant(DetailedParticipant participant, HttpAuthenticator authenticator, Row header, Row row, string searchKey)
+		{
+			if (participant.VisualBlockValueLines == null) participant.VisualBlockValueLines = new List<VisualBlockParticipantLine>();
+
+			if (_blockLines == null)
 			{
-				_detailedParticipants = ApiRouter.Participants.GetParticipants(authenticator)
-					.Where(p => p.TypeName == ParticipantCreator.Person)
-					.Select(p => new Lazy<DetailedParticipant>(() => ApiRouter.Participants.GetParticipant(authenticator, p.Id)))
-					.ToList();
+				var fParticipantId = _detailedParticipants.First().Value.Id;
+				_blockLines = ApiRouter.Participants.GetVisualBlock(authenticator, fParticipantId).Lines.ToList();
 			}
 
-			var uniqueId = Table.GetValue(header, row, uniqueIdFieldName);
-			var participant = _detailedParticipants.FirstOrDefault(p =>
-				{
-					var visualBlock = p.Value.VisualBlockValueLines;
-					if (visualBlock == null) return false;
-					return visualBlock
-						.SelectMany(line => line.Values.Select(value => value.Value))
-						.Contains(uniqueId);
-				}
-			)?.Value;
+			var fieldValue = Table.GetValue(header, row, searchKey)?.Trim();
+			if (string.IsNullOrEmpty(fieldValue)) return null;
 
+			var editingLine = _blockLines.FirstOrDefault(line => line.Fields.Any(field =>
+			{
+				var isRequiredFieldName = field.ProjectField.Name.Contains(searchKey);
+				var doesAlreadyContains = participant.VisualBlockValueLines.FirstOrDefault(pl => pl.BlockLineId == line.Id) != null;
+				return isRequiredFieldName && !doesAlreadyContains;
+			}));
+			if (editingLine == null) return null;
+
+			var addingLine = new VisualBlockParticipantLine
+			{
+				BlockLineId = editingLine.Id,
+				Values = editingLine.Fields
+					.Select(f =>
+					{
+						var newField = new VisualBlockParticipantField { VisualBlockProjectFieldId = f.Id };
+						if (f.ProjectField.Name.Contains(searchKey)) newField.Value = fieldValue;
+						return newField;
+					})
+					.ToList()
+			};
+			participant.VisualBlockValueLines.Add(addingLine);
+			if (string.IsNullOrEmpty(participant.LastName)) participant.LastName = "LastNameTemplate";
 			return participant;
+		}
+
+		public static DetailedParticipant GetParticipantByName(HttpAuthenticator authenticator, Row header, Row row, string name)
+		{
+			if (_participants == null) _participants = ApiRouter.Participants.GetParticipants(authenticator);
+			var participant = _participants.FirstOrDefault(p => p.Name == name);
+			if (participant == null) return null;
+			return ApiRouter.Participants.GetParticipant(authenticator, participant.Id);
 		}
 
 		public Func<EngineMessage, EngineMessage> Create = message =>
@@ -82,46 +113,44 @@ namespace PravoAdder.Processors
 		{
 			ApiRouter.Participants.DeleteParticipant(message.Authenticator, message.Item.Id);
 			return message;
-		};		
+		};	
+
+		public Func<EngineMessage, EngineMessage> EditById = message =>
+		{
+			SetDetailedParticipant(message.Authenticator);
+
+			var uniqueId = Table.GetValue(message.Table.Header, message.Row, "UniqueId");
+			var participant = _detailedParticipants.FirstOrDefault(p =>
+				{
+					var visualBlock = p.Value.VisualBlockValueLines;
+					if (visualBlock == null) return false;
+					return visualBlock
+						.SelectMany(line => line.Values.Select(value => value.Value))
+						.Contains(uniqueId);
+				}
+			)?.Value;
+			if (participant == null) return null;
+
+			var editedParticipant = EditParticipant(participant, message.Authenticator, message.Table.Header, message.Row, message.Args.SearchKey);
+			if (editedParticipant == null) return null;
+
+			var result = ApiRouter.Participants.PutParticipant(message.Authenticator, editedParticipant);
+
+			return new EngineMessage { Item = result };
+		};
 
 		public Func<EngineMessage, EngineMessage> Edit = message =>
 		{
-			var participant = GetByKeyname(message.Authenticator, message.Table.Header, message.Row, "UniqueId");
-			if (participant == null) return null;
+			SetDetailedParticipant(message.Authenticator);
 
-			if (_blockLines == null)
-			{
-				var fParticipantId = _detailedParticipants.First().Value.Id;
-				_blockLines = ApiRouter.Participants.GetVisualBlock(message.Authenticator, fParticipantId).Lines.ToList();
-			}
+			var participantName = Table.GetValue(message.Table.Header, message.Row, "Participant");
+			var detailedParticipant = GetParticipantByName(message.Authenticator, message.Table.Header, message.Row, participantName);
+			if (detailedParticipant == null) return null;
 
-			const string noteFieldName = "Notes";
-			var noteText = Table.GetValue(message.Table.Header, message.Row, noteFieldName)?.Trim();
-			if (string.IsNullOrEmpty(noteText)) return null;
+			var editedParticipant = EditParticipant(detailedParticipant, message.Authenticator, message.Table.Header, message.Row, message.Args.SearchKey);
+			if (editedParticipant == null) return null;
 
-			var editingLine = _blockLines.FirstOrDefault(line => line.Fields.Any(field =>
-			{
-				var isRequiredFieldName = field.ProjectField.Name.Contains(noteFieldName);
-				var doesAlreadyContains = participant.VisualBlockValueLines.FirstOrDefault(pl => pl.BlockLineId == line.Id) != null;
-				return isRequiredFieldName && !doesAlreadyContains;
-			}));
-			if (editingLine == null) return null;
-
-			var addingLine = new VisualBlockParticipantLine
-			{
-				BlockLineId = editingLine.Id,
-				Values = editingLine.Fields
-					.Select(f =>
-					{
-						var newField = new VisualBlockParticipantField { VisualBlockProjectFieldId = f.Id };
-						if (f.ProjectField.Name.Contains(noteFieldName)) newField.Value = noteText;
-						return newField;
-					})
-					.ToList()
-			};
-			participant.VisualBlockValueLines.Add(addingLine);
-
-			var result = ApiRouter.Participants.PutParticipant(message.Authenticator, participant);
+			var result = ApiRouter.Participants.PutParticipant(message.Authenticator, editedParticipant);
 
 			return new EngineMessage { Item = result };
 		};

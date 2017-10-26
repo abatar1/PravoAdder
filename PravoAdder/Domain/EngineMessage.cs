@@ -11,7 +11,7 @@ namespace PravoAdder.Domain
 	[Serializable]
 	public class EngineMessage : IDisposable
 	{
-		public ApplicationArguments ApplicationArguments { get; set; }
+		public ApplicationArguments Args { get; set; }
 		public Settings Settings { get; set; }
 		public Table Table { get; set; }		
 		public Row Row { get; set; }

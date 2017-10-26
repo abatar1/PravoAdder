@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PravoAdder.Processors
 {
-	class ConveyorException
+	public class ConveyorException : Exception
 	{
+		public ConveyorException(string message) : base(message)
+		{
+		}
 	}
 }

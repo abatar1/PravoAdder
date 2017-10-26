@@ -11,6 +11,7 @@
 		public int ParallelOptions { get; set; }
 		public bool IsOverwrite { get; set; }
 		public string ParticipantType { get; set; }
-		public string Date { get; set; }	
+		public string Date { get; set; }
+		public string SearchKey { get; set; }
 	}
 }

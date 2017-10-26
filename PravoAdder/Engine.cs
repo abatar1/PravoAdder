@@ -25,7 +25,8 @@ namespace PravoAdder
 		public static readonly ProcessType[] TableProcesses =
 		{
 			ProcessType.Migration, ProcessType.Sync, ProcessType.CreateParticipants, ProcessType.Analyze, ProcessType.Notes,
-			ProcessType.EditParticipants, ProcessType.RenameCases, ProcessType.AttachParticipant
+			ProcessType.EditParticipantsByKey, ProcessType.RenameCases, ProcessType.AttachParticipant,
+			ProcessType.EditParticipants,
 		};
 
 		public Engine Initialize(string[] args)
@@ -63,6 +64,12 @@ namespace PravoAdder
 				parser.Setup(arg => arg.IsOverwrite)
 					.As('o', "overwrite")
 					.SetDefault(true);
+			}
+			if (processType == ProcessType.EditParticipantsByKey || processType == ProcessType.EditParticipants)
+			{
+				parser.Setup(arg => arg.SearchKey)
+					.As('k', "searchkey")
+					.Required();
 			}
 			if (processType == ProcessType.DeleteCasesByDate || processType == ProcessType.DeleteParticipantsByDate)
 			{

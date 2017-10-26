@@ -31,22 +31,22 @@ namespace PravoAdder.Processors
 			var settingsController = new SettingsWrapper();
 			return new EngineMessage
 			{
-				Settings = settingsController.LoadSettingsFromConsole(message.ApplicationArguments),
-				ParallelOptions = new ParallelOptions {MaxDegreeOfParallelism = message.ApplicationArguments.ParallelOptions}
+				Settings = settingsController.LoadSettingsFromConsole(message.Args),
+				ParallelOptions = new ParallelOptions {MaxDegreeOfParallelism = message.Args.ParallelOptions}
 			};
 		};
 
 		public static Func<EngineMessage, EngineMessage> LoadTable = message =>
 		{
-			TableEnviroment.Initialize(message.ApplicationArguments, message.Settings);
+			TableEnviroment.Initialize(message.Args, message.Settings);
 			return new EngineMessage {Table = TableEnviroment.Table, Settings = message.Settings};
 		};
 
 		public static Func<EngineMessage, EngineMessage> InitializeApp = message =>
 		{
-			var authenticatorController = new AuthentificatorWrapper(message.Settings, message.ApplicationArguments);
+			var authenticatorController = new AuthentificatorWrapper(message.Settings, message.Args);
 			var authenticator = authenticatorController.Authenticate();
-			var processType = message.ApplicationArguments.ProcessType;
+			var processType = message.Args.ProcessType;
 
 			return new EngineMessage
 			{
@@ -56,7 +56,7 @@ namespace PravoAdder.Processors
 				Counter = new Counter(),
 				TaskCreator = processType == ProcessType.CreateTask ? new TaskCreator(authenticator) : null,
 				ParticipantCreator = processType == ProcessType.CreateParticipants
-					? new ParticipantCreator(authenticator, message.ApplicationArguments.ParticipantType)
+					? new ParticipantCreator(authenticator, message.Args.ParticipantType)
 					: null
 			};
 		};
@@ -129,7 +129,7 @@ namespace PravoAdder.Processors
 					errorKeys.Add(cell.Key);			
 				}
 			}
-			using (var xlPackage = new ExcelPackage(new FileInfo(message.ApplicationArguments.SourceFileName + ".xlsx")))
+			using (var xlPackage = new ExcelPackage(new FileInfo(message.Args.SourceFileName + ".xlsx")))
 			{
 				var worksheet = xlPackage.Workbook.Worksheets.First();
 				foreach (var key in errorKeys)
