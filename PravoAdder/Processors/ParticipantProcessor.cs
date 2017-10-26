@@ -12,22 +12,22 @@ namespace PravoAdder.Processors
 {
 	public class ParticipantProcessor
 	{
-		private static List<Lazy<ExtendentParticipant>> _lazyParticipants;
+		private static List<Lazy<DetailedParticipant>> _detailedParticipants;
 		private static List<VisualBlockLine> _blockLines;
 		private static List<Participant> _participants;
 
-		private static ExtendentParticipant GetByKeyname(HttpAuthenticator authenticator, Row header, Row row, string uniqueIdFieldName)
+		private static DetailedParticipant GetByKeyname(HttpAuthenticator authenticator, Row header, Row row, string uniqueIdFieldName)
 		{
-			if (_lazyParticipants == null)
+			if (_detailedParticipants == null)
 			{
-				_lazyParticipants = ApiRouter.Participants.GetParticipants(authenticator)
+				_detailedParticipants = ApiRouter.Participants.GetParticipants(authenticator)
 					.Where(p => p.TypeName == ParticipantCreator.Person)
-					.Select(p => new Lazy<ExtendentParticipant>(() => ApiRouter.Participants.GetParticipant(authenticator, p.Id)))
+					.Select(p => new Lazy<DetailedParticipant>(() => ApiRouter.Participants.GetParticipant(authenticator, p.Id)))
 					.ToList();
 			}
 
 			var uniqueId = Table.GetValue(header, row, uniqueIdFieldName);
-			var participant = _lazyParticipants.FirstOrDefault(p =>
+			var participant = _detailedParticipants.FirstOrDefault(p =>
 				{
 					var visualBlock = p.Value.VisualBlockValueLines;
 					if (visualBlock == null) return false;
@@ -91,7 +91,7 @@ namespace PravoAdder.Processors
 
 			if (_blockLines == null)
 			{
-				var fParticipantId = _lazyParticipants.First().Value.Id;
+				var fParticipantId = _detailedParticipants.First().Value.Id;
 				_blockLines = ApiRouter.Participants.GetVisualBlock(message.Authenticator, fParticipantId).Lines.ToList();
 			}
 

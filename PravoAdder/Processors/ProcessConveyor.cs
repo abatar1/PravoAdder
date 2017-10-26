@@ -158,6 +158,12 @@ namespace PravoAdder.Processors
 					conveyor.Add(SingleProcessors.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.Row);
 					break;
+				case ProcessType.AttachParticipant:
+					conveyor.AddRange(GroupedProcessors.LoadWithTable);
+					conveyor.Add(SingleProcessors.Project.AttachParticipant, 1);
+					conveyor.Add(SingleProcessors.ProcessCount, 1);
+					conveyor.Add(ForEachProcessors.Row);
+					break;
 			}
 			return conveyor;
 		}

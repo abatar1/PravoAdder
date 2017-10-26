@@ -28,11 +28,11 @@ namespace PravoAdder.Readers
 			_participantTypes = ApiRouter.Participants.GetParticipantTypes(_authenticator);
 		}
 
-		public ExtendentParticipant Create(Row info, Row row)
+		public DetailedParticipant Create(Row info, Row row)
 		{
 			var type = _participantTypes.First(p => p.Name == _currentType);
 
-			var participant = new ExtendentParticipant
+			var participant = new DetailedParticipant
 			{
 				Type = type,
 				ContactDetail = new ContactDetail(),

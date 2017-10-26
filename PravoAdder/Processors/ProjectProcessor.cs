@@ -10,6 +10,7 @@ namespace PravoAdder.Processors
 	public class ProjectProcessor
 	{
 		private static List<Project> _projects;
+		private static List<Participant> _participants;
 
 		public Func<EngineMessage, EngineMessage> Update = message =>
 		{
@@ -71,7 +72,7 @@ namespace PravoAdder.Processors
 				if (_projects == null) _projects = ApiRouter.Projects.GetProjects(message.Authenticator);
 				var project = _projects.First(p => p.Name == message.HeaderBlock.ProjectName);
 
-				var tmp = ApiRouter.Casebook.CheckCasebookCaseAsync(message.Authenticator, project.Id,
+				var asyncResult = ApiRouter.Casebook.CheckCasebookCaseAsync(message.Authenticator, project.Id,
 					message.HeaderBlock.SynchronizationNumber).Result;
 				message.Item = project;
 				return message;
@@ -91,6 +92,25 @@ namespace PravoAdder.Processors
 					message.ApiEnviroment.AddInformation(blockInfo, message.Row, message.Item.Id, repeatBlock.Order);
 				}
 			}
+			return message;
+		};
+
+		public Func<EngineMessage, EngineMessage> AttachParticipant = message =>
+		{
+			var projectName = Table.GetValue(message.Table.Header, message.Row, "Case name");
+			if (_projects == null) _projects = ApiRouter.Projects.GetProjects(message.Authenticator);
+			var project = _projects.FirstOrDefault(p => p.Name == projectName);
+			if (project == null) return null;
+
+			var participantName = Table.GetValue(message.Table.Header, message.Row, "Participant");
+			if (_participants == null) _participants = ApiRouter.Participants.GetParticipants(message.Authenticator);
+			var participant = _participants.FirstOrDefault(p => p.Name == participantName);
+			if (participant == null) return null;
+			var extParticipant = ApiRouter.Participants.GetParticipant(message.Authenticator, participant.Id);
+			extParticipant.IncludeInProjectId = project.Id;
+
+			ApiRouter.Participants.PutParticipant(message.Authenticator, extParticipant);
+			message.Item = participant;
 			return message;
 		};
 	}

@@ -26,10 +26,10 @@ namespace PravoAdder.Api
 			return ApiHelper.GetItems<Participant>(httpAuthenticator, "ParticipantsSuggest/GetParticipants", HttpMethod.Post);
 		}
 
-		public ExtendentParticipant GetParticipant(HttpAuthenticator httpAuthenticator, string participantId)
+		public DetailedParticipant GetParticipant(HttpAuthenticator httpAuthenticator, string participantId)
 		{
 			var parameters = ApiHelper.CreateParameters(("participantId", participantId));
-			return ApiHelper.GetItem<ExtendentParticipant>(httpAuthenticator, "participants/GetParticipant", HttpMethod.Get, parameters);
+			return ApiHelper.GetItem<DetailedParticipant>(httpAuthenticator, "participants/GetParticipant", HttpMethod.Get, parameters);
 		}
 
 		public VisualBlock GetVisualBlock(HttpAuthenticator httpAuthenticator, string participantId)
@@ -45,7 +45,7 @@ namespace PravoAdder.Api
 			return participantTypes.Select(o => new ParticipantType(o)).ToList();
 		}
 
-		public Participant PutParticipant(HttpAuthenticator httpAuthenticator, ExtendentParticipant participant)
+		public Participant PutParticipant(HttpAuthenticator httpAuthenticator, DetailedParticipant participant)
 		{
 			return ApiHelper.GetItem<Participant>(httpAuthenticator, "participants/PutParticipant", HttpMethod.Put, participant);
 		}

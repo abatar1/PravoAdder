@@ -25,7 +25,7 @@ namespace PravoAdder
 		public static readonly ProcessType[] TableProcesses =
 		{
 			ProcessType.Migration, ProcessType.Sync, ProcessType.CreateParticipants, ProcessType.Analyze, ProcessType.Notes,
-			ProcessType.EditParticipants, ProcessType.RenameCases
+			ProcessType.EditParticipants, ProcessType.RenameCases, ProcessType.AttachParticipant
 		};
 
 		public Engine Initialize(string[] args)

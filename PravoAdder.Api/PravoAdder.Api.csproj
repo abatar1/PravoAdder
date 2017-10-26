@@ -91,7 +91,7 @@
     <Compile Include="Domain\Content.cs" />
     <Compile Include="Domain\DatabaseItems\DatabaseEntityItem.cs" />
     <Compile Include="Domain\DatabaseItems\DictionaryItem.cs" />
-    <Compile Include="Domain\ExtendentParticipant.cs" />
+    <Compile Include="Domain\DetailedParticipant.cs" />
     <Compile Include="Domain\LineType.cs" />
     <Compile Include="Domain\DatabaseItems\Participant.cs" />
     <Compile Include="Domain\Note.cs" />
