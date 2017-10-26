@@ -94,7 +94,7 @@ namespace PravoAdder.Api.Helpers
 					httpAuthenticator.UserCookie);
 
 				var responseMessage = GetResponseFromRequest(request, httpAuthenticator);
-				if (responseMessage == null) return null;				
+				if (responseMessage == null) throw new HttpRequestException();			
 
 				var newItems = new List<object>(responseMessage.Result)
 					.Select(r => (T) Activator.CreateInstance(typeof(T), r));

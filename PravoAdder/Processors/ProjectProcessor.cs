@@ -66,15 +66,17 @@ namespace PravoAdder.Processors
 
 		public Func<EngineMessage, EngineMessage> Synchronize = message =>
 		{
-			var blocksInfo = message.CaseCreator.Create();
-			foreach (var repeatBlock in blocksInfo)
+			if (!string.IsNullOrEmpty(message.HeaderBlock.SynchronizationNumber))
 			{
-				foreach (var blockInfo in repeatBlock.Blocks)
-				{
-					message.ApiEnviroment.AddInformation(blockInfo, message.Row, message.Item.Id, repeatBlock.Order);
-				}
+				if (_projects == null) _projects = ApiRouter.Projects.GetProjects(message.Authenticator);
+				var project = _projects.First(p => p.Name == message.HeaderBlock.ProjectName);
+
+				var tmp = ApiRouter.Casebook.CheckCasebookCaseAsync(message.Authenticator, project.Id,
+					message.HeaderBlock.SynchronizationNumber).Result;
+				message.Item = project;
+				return message;
 			}
-			return message;
+			return null;
 		};
 
 		public Func<EngineMessage, EngineMessage> AddInformation = message =>
