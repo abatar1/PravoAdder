@@ -1,4 +1,6 @@
-﻿namespace PravoAdder.Api
+﻿using PravoAdder.Api;
+
+namespace PravoAdder
 {
 	public class ApiRouter
 	{

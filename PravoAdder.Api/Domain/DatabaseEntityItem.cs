@@ -2,27 +2,8 @@
 
 namespace PravoAdder.Api.Domain
 {
-	[Serializable]
 	public abstract class DatabaseEntityItem : IEquatable<DatabaseEntityItem>
 	{
-		public DatabaseEntityItem()
-		{
-			
-		}
-
-		public DatabaseEntityItem(string name, string id)
-		{
-			Name = name;
-			Id = id;
-		}
-
-		public DatabaseEntityItem(object data)
-		{
-			var dynamicData = data as dynamic;
-			Name = dynamicData?.Name?.ToString() ?? dynamicData?.DisplayName;
-			Id = dynamicData?.Id?.ToString();
-		}
-
 		public string Name { get; set; }
 		public string Id { get; set; }
 		public string SysName { get; set; }

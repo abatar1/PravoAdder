@@ -12,7 +12,7 @@ namespace PravoAdder.Api.Helpers
 {
 	public class ApiHelper
 	{
-		public static dynamic GetResponseFromRequest(HttpRequestMessage request, HttpAuthenticator httpAuthenticator)
+		private static dynamic GetResponseFromRequest(HttpRequestMessage request, HttpAuthenticator httpAuthenticator)
 		{
 			try
 			{
@@ -97,7 +97,7 @@ namespace PravoAdder.Api.Helpers
 				if (responseMessage == null) throw new HttpRequestException();			
 
 				var newItems = new List<object>(responseMessage.Result)
-					.Select(r => (T) Activator.CreateInstance(typeof(T), r));
+					.Select(r => (T) JsonConvert.DeserializeObject(r.ToString(), typeof(T)));
 				resultContainer.AddRange(newItems);
 
 				count += 1;
@@ -115,11 +115,7 @@ namespace PravoAdder.Api.Helpers
 			if (item == null) return default(T);
 			if (!(bool) item.IsSuccess) return default(T);
 
-			if (typeof(T).BaseType?.Name != "DatabaseEntityItem")
-			{
-				return JsonConvert.DeserializeObject(item.Result.ToString(), typeof(T));
-			}
-			return (T) Activator.CreateInstance(typeof(T), new object[] {item.Result});
+			return (T) JsonConvert.DeserializeObject(item.Result.ToString(), typeof(T));
 		}
 
 		public static dynamic GetItem(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, object content)

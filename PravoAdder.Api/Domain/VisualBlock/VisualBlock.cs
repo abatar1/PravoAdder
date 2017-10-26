@@ -2,10 +2,8 @@
 
 namespace PravoAdder.Api.Domain
 {
-	public class VisualBlock
+	public class VisualBlock : DatabaseEntityItem
 	{
-		public string Id { get; set; }
-		public string Name { get; set; }
 		public List<VisualBlockLine> Lines { get; set; }
 		public bool IsRepeatable { get; set; }
 

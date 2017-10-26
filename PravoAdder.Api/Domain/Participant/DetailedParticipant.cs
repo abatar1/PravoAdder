@@ -34,6 +34,14 @@ namespace PravoAdder.Api.Domain
 				return string.Empty;
 			}
 		}
-		
+
+		public static explicit operator Participant(DetailedParticipant other)
+		{
+			return new Participant { Name = other.FullName, Id = other.Id };
+		}
+
+		public Participant ToParticipant() => new Participant { Name = FullName, Id = Id };
+
+		public override string ToString() => FullName;
 	}
 }
