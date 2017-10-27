@@ -20,25 +20,23 @@ namespace PravoAdder.Wrappers
 
         public HttpAuthenticator Authenticate()
         {
-            while (true)
-            {
-                Logger.Info($"Login as {_settings.Login} to {_settings.BaseUri}...");
-	            try
-	            {
-		            Authentication(_settings.Login, _arguments.Password);
-		            return this;
-	            }
-	            catch (AuthenticationException e)
-	            {
-		            Logger.Error($"Failed to login in. Message: {e.Message}");
-		            throw;
-	            }
-	            catch (Exception e)
-	            {
-					Logger.Error($"Unknown exception while logging in. Message: {e.Message}");
-		            throw;
-				}
-            }
+            Logger.Info($"Login as {_settings.Login} to {_settings.BaseUri}...");
+	        try
+	        {
+		        Authentication(_settings.Login, _arguments.Password);
+		        return this;
+	        }
+	        catch (AuthenticationException e)
+	        {
+		        Logger.Error($"Failed to login in. Message: {e.Message}");
+		        //throw;
+	        }
+	        catch (Exception e)
+	        {
+				Logger.Error($"Unknown exception while logging in. Message: {e.Message}");
+		        //throw;
+			}
+	        return null;
         }
     }
 }

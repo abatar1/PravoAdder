@@ -112,6 +112,7 @@ namespace PravoAdder.Api.Helpers
 			where T : new()
 		{
 			var item = GetItem(httpAuthenticator, path, httpMethod, content);
+
 			if (item == null) return default(T);
 			if (!(bool) item.IsSuccess) return default(T);
 

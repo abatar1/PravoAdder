@@ -8,17 +8,7 @@ namespace PravoAdder.Wrappers
 	public class TableEnviroment
 	{
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
-		private static Table _table;
-		public static Table Table
-		{
-			get
-			{
-				if (_table == null) throw new ArgumentNullException($"Table doesn't initialized");
-				return _table;
-			}
-			private set => _table = value;
-		}
+		public static Table Table { get; private set; }
 
 		public static void Initialize(ApplicationArguments args, Settings settings)
 		{

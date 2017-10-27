@@ -8,7 +8,6 @@ using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api
 {
-	[Serializable]
     public class HttpAuthenticator : IDisposable
     {
         public HttpAuthenticator(string baseUri)
@@ -31,12 +30,7 @@ namespace PravoAdder.Api
         public HttpClient Client { get; }
         public Cookie UserCookie { get; private set; }
         private Uri BaseAddress { get; }
-        private CookieContainer CookieContainer { get; }
-
-        public void Dispose()
-        {
-            Client?.Dispose();
-        }
+        private CookieContainer CookieContainer { get; }    
 
         protected void Authentication(string login, string password)
         {
@@ -56,5 +50,27 @@ namespace PravoAdder.Api
             var message = ApiHelper.ReadFromResponce(response);
             if (!(bool) message.Succeeded) throw new AuthenticationException("Wrong login or password");
         }
-    }
+
+		#region IDisposable Support
+		private bool _disposedValue;
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!_disposedValue)
+			{
+				if (disposing)
+				{
+					Client?.Dispose();					
+				}
+
+				_disposedValue = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+		}
+		#endregion
+	}
 }

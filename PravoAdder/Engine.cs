@@ -92,8 +92,8 @@ namespace PravoAdder
 
 		public Engine Run()
 		{
-			ProcessConveyor.Create(_arguments).Run();
-			Logger.Info($"{DateTime.Now} | {_arguments.ProcessType} successfully processed. Press any key to continue.");
+			var state = ProcessConveyor.Create(_arguments).Run();
+			if (state) Logger.Info($"{DateTime.Now} | {_arguments.ProcessType} successfully processed. Press any key to continue.");
 			Console.ReadKey();
 			return new Engine(_arguments);
 		}		

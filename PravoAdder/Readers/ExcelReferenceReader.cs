@@ -53,6 +53,7 @@ namespace PravoAdder.Readers
 
 			public void Dispose()
 			{
+				Worksheet.Dispose();
 				_excelPackage.Dispose();
 			}
 
@@ -72,7 +73,7 @@ namespace PravoAdder.Readers
 		{
 			var mainTableInfo = new TableInfo(settings, args.SourceFileName);
 			var table = new List<Row>();
-			var infos = new Dictionary<string, TableInfo>();
+			var referenceTableInfos = new Dictionary<string, TableInfo>();
 
 			for (var rowNum = settings.DataRowPosition + args.RowNum - 1; rowNum <= mainTableInfo.TotalRows; rowNum++)
 			{
@@ -117,11 +118,11 @@ namespace PravoAdder.Readers
 						}
 
 						var reference = fieldInfo.Reference;
-						if (!infos.ContainsKey(reference))
+						if (!referenceTableInfos.ContainsKey(reference))
 						{
-							infos.Add(fieldInfo.Reference, new TableInfo(settings, fieldInfo.Reference));
+							referenceTableInfos.Add(fieldInfo.Reference, new TableInfo(settings, fieldInfo.Reference));
 						}
-						var reversedHeader = infos[reference].HeaderRev;
+						var reversedHeader = referenceTableInfos[reference].HeaderRev;
 						if (!reversedHeader.ContainsKey(fieldInfo))
 						{
 							row.Add(null);
@@ -131,13 +132,13 @@ namespace PravoAdder.Readers
 						var keyPos = reversedHeader[reversedHeader.Keys.First(x => x.IsKey)];
 						var fieldPos = reversedHeader[fieldInfo];
 
-						for (var rowNum1 = 2; rowNum1 <= infos[reference].TotalRows; rowNum1++)
+						for (var rowNum1 = 2; rowNum1 <= referenceTableInfos[reference].TotalRows; rowNum1++)
 						{
-							var cellValues = infos[reference].GetValue(rowNum1, keyPos);
+							var cellValues = referenceTableInfos[reference].GetValue(rowNum1, keyPos);
 							if (cellValues == null) continue;
 							if (!cellValues.Split('\n').Contains(cellValue)) continue;
 
-							cellValue = infos[reference].GetValue(rowNum1, fieldPos);
+							cellValue = referenceTableInfos[reference].GetValue(rowNum1, fieldPos);
 							break;
 						}
 					}
@@ -151,7 +152,7 @@ namespace PravoAdder.Readers
 				table.Add(new Row(coloredRow));
 			}
 
-			infos.ForEach(info => info.Value.Dispose());
+			referenceTableInfos.ForEach(info => info.Value.Dispose());
 			mainTableInfo.Dispose();
 			return new Table(table, mainTableInfo.Header);
 		}		

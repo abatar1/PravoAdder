@@ -30,7 +30,7 @@ namespace PravoAdder
 			}
 		}
 
-		public void Run()
+		public bool Run()
 		{
 			var conveyorСounter = 0;
 			using (var messageConveyor = FirstMessage)
@@ -44,6 +44,7 @@ namespace PravoAdder
 					{
 						messageConveyor.Concat(conveyorIter.Message);
 						var responseMessage = conveyorIter.Processor(messageConveyor);
+						if (responseMessage.IsFinal) return false;
 						messageConveyor.Concat(responseMessage);
 					}
 					else
@@ -63,6 +64,7 @@ namespace PravoAdder
 					conveyorСounter += 1;
 				}
 			}
+			return true;
 		}
 
 		public static ProcessConveyor Create(ApplicationArguments arguments)

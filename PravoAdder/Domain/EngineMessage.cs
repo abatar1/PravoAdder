@@ -8,7 +8,6 @@ using PravoAdder.Wrappers;
 
 namespace PravoAdder.Domain
 {
-	[Serializable]
 	public class EngineMessage : IDisposable
 	{
 		public ApplicationArguments Args { get; set; }
@@ -22,7 +21,7 @@ namespace PravoAdder.Domain
 		public HeaderBlockInfo HeaderBlock { get; set; }
 		public Counter Counter { get; set; }
 		public ParallelOptions ParallelOptions { get; set; }	
-
+		public bool IsFinal { get; set; }
 		public HttpAuthenticator Authenticator { get; set; }
 		public ApiEnviroment ApiEnviroment { get; set; }
 		public CaseCreator CaseCreator { get; set; }
@@ -44,9 +43,27 @@ namespace PravoAdder.Domain
 			}
 		}
 
+		#region IDisposable Support
+
+		private bool _disposedValue;
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!_disposedValue)
+			{
+				if (disposing)
+				{
+					Authenticator?.Dispose();
+				}
+
+				_disposedValue = true;
+			}
+		}
+
 		public void Dispose()
 		{
-			Authenticator.Dispose();
+			Dispose(true);
 		}
+		#endregion
 	}
 }

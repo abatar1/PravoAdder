@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using OfficeOpenXml;
-using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Domain;
 using PravoAdder.Domain.Attributes;
@@ -46,6 +45,12 @@ namespace PravoAdder.Processors
 		{
 			var authenticatorController = new AuthentificatorWrapper(message.Settings, message.Args);
 			var authenticator = authenticatorController.Authenticate();
+			if (authenticator == null)
+			{
+				message.IsFinal = true;
+				return message;
+			}
+
 			var processType = message.Args.ProcessType;
 
 			return new EngineMessage
