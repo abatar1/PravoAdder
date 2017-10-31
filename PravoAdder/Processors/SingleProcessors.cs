@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using OfficeOpenXml;
 using PravoAdder.Api.Domain;
@@ -108,9 +109,42 @@ namespace PravoAdder.Processors
 			return message;
 		};
 
+		private static List<VisualBlock> _visualBlocks;
+		private static List<LineType> _lineTypes;
+
+
 		public static Func<EngineMessage, EngineMessage> AddVisualBlockRow = message =>
 		{
+			if (_visualBlocks == null) _visualBlocks = ApiRouter.VisualBlock.Get(message.Authenticator);
+			var visualBlock = _visualBlocks.FirstOrDefault(vb => vb.Name == message.GetValueFromRow("Data block"));
+			if (visualBlock == null) return null;
 
+			if (_lineTypes == null)
+				_lineTypes = ApiRouter.VisualBlock.GetLineTypes(message.Authenticator);
+
+			var projectField = ApiRouter.ProjectFields.Get(message.Authenticator, message.GetValueFromRow("Field name")).FirstOrDefault();
+			if (projectField == null) return null;
+
+			var tagNamingRule = new Regex("[^a-яA-Яa-zA-Z0-9_]");
+			var newLine = new VisualBlockLine
+			{
+				LineType = _lineTypes.First(t => t.Name == message.GetValueFromRow("Row")),
+				Fields = new List<VisualBlockField>
+				{
+					new VisualBlockField
+					{
+						IsRequired = bool.Parse(message.GetValueFromRow("Required")),
+						Tag = tagNamingRule.Replace(message.GetValueFromRow("Tag"), "_"),
+						Width = int.Parse(message.GetValueFromRow("Width")),
+						ProjectField = projectField
+					}
+				},
+				Order = visualBlock.Lines.Count				
+			};
+			visualBlock.Lines.Add(newLine);
+
+			var result = ApiRouter.VisualBlock.Update(message.Authenticator, visualBlock);
+			message.Item = result;
 			return message;
 		};
 

@@ -48,6 +48,11 @@ namespace PravoAdder.Domain
 			return Creator.Create(Table.Header, Row);
 		}
 
+		public string GetValueFromRow(string name)
+		{
+			return Table.GetValue(Table.Header, Row, name).Trim();
+		}
+
 		#region IDisposable Support
 
 		private bool _disposedValue;

@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
+using Newtonsoft.Json;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
 
@@ -31,7 +34,14 @@ namespace PravoAdder.Api.Api
 
 		public VisualBlock Update(HttpAuthenticator httpAuthenticator, VisualBlock updatedBlock)
 		{
-			return ApiHelper.GetItem<VisualBlock>(httpAuthenticator, "VisualBlocks/GetCustomVisualBlocks", HttpMethod.Post, updatedBlock);
+			return ApiHelper.GetItem<VisualBlock>(httpAuthenticator, "VisualBlocks/UpdateCustomVisualBlock", HttpMethod.Put, updatedBlock);
+		}
+
+		public List<LineType> GetLineTypes(HttpAuthenticator httpAuthenticator)
+		{
+			var bootstrap = ApiRouter.Bootstrap.GetShellBootstrap(httpAuthenticator);
+			IEnumerable<dynamic> participantTypes = bootstrap["ProjectFieldFormats"]["LineTypes"];
+			return participantTypes.Select(o => (LineType) JsonConvert.DeserializeObject<LineType>(o.ToString())).ToList();
 		}
 	}
 }

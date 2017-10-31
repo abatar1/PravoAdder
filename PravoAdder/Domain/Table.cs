@@ -23,7 +23,7 @@ namespace PravoAdder.Domain
 
 	    public static string GetValue(Row header, Row tableRow, string name)
 	    {
-			var index = header.Content.First(h => h.Value.FieldName == name).Key;
+			var index = header.Content.FirstOrDefault(h => h.Value.FieldName == name).Key;
 		    return tableRow[index].Value;
 		}
 

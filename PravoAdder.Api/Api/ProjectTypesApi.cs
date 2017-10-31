@@ -18,8 +18,6 @@ namespace PravoAdder.Api
 			var parameters = ApiHelper.CreateParameters(("projectTypeId", projectTypeId));
 			return ApiHelper.GetItem<VisualBlockWrapper>(httpAuthenticator, "ProjectTypes/GetProjectType", HttpMethod.Get,
 				parameters).VisualBlocks;
-		}
-
-		
+		}		
 	}
 }
