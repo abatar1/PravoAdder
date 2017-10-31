@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace PravoAdder.Api.Domain
 {
-	public class DetailedParticipant
+	public class DetailedParticipant : ICreatable
 	{
 		public string Id { get; set; }
 		public ParticipantType Type { get; set; }

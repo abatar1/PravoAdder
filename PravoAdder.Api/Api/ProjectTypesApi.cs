@@ -20,15 +20,6 @@ namespace PravoAdder.Api
 				parameters).VisualBlocks;
 		}
 
-		public VisualBlock GetEntityCardVisualBlock(HttpAuthenticator httpAuthenticator, string entityId, string entityTypeId)
-		{
-			var content = new
-			{
-				EntityId = entityId,
-				EntityTypeSysName = entityTypeId
-			};
-			return ApiHelper.GetItem<VisualBlock>(httpAuthenticator, "EntityVisualBlocks/GetEntityCardVisualBlock",
-				HttpMethod.Post, content);
-		}
+		
 	}
 }

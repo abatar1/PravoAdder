@@ -3,7 +3,6 @@ using System.Linq;
 using Fclp;
 using NLog;
 using PravoAdder.Domain;
-using PravoAdder.Processors;
 
 namespace PravoAdder
 {
@@ -26,7 +25,7 @@ namespace PravoAdder
 		{
 			ProcessType.Migration, ProcessType.Sync, ProcessType.CreateParticipants, ProcessType.Analyze, ProcessType.Notes,
 			ProcessType.EditParticipantsByKey, ProcessType.RenameCases, ProcessType.AttachParticipant,
-			ProcessType.EditParticipants,
+			ProcessType.EditParticipants, ProcessType.CreateProjectField, 
 		};
 
 		public Engine Initialize(string[] args)
@@ -92,8 +91,10 @@ namespace PravoAdder
 
 		public Engine Run()
 		{
-			var state = ProcessConveyor.Create(_arguments).Run();
-			if (state) Logger.Info($"{DateTime.Now} | {_arguments.ProcessType} successfully processed. Press any key to continue.");
+			var conveyor = new ProcessConveyor(_arguments);
+			var isSuccess = conveyor.Create().Run();
+			if (isSuccess) Logger.Info($"{DateTime.Now} | {_arguments.ProcessType} successfully processed. Press any key to continue.");
+
 			Console.ReadKey();
 			return new Engine(_arguments);
 		}		

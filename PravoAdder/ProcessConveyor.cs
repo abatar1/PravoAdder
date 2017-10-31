@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NLog;
 using PravoAdder.Domain;
 using PravoAdder.Processors;
 
@@ -8,17 +9,20 @@ namespace PravoAdder
 {
 	public class ProcessConveyor
 	{
-		private List<ConveyorItem> Conveyor { get; }
+		private static List<ConveyorItem> Conveyor { get; set; }
 		private EngineMessage FirstMessage { get; }
+		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+		private static ApplicationArguments _args;
 
 		public ProcessConveyor(ApplicationArguments arguments)
 		{
 			FirstMessage = new EngineMessage { Args = arguments };
-			Conveyor = new List<ConveyorItem>();
+			_args = arguments;
 		}
 
 		public void Add(Func<EngineMessage, EngineMessage> processor, int depth = 0)
 		{
+			if (Conveyor == null) Conveyor = new List<ConveyorItem>();
 			Conveyor.Add(new ConveyorItem {Depth = depth, Processor = processor, Message = new EngineMessage()});
 		}
 
@@ -38,7 +42,10 @@ namespace PravoAdder
 				foreach (var conveyorIter in Conveyor)
 				{
 					if (conveyorСounter == 0 && conveyorIter.Depth != 0)
-						throw new ConveyorException("Conveyor can't starts with process which depth more than 0.");
+					{
+						Logger.Info("Conveyor can't starts with process which depth more than 0.");
+						return false;
+					}
 
 					if (conveyorIter.Depth == 0)
 					{
@@ -67,10 +74,18 @@ namespace PravoAdder
 			return true;
 		}
 
-		public static ProcessConveyor Create(ApplicationArguments arguments)
+		private void SetSimpleTableProcessor(Func<EngineMessage, EngineMessage> simpleProcessor)
 		{
-			var conveyor = new ProcessConveyor(arguments);
-			var processType = arguments.ProcessType;
+			AddRange(GroupedProcessors.LoadWithTable);
+			Add(simpleProcessor, 1);
+			Add(SingleProcessors.ProcessCount, 1);
+			Add(ForEachProcessors.Row);
+		}
+
+		public ProcessConveyor Create()
+		{
+			var conveyor = new ProcessConveyor(_args);
+			var processType = _args.ProcessType;
 
 			Console.Title = $"Pravo.{Enum.GetName(typeof(ProcessType), processType)}";
 
@@ -83,11 +98,8 @@ namespace PravoAdder
 					conveyor.Add(SingleProcessors.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.Row);
 					break;					
-				case ProcessType.Update:					
-					conveyor.AddRange(GroupedProcessors.LoadWithTable);
-					conveyor.Add(SingleProcessors.Project.Update, 1);
-					conveyor.Add(SingleProcessors.ProcessCount, 1);
-					conveyor.Add(ForEachProcessors.Row);
+				case ProcessType.Update:
+					SetSimpleTableProcessor(SingleProcessors.Project.Update);
 					break;				
 				case ProcessType.Sync:					
 					conveyor.AddRange(GroupedProcessors.LoadWithTable);
@@ -114,17 +126,11 @@ namespace PravoAdder
 					conveyor.Add(ForEachProcessors.ProjectByDate, 1);
 					conveyor.Add(ForEachProcessors.ProjectGroup);
 					break;					
-				case ProcessType.CreateTask:					
-					conveyor.AddRange(GroupedProcessors.LoadWithTable);
-					conveyor.Add(SingleProcessors.CreateTask, 1);
-					conveyor.Add(SingleProcessors.ProcessCount, 1);
-					conveyor.Add(ForEachProcessors.Row);
+				case ProcessType.CreateTask:
+					SetSimpleTableProcessor(SingleProcessors.CreateTask);
 					break;					
-				case ProcessType.CreateParticipants:					
-					conveyor.AddRange(GroupedProcessors.LoadWithTable);
-					conveyor.Add(SingleProcessors.Participant.Create, 1);
-					conveyor.Add(SingleProcessors.ProcessCount, 1);
-					conveyor.Add(ForEachProcessors.Row);
+				case ProcessType.CreateParticipants:
+					SetSimpleTableProcessor(SingleProcessors.Participant.Create);
 					break;					
 				case ProcessType.DeleteParticipants:
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
@@ -147,35 +153,28 @@ namespace PravoAdder
 					conveyor.Add(SingleProcessors.AnalyzeHeader);
 					break;
 				case ProcessType.Notes:
-					conveyor.AddRange(GroupedProcessors.LoadWithTable);
-					conveyor.Add(SingleProcessors.Project.AddNote, 1);
-					conveyor.Add(SingleProcessors.ProcessCount, 1);
-					conveyor.Add(ForEachProcessors.Row);
+					SetSimpleTableProcessor(SingleProcessors.Project.AddNote);
 					break;
 				case ProcessType.EditParticipantsByKey:
-					conveyor.AddRange(GroupedProcessors.LoadWithTable);
-					conveyor.Add(SingleProcessors.Participant.EditById, 1);
-					conveyor.Add(SingleProcessors.ProcessCount, 1);
-					conveyor.Add(ForEachProcessors.Row);
+					SetSimpleTableProcessor(SingleProcessors.Participant.EditById);
 					break;
 				case ProcessType.RenameCases:
-					conveyor.AddRange(GroupedProcessors.LoadWithTable);
-					conveyor.Add(SingleProcessors.Project.Rename, 1);
-					conveyor.Add(SingleProcessors.ProcessCount, 1);
-					conveyor.Add(ForEachProcessors.Row);
+					SetSimpleTableProcessor(SingleProcessors.Project.Rename);
 					break;
 				case ProcessType.AttachParticipant:
-					conveyor.AddRange(GroupedProcessors.LoadWithTable);
-					conveyor.Add(SingleProcessors.Project.AttachParticipant, 1);
-					conveyor.Add(SingleProcessors.ProcessCount, 1);
-					conveyor.Add(ForEachProcessors.Row);
+					SetSimpleTableProcessor(SingleProcessors.Project.AttachParticipant);
 					break;
 				case ProcessType.EditParticipants:
-					conveyor.AddRange(GroupedProcessors.LoadWithTable);
-					conveyor.Add(SingleProcessors.Participant.Edit, 1);
-					conveyor.Add(SingleProcessors.ProcessCount, 1);
-					conveyor.Add(ForEachProcessors.Row);
+					SetSimpleTableProcessor(SingleProcessors.Participant.Edit);
 					break;
+				case ProcessType.CreateProjectField:
+					SetSimpleTableProcessor(SingleProcessors.CreateProjectField);
+					break;
+				case ProcessType.AddVisualBlockRow:
+					SetSimpleTableProcessor(SingleProcessors.AddVisualBlockRow);
+					break;
+				default:
+					throw new ArgumentException("Неизвестный тип конвеера.");
 			}
 			return conveyor;
 		}

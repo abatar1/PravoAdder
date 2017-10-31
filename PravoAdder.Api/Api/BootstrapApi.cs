@@ -10,5 +10,10 @@ namespace PravoAdder.Api
 		{
 			return ApiHelper.GetItem(httpAuthenticator, "bootstrap/GetBootstrap", HttpMethod.Get, new Dictionary<string, string>());
 		}
+
+		public dynamic GetShellBootstrap(HttpAuthenticator httpAuthenticator)
+		{
+			return ApiHelper.GetItem(httpAuthenticator, "bootstrap/GetShellBootstrap", HttpMethod.Get, new Dictionary<string, string>());
+		}
 	}
 }

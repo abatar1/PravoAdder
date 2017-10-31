@@ -29,6 +29,8 @@ namespace PravoAdder.Domain
 		DistinctParticipants,
 		DeleteParticipants,
 		DeleteParticipantsByDate,
+		CreateProjectField,
+		AddVisualBlockRow,
 		Notes,
 		All
 	}

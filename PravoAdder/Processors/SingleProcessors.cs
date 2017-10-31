@@ -52,17 +52,21 @@ namespace PravoAdder.Processors
 			}
 
 			var processType = message.Args.ProcessType;
+			var processName = Enum.GetName(typeof(ProcessType), processType);
+			if (processName == null) return new EngineMessage {IsFinal = true};
+
+			ICreator creator = null;
+			if (processName.Contains("Participant")) creator = new ParticipantCreator(authenticator, message.Args.ParticipantType); 
+			if (processName.Contains("Task")) creator = new TaskCreator(authenticator);
+			if (processName.Contains("ProjectField")) creator = new ProjectFieldCreator(authenticator);
 
 			return new EngineMessage
 			{
 				Authenticator = authenticator,
-				CaseCreator = new CaseCreator(message.Table, message.Settings, authenticator),
+				CaseBuilder = new CaseBuilder(message.Table, message.Settings, authenticator),
 				ApiEnviroment = new ApiEnviroment(authenticator),
 				Counter = new Counter(),
-				TaskCreator = processType == ProcessType.CreateTask ? new TaskCreator(authenticator) : null,
-				ParticipantCreator = processType == ProcessType.CreateParticipants
-					? new ParticipantCreator(authenticator, message.Args.ParticipantType)
-					: null
+				Creator = creator
 			};
 		};
 
@@ -81,6 +85,14 @@ namespace PravoAdder.Processors
 			return message;
 		};
 
+		public static Func<EngineMessage, EngineMessage> CreateProjectField = message =>
+		{
+			var projectField = (ProjectField) message.GetCreatable();
+			var result = ApiRouter.ProjectFields.CreateProjectField(message.Authenticator, projectField);
+			message.Item = result;
+			return message;
+		};
+
 		public static Func<EngineMessage, EngineMessage> ProcessCount = message =>
 		{
 			if (message.Item == null) return message;
@@ -90,11 +102,17 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> CreateTask = message =>
 		{
-			var task = message.TaskCreator.Create(message.Table.Header, message.Row);
+			var task = (Api.Domain.Task) message.GetCreatable();
 			ApiRouter.Task.Create(message.Authenticator, task);
 			if (task.IsArchive) ApiRouter.Projects.ArchiveProject(message.Authenticator, task.Project.Id);
 			return message;
-		};		
+		};
+
+		public static Func<EngineMessage, EngineMessage> AddVisualBlockRow = message =>
+		{
+
+			return message;
+		};
 
 		public static Func<EngineMessage, EngineMessage> AnalyzeHeader = message =>
 		{

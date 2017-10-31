@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Domain;
 
 namespace PravoAdder.Readers
 {
-	public class TaskCreator
+	public class TaskCreator : ICreator
 	{
-		private readonly HttpAuthenticator _authenticator;
 	    private IList<DictionaryItem> _taskStates;
 	    private IList<ProjectFolder> _projectFolders;
 	    private readonly Dictionary<string, IList<Project>> _projects;
@@ -18,7 +16,7 @@ namespace PravoAdder.Readers
 
 		public TaskCreator(HttpAuthenticator authenticator)
 		{
-			_authenticator = authenticator;
+			HttpAuthenticator = authenticator;
             _projects = new Dictionary<string, IList<Project>>();
 		}
 
@@ -28,7 +26,9 @@ namespace PravoAdder.Readers
 	        return new TaskState(item?.Name, item?.Id, item?.SysName);
         }
 
-		public Task Create(Row info, Row row)
+		public HttpAuthenticator HttpAuthenticator { get; }
+
+		public ICreatable Create(Row info, Row row)
 		{
 			var task = new Task {Id = null};
 
@@ -38,21 +38,21 @@ namespace PravoAdder.Readers
 		        var value = valuePair.Value.Value?.Trim();
 		        if (fieldName == "Case name")
 		        {
-		            if (_projectFolders == null) _projectFolders = ApiRouter.ProjectFolders.GetProjectFolders(_authenticator);
+		            if (_projectFolders == null) _projectFolders = ApiRouter.ProjectFolders.GetProjectFolders(HttpAuthenticator);
 		            foreach (var folder in _projectFolders)
 		            {
 		                if (!_projects.ContainsKey(folder.Name))
 		                {
 		                    _projects.Add(folder.Name, new List<Project>());
-			                _projects[folder.Name] = ApiRouter.Projects.GetProjects(_authenticator, folder.Name);
+			                _projects[folder.Name] = ApiRouter.Projects.GetProjects(HttpAuthenticator, folder.Name);
 		                }
 		                var project = _projects[folder.Name]
 		                    .FirstOrDefault(s => s.Name == value);
 		                if (project != null)
 		                {
-		                    if (ApiRouter.Projects.GetProject(_authenticator, project.Id).IsArchive)
+		                    if (ApiRouter.Projects.GetProject(HttpAuthenticator, project.Id).IsArchive)
 		                    {
-		                        ApiRouter.Projects.RestoreProject(_authenticator, project.Id);
+		                        ApiRouter.Projects.RestoreProject(HttpAuthenticator, project.Id);
 		                        task.IsArchive = true;
 		                    }
 		                    task.Project = project;
@@ -80,7 +80,7 @@ namespace PravoAdder.Readers
                 else if (fieldName == "Completed")
 		        {
 		            if (_taskStates == null)
-		                _taskStates = ApiRouter.Dictionary.GetDefaultDictionaryItems(_authenticator, "Tasks.TaskState");
+		                _taskStates = ApiRouter.Dictionary.GetDefaultDictionaryItems(HttpAuthenticator, "Tasks.TaskState");
 
 		            task.TaskState = GetState(bool.Parse(value) ? "Completed" : "In Progress");
 		        }
@@ -90,7 +90,7 @@ namespace PravoAdder.Readers
 		        }               
                 else if (fieldName == "Responsible")
 		        {
-		            if (_responsibles == null) _responsibles = ApiRouter.Responsibles.GetResponsibles(_authenticator);
+		            if (_responsibles == null) _responsibles = ApiRouter.Responsibles.GetResponsibles(HttpAuthenticator);
 		            task.ResponseUser = _responsibles.First(r => r.Name == value);
 		        }
 		    }

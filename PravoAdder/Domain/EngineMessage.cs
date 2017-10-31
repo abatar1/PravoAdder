@@ -17,16 +17,16 @@ namespace PravoAdder.Domain
 		public int Count { get; set; }
 		public int Total { get; set; }
 		public bool IsUpdate { get; set; }
+		public bool IsFinal { get; set; }
 		public DatabaseEntityItem Item { get; set; }
 		public HeaderBlockInfo HeaderBlock { get; set; }
 		public Counter Counter { get; set; }
 		public ParallelOptions ParallelOptions { get; set; }	
-		public bool IsFinal { get; set; }
+
 		public HttpAuthenticator Authenticator { get; set; }
 		public ApiEnviroment ApiEnviroment { get; set; }
-		public CaseCreator CaseCreator { get; set; }
-		public TaskCreator TaskCreator { get; set; }
-		public ParticipantCreator ParticipantCreator { get; set; }
+		public CaseBuilder CaseBuilder { get; set; }
+		public ICreator Creator { get; set; }
 
 		public List<ConveyorItem> Child { get; set; }
 
@@ -41,6 +41,11 @@ namespace PravoAdder.Domain
 					property.SetValue(this, property.GetValue(other));
 				}
 			}
+		}
+
+		public ICreatable GetCreatable()
+		{
+			return Creator.Create(Table.Header, Row);
 		}
 
 		#region IDisposable Support

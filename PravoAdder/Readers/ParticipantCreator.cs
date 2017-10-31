@@ -8,9 +8,8 @@ using PravoAdder.Helpers;
 
 namespace PravoAdder.Readers
 {
-	public class ParticipantCreator
+	public class ParticipantCreator : ICreator
 	{
-		private readonly HttpAuthenticator _authenticator;
 		private VisualBlock _visualBlock;
 		private List<Participant> _participants;
 		private readonly List<ParticipantType> _participantTypes;
@@ -24,11 +23,13 @@ namespace PravoAdder.Readers
 			if (typeName != Person && typeName != Company) throw new ArgumentException("Wrong participant type name");
 
 			_currentType = typeName;
-			_authenticator = authenticator;
-			_participantTypes = ApiRouter.Participants.GetParticipantTypes(_authenticator);
+			HttpAuthenticator = authenticator;
+			_participantTypes = ApiRouter.Participants.GetParticipantTypes(HttpAuthenticator);
 		}
 
-		public DetailedParticipant Create(Row info, Row row)
+		public HttpAuthenticator HttpAuthenticator { get; }
+
+		public ICreatable Create(Row info, Row row)
 		{
 			var type = _participantTypes.First(p => p.Name == _currentType);
 
@@ -73,7 +74,7 @@ namespace PravoAdder.Readers
 					}
 					if (fieldName == "Company Name")
 					{
-						if (_participants == null) _participants = ApiRouter.Participants.GetParticipants(_authenticator);
+						if (_participants == null) _participants = ApiRouter.Participants.GetParticipants(HttpAuthenticator);
 						var company = _participants.FirstOrDefault(p => p.Name == value) ?? new Participant {Name = value};
 						participant.Company = company;
 					}
@@ -90,7 +91,7 @@ namespace PravoAdder.Readers
 				if (_visualBlock == null)
 				{
 					var participantTypeId = _participantTypes.First(p => p.TypeName == _currentType).Id;
-					_visualBlock = ApiRouter.ProjectTypes.GetEntityCardVisualBlock(_authenticator, participantTypeId, "Participant");
+					_visualBlock = ApiRouter.VisualBlock.GetEntityCard(HttpAuthenticator, participantTypeId, "Participant");
 				}
 				foreach (var line in _visualBlock.Lines)
 				{
@@ -99,7 +100,7 @@ namespace PravoAdder.Readers
 
 					var newField = new VisualBlockParticipantField
 					{
-						Value = FieldBuilder.CreateFieldValueFromData(_authenticator, field, value),
+						Value = FieldBuilder.CreateFieldValueFromData(HttpAuthenticator, field, value),
 						VisualBlockProjectFieldId = field.Id
 					};
 

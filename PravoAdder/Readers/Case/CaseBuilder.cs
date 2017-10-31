@@ -9,17 +9,17 @@ using PravoAdder.Domain.Attributes;
 
 namespace PravoAdder.Readers
 {
-    public class CaseCreator
+    public class CaseBuilder
     {
 	    private readonly IDictionary<string, List<VisualBlock>> _visualBlocks;
 		private readonly object _visualBlocksLocker = new object();
 	    private readonly HttpAuthenticator _httpAuthenticator;
 
-	    public readonly Table Table;
+		public readonly Table Table;
 	    public readonly Settings Settings;
-	    public HeaderBlockInfo HeaderBlockInfo;
+	    public HeaderBlockInfo HeaderBlockInfo;    
 
-		public CaseCreator(Table excelTable, Settings settings, HttpAuthenticator httpAuthenticator)
+		public CaseBuilder(Table excelTable, Settings settings, HttpAuthenticator httpAuthenticator)
         {
 	        Settings = settings;
 	        Table = excelTable;
@@ -40,9 +40,9 @@ namespace PravoAdder.Readers
 			    visualBlocks = _visualBlocks[projectTypeId];
 		    }
 		    return visualBlocks;
-	    }
+	    }   
 
-	    public IEnumerable<CaseInfo> Create()
+	    public IEnumerable<CaseInfo> Build()
 	    {
 		    if (HeaderBlockInfo.ProjectTypeName == null) return null;
 

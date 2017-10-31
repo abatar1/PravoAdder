@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace PravoAdder.Api.Domain
 {
-    public class Task
+    public class Task : ICreatable 
     {
         public Project Project { get; set; }
         public TaskName TaskName { get; set; }

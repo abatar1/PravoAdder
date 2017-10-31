@@ -29,12 +29,10 @@ namespace PravoAdder.Wrappers
 	        catch (AuthenticationException e)
 	        {
 		        Logger.Error($"Failed to login in. Message: {e.Message}");
-		        //throw;
 	        }
 	        catch (Exception e)
 	        {
 				Logger.Error($"Unknown exception while logging in. Message: {e.Message}");
-		        //throw;
 			}
 	        return null;
         }

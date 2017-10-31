@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Domain;
 
@@ -18,7 +17,7 @@ namespace PravoAdder.Processors
 
 		public Func<EngineMessage, EngineMessage> TryCreate = message =>
 		{
-			var headerBlock = message.CaseCreator.ReadHeaderBlock(message.Row);
+			var headerBlock = message.CaseBuilder.ReadHeaderBlock(message.Row);
 			if (headerBlock == null) return null;
 
 			var projectGroup = message.ApiEnviroment.AddProjectGroup(message.Args.IsOverwrite, headerBlock);
@@ -83,7 +82,7 @@ namespace PravoAdder.Processors
 		{
 			if (message.Item == null) return message;
 
-			var blocksInfo = message.CaseCreator.Create();
+			var blocksInfo = message.CaseBuilder.Build();
 			foreach (var repeatBlock in blocksInfo)
 			{
 				foreach (var blockInfo in repeatBlock.Blocks)

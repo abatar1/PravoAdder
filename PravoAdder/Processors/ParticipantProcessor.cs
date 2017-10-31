@@ -75,7 +75,7 @@ namespace PravoAdder.Processors
 		{
 			if (_participants == null) _participants = ApiRouter.Participants.GetParticipants(message.Authenticator);
 
-			var newParticipant = message.ParticipantCreator.Create(message.Table.Header, message.Row);
+			var newParticipant = (DetailedParticipant) message.GetCreatable();
 			var existedParticipant = _participants.FirstOrDefault(p => p.Name == newParticipant.FullName);
 			if (existedParticipant != null) return new EngineMessage { Item = existedParticipant };
 			var participantResponse = ApiRouter.Participants.PutParticipant(message.Authenticator, newParticipant);

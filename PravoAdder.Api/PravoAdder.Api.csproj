@@ -76,6 +76,9 @@
     <Compile Include="Api\CasebookApi.cs" />
     <Compile Include="Api\CurrenciesApi.cs" />
     <Compile Include="Api\DictionaryApi.cs" />
+    <Compile Include="Api\ProjectFieldsApi.cs" />
+    <Compile Include="Api\VisualBlockApi.cs" />
+    <Compile Include="Domain\Other\DictionaryInfo.cs" />
     <Compile Include="Api\NotesApi.cs" />
     <Compile Include="Api\ParticipantsApi.cs" />
     <Compile Include="Api\ProjectCustomValuesApi.cs" />
@@ -85,6 +88,7 @@
     <Compile Include="Api\ProjectTypesApi.cs" />
     <Compile Include="Api\ResponsiblesApi.cs" />
     <Compile Include="Api\TaskApi.cs" />
+    <Compile Include="Domain\ICreatable.cs" />
     <Compile Include="Domain\Other\ContactDetail.cs" />
     <Compile Include="Domain\Other\CalculationFormula.cs" />
     <Compile Include="Domain\Other\CalculationFormulaValue.cs" />

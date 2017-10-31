@@ -3,6 +3,6 @@
 	public class ProjectFieldFormat
 	{
 		public string SysName { get; set; }
-		public DictionaryItem Dictionary { get; set; } 
+		public DictionaryInfo Dictionary { get; set; } 
 	}
 }
