@@ -10,7 +10,7 @@ namespace PravoAdder.Api
 	{
 		public List<Project> GetProjects(HttpAuthenticator httpAuthenticator, string folderName = null)
 		{
-			return GetGroupedProjects(httpAuthenticator, folderName)?.SelectMany(g => g.Projects).ToList();
+			return GetGroupedProjects(httpAuthenticator, folderName).SelectMany(g => g.Projects).ToList();
 		}
 
 		public List<GroupedProjects> GetGroupedProjects(HttpAuthenticator httpAuthenticator, string folderName = null)

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Fclp;
+using PravoAdder.Helpers;
 
 namespace PravoAdder.Domain
 {
-	[Serializable]
     public class FieldAddress : IEquatable<FieldAddress>
     {
 		public FieldAddress(string address)
@@ -47,41 +47,13 @@ namespace PravoAdder.Domain
 				})
 				.SetDefault(string.Empty);
 			
-			var result = parser.Parse(GetCommandsFromString(address));
+			var result = parser.Parse(SettingsHelper.GetCommandsFromString(address));
 			if (result.HasErrors)
 			{
 				IsValue = true;
 				Value = address;
 			}
-		}
-
-		private static string[] GetCommandsFromString(string line)
-		{
-			if (line == null) return null;
-
-			var words = line.Split(' ');
-			var commands = new List<string>();
-
-			for (var i = 0; i < words.Length; i++)
-			{
-				commands.Add(words[i]);
-				if (words[i].StartsWith("-")) continue;
-
-				var count = 1;
-				while (true)
-				{
-					if (i + count >= words.Length || words[i + count].StartsWith("-"))
-					{
-						i += count - 1;
-						break;
-					}
-					commands[commands.Count - 1] += $" {words[i + count]}";
-					count += 1;
-				}
-			}
-
-			return commands.ToArray();
-		}
+		}		
 
 		public FieldAddress(string blockName, string fieldName, bool repeatBlock = false, int repeatBlockNumber = 0)
 		{

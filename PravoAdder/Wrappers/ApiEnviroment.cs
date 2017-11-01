@@ -58,7 +58,7 @@ namespace PravoAdder.Wrappers
 
 		public ProjectGroup AddProjectGroup(bool needOverwrite, HeaderBlockInfo headerInfo)
         {
-	        if (headerInfo.ProjectGroupName == null) return null;		
+	        if (string.IsNullOrEmpty(headerInfo.ProjectGroupName)) return null;		
 
 			if (needOverwrite)
 			{
@@ -130,7 +130,7 @@ namespace PravoAdder.Wrappers
 		        return null;
 	        }
 
-	        var responsibleName = headerInfo.ResponsibleName.Replace(".", "");
+	        var responsibleName = headerInfo.ResponsibleName?.Replace(".", "");
 	        if (string.IsNullOrEmpty(responsibleName)) responsibleName = "empty_string";
 	        var responsible = ApiRouter.Responsibles.GetResponsibles(_httpAuthenticator).GetByName(responsibleName);
 	        if (responsible == null)
@@ -140,27 +140,27 @@ namespace PravoAdder.Wrappers
 		        return null;
 	        }
 
-	        var projectGroup = headerInfo.ProjectGroupName == null && projectGroupId == null
+	        var projectGroup = string.IsNullOrEmpty(headerInfo.ProjectGroupName) && projectGroupId == null
 		        ? null
 		        : new ProjectGroup(headerInfo.ProjectGroupName, projectGroupId);
 
 			var projectName = headerInfo.ProjectName;
 	        if (projectName.Length > MaxWordLength) projectName = projectName.Remove(MaxWordLength);
 
-			var content = new
-            {
-                ProjectFolder = projectFolder,
-                ProjectType = projectType,
-                Responsible = responsible,
-                ProjectGroup = projectGroup,
-                Name = projectName
+	        var newProject = new Project
+	        {
+		        CasebookNumber = headerInfo.SynchronizationNumber,
+		        Name = projectName,
+				ProjectType = projectType,
+				Responsible = responsible,
+				ProjectGroup = projectGroup,
+				ProjectFolder = projectFolder				
 			};
 
-	        var project = ApiRouter.Projects.CreateProject(_httpAuthenticator, content);
+	        var project = ApiRouter.Projects.CreateProject(_httpAuthenticator, newProject);
 			if (project == null) Logger.Error($"{DateTime.Now} | Failed to add {headerInfo.ProjectName} project");
 			return project;
 		}
-
 
         public void AddInformation(BlockInfo blockInfo, Row excelRow, string projectId, int order)
         {		

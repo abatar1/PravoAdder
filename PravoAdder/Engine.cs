@@ -3,6 +3,7 @@ using System.Linq;
 using Fclp;
 using NLog;
 using PravoAdder.Domain;
+using PravoAdder.Helpers;
 
 namespace PravoAdder
 {
@@ -73,13 +74,21 @@ namespace PravoAdder
 			if (processType == ProcessType.DeleteCasesByDate || processType == ProcessType.DeleteParticipantsByDate)
 			{
 				parser.Setup(arg => arg.Date)
-					.As('d', "date")
+					.As('k', "date")
 					.Required();
 			}
+
+			if (processType == ProcessType.UnloadCases)
+			{
+				parser.Setup(arg => arg.ProjectType)
+					.As('k', "projectType")
+					.Required();
+			}
+
 			if (processType == ProcessType.CreateParticipants)
 			{
 				parser.Setup(arg => arg.ParticipantType)
-					.As('z', "participantType")
+					.As('k', "participantType")
 					.Required();
 			}		
 

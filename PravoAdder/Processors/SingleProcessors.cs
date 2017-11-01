@@ -112,7 +112,6 @@ namespace PravoAdder.Processors
 		private static List<VisualBlock> _visualBlocks;
 		private static List<LineType> _lineTypes;
 
-
 		public static Func<EngineMessage, EngineMessage> AddVisualBlockRow = message =>
 		{
 			if (_visualBlocks == null) _visualBlocks = ApiRouter.VisualBlock.Get(message.Authenticator);
@@ -145,6 +144,33 @@ namespace PravoAdder.Processors
 
 			var result = ApiRouter.VisualBlock.Update(message.Authenticator, visualBlock);
 			message.Item = result;
+			return message;
+		};
+
+		public static Func<EngineMessage, EngineMessage> CreateExcelRow = message =>
+		{
+			var project = ApiRouter.Projects.GetProject(message.Authenticator, message.Item.Id);
+
+			var newTable = new FileInfo("output.xlsx");
+			var pck = new ExcelPackage(newTable);
+			if (!newTable.Exists)
+			{				
+				var ws = pck.Workbook.Worksheets.Add("Content");
+				ws.View.ShowGridLines = false;
+				ws.Cells["A1"].Value = "Папка дела";
+				ws.Cells["B1"].Value = "Проект дела";
+				ws.Cells["C1"].Value = "Название дела";
+				ws.Cells["D1"].Value = "Номер дела к КБ";
+			}
+			var worksheet = pck.Workbook.Worksheets.First();
+
+			worksheet.Cells[message.Count + 2, 1].Value = project.ProjectFolder?.Name;
+			worksheet.Cells[message.Count + 2, 2].Value = project.ProjectGroup?.Name;
+			worksheet.Cells[message.Count + 2, 3].Value = project.Name;
+			worksheet.Cells[message.Count + 2, 4].Value = project.CasebookNumber;
+			pck.Save();
+
+			message.Item = project;
 			return message;
 		};
 

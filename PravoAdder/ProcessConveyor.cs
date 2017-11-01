@@ -173,6 +173,12 @@ namespace PravoAdder
 				case ProcessType.AddVisualBlockRow:
 					SetSimpleTableProcessor(SingleProcessors.AddVisualBlockRow);
 					break;
+				case ProcessType.UnloadCases:
+					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
+					conveyor.Add(SingleProcessors.CreateExcelRow, 2);
+					conveyor.Add(ForEachProcessors.ProjectByType, 1);
+					conveyor.Add(ForEachProcessors.ProjectGroup);
+					break;
 				default:
 					throw new ArgumentException("Неизвестный тип конвеера.");
 			}

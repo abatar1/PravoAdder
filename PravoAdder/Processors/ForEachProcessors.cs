@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Configuration;
 using System.Threading.Tasks;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
@@ -62,6 +63,26 @@ namespace PravoAdder.Processors
 			return ProcessForEach(projects, message, (msg, item) =>
 			{
 				msg.Item = (Project) item;
+				return msg;
+			});
+		};
+
+		public static Func<EngineMessage, EngineMessage> ProjectByType = message =>
+		{
+			var type = ApiRouter.ProjectTypes.GetProjectTypes(message.Authenticator)
+				.FirstOrDefault(t => t.Name.Equals(message.Args.ProjectType.Replace('_', ' ')));
+			if (type == null)
+			{
+				message.IsFinal = true;
+				return message;
+			}
+
+			var projects = ApiRouter.Projects.GetProjects(message.Authenticator, message.Item.Id)
+				.Where(p => p.ProjectType.Equals(type))
+				.ToList();
+			return ProcessForEach(projects, message, (msg, item) =>
+			{
+				msg.Item = (Project)item;
 				return msg;
 			});
 		};

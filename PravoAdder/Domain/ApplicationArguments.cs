@@ -13,5 +13,6 @@
 		public string ParticipantType { get; set; }
 		public string Date { get; set; }
 		public string SearchKey { get; set; }
+		public string ProjectType { get; set; }
 	}
 }

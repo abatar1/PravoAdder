@@ -1,6 +1,6 @@
 {
-	"Login": "g.guy@case.one",
-	"BaseUri": "https://gradyfirm.case.one",
+	"Login": "user1@user.ru",
+	"BaseUri": "http://bankruptcy.case.one/",
 	"DataRowPosition": 2,
 	"InformationRowPosition": 1,
 	"XmlMappingPath": "mapping",

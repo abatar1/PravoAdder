@@ -21,6 +21,7 @@ namespace PravoAdder.Domain
 		AttachParticipant,
 		DeleteCases,
 		RenameCases,
+		UnloadCases,
 		DeleteCasesByDate,
 		CreateTask,
 		CreateParticipants,
