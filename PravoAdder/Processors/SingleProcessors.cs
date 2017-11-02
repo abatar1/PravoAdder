@@ -152,12 +152,12 @@ namespace PravoAdder.Processors
 		public static Func<EngineMessage, EngineMessage> CreateExcelRow = message =>
 		{
 			const string pageName = "Content";
-			var newTable = new FileInfo("output.xlsx");				
-			var pck = new ExcelPackage(newTable);
-			var head = typeof(HeaderBlockInfo).GetProperties();
+			var newTableInfo = new FileInfo("output.xlsx");				
+			var excelPackage = new ExcelPackage(newTableInfo);
+			var headProperties = typeof(HeaderBlockInfo).GetProperties();
 
 			ExcelWorksheet worksheet = null;
-			if (!newTable.Exists)
+			if (!newTableInfo.Exists)
 			{
 				if (!HeaderBlockInfo.Languages.ContainsKey(message.Args.Language))
 				{
@@ -165,10 +165,10 @@ namespace PravoAdder.Processors
 					return message;
 				}
 				var lKey = HeaderBlockInfo.Languages[message.Args.Language];
-				worksheet = pck.Workbook.Worksheets.Add(pageName);
+				worksheet = excelPackage.Workbook.Worksheets.Add(pageName);
 				var alphabet = Enumerable.Range(0, 26).Select(i => Convert.ToChar('A' + i));			
 
-				foreach (var p in head.Zip(alphabet, (info, c) => new {Info = info.LoadAttribute<FieldNameAttribute>(), Letter = c}))
+				foreach (var p in headProperties.Zip(alphabet, (info, c) => new {Info = info.LoadAttribute<FieldNameAttribute>(), Letter = c}))
 				{
 					worksheet.Cells[$"{p.Letter}1"].Value = $"-b {HeaderBlockInfo.SystemNames[lKey]} -f {p.Info.FieldNames[lKey]}";
 
@@ -180,12 +180,12 @@ namespace PravoAdder.Processors
 					worksheet.Cells[$"{p.Letter}1"].Style.Fill.BackgroundColor.SetColor(Color.Yellow);
 				}
 			}
-			if (worksheet == null) worksheet = pck.Workbook.Worksheets.First(w => w.Name == pageName);
+			if (worksheet == null) worksheet = excelPackage.Workbook.Worksheets.First(w => w.Name == pageName);
 
 			var project = ApiRouter.Projects.GetProject(message.Authenticator, message.Item.Id);
 			var projectProperties = typeof(Project).GetProperties();
 
-			foreach (var p in head.Zip(Enumerable.Range(1, head.Length + 1), (info, i) => new {Info = info, Count = i}))
+			foreach (var p in headProperties.Zip(Enumerable.Range(1, headProperties.Length + 1), (info, i) => new {Info = info, Count = i}))
 			{
 				var projectProperty = projectProperties.FirstOrDefault(prop => prop.Name == p.Info.Name);
 				if (projectProperty == null) continue;
@@ -195,12 +195,8 @@ namespace PravoAdder.Processors
 					: Convert.ChangeType(projectProperty.GetValue(project), projectProperty.PropertyType)?.ToString();
 				worksheet.Cells[message.Count + 2, p.Count].Value = value;
 			}
-			//worksheet.Cells[message.Count + 2, 1].Value = project.ProjectFolder?.Name;
-			//worksheet.Cells[message.Count + 2, 2].Value = project.ProjectGroup?.Name;
-			//worksheet.Cells[message.Count + 2, 3].Value = project.Name;
-			//worksheet.Cells[message.Count + 2, 4].Value = project.CasebookNumber;
-			pck.Save();
 
+			excelPackage.Save();
 			message.Item = project;
 			return message;
 		};

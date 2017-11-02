@@ -154,7 +154,8 @@ namespace PravoAdder.Wrappers
 				ProjectType = projectType,
 				Responsible = responsible,
 				ProjectGroup = projectGroup,
-				ProjectFolder = projectFolder				
+				ProjectFolder = projectFolder,
+				Description = headerInfo.Description
 			};
 
 	        var project = ApiRouter.Projects.CreateProject(_httpAuthenticator, newProject);

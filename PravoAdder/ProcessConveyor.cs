@@ -176,6 +176,7 @@ namespace PravoAdder
 				case ProcessType.UnloadCases:
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
 					conveyor.Add(SingleProcessors.CreateExcelRow, 2);
+					conveyor.Add(SingleProcessors.ProcessCount, 2);
 					conveyor.Add(ForEachProcessors.ProjectByType, 1);
 					conveyor.Add(ForEachProcessors.ProjectGroup);
 					break;
