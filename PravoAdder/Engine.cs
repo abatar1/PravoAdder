@@ -83,6 +83,9 @@ namespace PravoAdder
 				parser.Setup(arg => arg.ProjectType)
 					.As('k', "projectType")
 					.Required();
+				parser.Setup(arg => arg.Language)
+					.As('l', "language")
+					.Required();
 			}
 
 			if (processType == ProcessType.CreateParticipants)

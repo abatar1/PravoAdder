@@ -14,5 +14,6 @@
 		public string Date { get; set; }
 		public string SearchKey { get; set; }
 		public string ProjectType { get; set; }
+		public string Language { get; set; }
 	}
 }

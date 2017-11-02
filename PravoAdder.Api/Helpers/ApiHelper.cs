@@ -105,7 +105,7 @@ namespace PravoAdder.Api.Helpers
 
 			} while (true);
 
-			return resultContainer.Count == 0 ? new List<T>() : resultContainer;
+			return resultContainer;
 		}	
 
 		public static T GetItem<T>(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, object content)

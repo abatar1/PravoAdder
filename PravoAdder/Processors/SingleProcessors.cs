@@ -5,7 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using NLog;
 using OfficeOpenXml;
+using OfficeOpenXml.Style;
 using PravoAdder.Api.Domain;
 using PravoAdder.Domain;
 using PravoAdder.Domain.Attributes;
@@ -149,25 +151,54 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> CreateExcelRow = message =>
 		{
-			var project = ApiRouter.Projects.GetProject(message.Authenticator, message.Item.Id);
-
-			var newTable = new FileInfo("output.xlsx");
+			const string pageName = "Content";
+			var newTable = new FileInfo("output.xlsx");				
 			var pck = new ExcelPackage(newTable);
-			if (!newTable.Exists)
-			{				
-				var ws = pck.Workbook.Worksheets.Add("Content");
-				ws.View.ShowGridLines = false;
-				ws.Cells["A1"].Value = "Папка дела";
-				ws.Cells["B1"].Value = "Проект дела";
-				ws.Cells["C1"].Value = "Название дела";
-				ws.Cells["D1"].Value = "Номер дела к КБ";
-			}
-			var worksheet = pck.Workbook.Worksheets.First();
+			var head = typeof(HeaderBlockInfo).GetProperties();
 
-			worksheet.Cells[message.Count + 2, 1].Value = project.ProjectFolder?.Name;
-			worksheet.Cells[message.Count + 2, 2].Value = project.ProjectGroup?.Name;
-			worksheet.Cells[message.Count + 2, 3].Value = project.Name;
-			worksheet.Cells[message.Count + 2, 4].Value = project.CasebookNumber;
+			ExcelWorksheet worksheet = null;
+			if (!newTable.Exists)
+			{
+				if (!HeaderBlockInfo.Languages.ContainsKey(message.Args.Language))
+				{
+					message.IsFinal = true;
+					return message;
+				}
+				var lKey = HeaderBlockInfo.Languages[message.Args.Language];
+				worksheet = pck.Workbook.Worksheets.Add(pageName);
+				var alphabet = Enumerable.Range(0, 26).Select(i => Convert.ToChar('A' + i));			
+
+				foreach (var p in head.Zip(alphabet, (info, c) => new {Info = info.LoadAttribute<FieldNameAttribute>(), Letter = c}))
+				{
+					worksheet.Cells[$"{p.Letter}1"].Value = $"-b {HeaderBlockInfo.SystemNames[lKey]} -f {p.Info.FieldNames[lKey]}";
+
+					worksheet.Cells[$"{p.Letter}1"].Style.Border.BorderAround(ExcelBorderStyle.Medium);
+					worksheet.Cells[$"{p.Letter}1"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+					worksheet.Cells[$"{p.Letter}1"].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+					worksheet.Cells[$"{p.Letter}1"].Style.WrapText = true;
+					worksheet.Cells[$"{p.Letter}1"].Style.Fill.PatternType = ExcelFillStyle.Solid;
+					worksheet.Cells[$"{p.Letter}1"].Style.Fill.BackgroundColor.SetColor(Color.Yellow);
+				}
+			}
+			if (worksheet == null) worksheet = pck.Workbook.Worksheets.First(w => w.Name == pageName);
+
+			var project = ApiRouter.Projects.GetProject(message.Authenticator, message.Item.Id);
+			var projectProperties = typeof(Project).GetProperties();
+
+			foreach (var p in head.Zip(Enumerable.Range(1, head.Length + 1), (info, i) => new {Info = info, Count = i}))
+			{
+				var projectProperty = projectProperties.FirstOrDefault(prop => prop.Name == p.Info.Name);
+				if (projectProperty == null) continue;
+
+				var value = projectProperty.PropertyType.BaseType == typeof(DatabaseEntityItem)
+					? ((DatabaseEntityItem) projectProperty.GetValue(project))?.Name
+					: Convert.ChangeType(projectProperty.GetValue(project), projectProperty.PropertyType)?.ToString();
+				worksheet.Cells[message.Count + 2, p.Count].Value = value;
+			}
+			//worksheet.Cells[message.Count + 2, 1].Value = project.ProjectFolder?.Name;
+			//worksheet.Cells[message.Count + 2, 2].Value = project.ProjectGroup?.Name;
+			//worksheet.Cells[message.Count + 2, 3].Value = project.Name;
+			//worksheet.Cells[message.Count + 2, 4].Value = project.CasebookNumber;
 			pck.Save();
 
 			message.Item = project;

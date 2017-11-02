@@ -196,17 +196,13 @@ namespace PravoAdder.Readers
 			var projectName = caseInfoAttribute.DescendantsAndSelf("Name")
 				.FirstOrDefault()
 				?.Value;
-			var projectNumber = caseInfoAttribute.DescendantsAndSelf("CaseNumber")
-				.FirstOrDefault()
-				?.Value;
 
 			return new HeaderBlockInfo
 			{
-				FolderName = projectFolder,
-				ProjectName = projectName,
-				ProjectTypeName = projectType,
-				ResponsibleName = responsible,
-				ProjectNumber = projectNumber
+				ProjectFolder = projectFolder,
+				Name = projectName,
+				ProjectType = projectType,
+				Responsible = responsible
 			};
 		}
 	}

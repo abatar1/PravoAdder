@@ -58,31 +58,31 @@ namespace PravoAdder.Wrappers
 
 		public ProjectGroup AddProjectGroup(bool needOverwrite, HeaderBlockInfo headerInfo)
         {
-	        if (string.IsNullOrEmpty(headerInfo.ProjectGroupName)) return null;		
+	        if (string.IsNullOrEmpty(headerInfo.ProjectGroup)) return null;		
 
 			if (needOverwrite)
 			{
 				var response = GetProjectGroupItems();
-				var projectGroupResponse = response?.GetByName(headerInfo.ProjectGroupName);
+				var projectGroupResponse = response?.GetByName(headerInfo.ProjectGroup);
 				if (projectGroupResponse != null) return projectGroupResponse;
 			}
 
 	        var projectFolder = ApiRouter.ProjectFolders.GetProjectFolders(_httpAuthenticator)
-		        .GetByName(headerInfo.FolderName);
+		        .GetByName(headerInfo.ProjectFolder);
 	        if (projectFolder == null)
 	        {
-		        ApiRouter.ProjectFolders.InsertProjectFolder(headerInfo.FolderName, _httpAuthenticator);
+		        ApiRouter.ProjectFolders.InsertProjectFolder(headerInfo.ProjectFolder, _httpAuthenticator);
 			}               
 
             var content = new
             {
-                Name = headerInfo.ProjectGroupName,
+                Name = headerInfo.ProjectGroup,
                 ProjectFolder = projectFolder,
                 headerInfo.Description
             };
 
 	        var projectGroup = ApiRouter.ProjectGroups.ProjectGroups(_httpAuthenticator, content);
-			if (projectGroup == null) Logger.Error($"Failed to add {headerInfo.ProjectGroupName} project group");
+			if (projectGroup == null) Logger.Error($"Failed to add {headerInfo.ProjectGroup} project group");
 	        return projectGroup;			
 		}
 
@@ -94,27 +94,27 @@ namespace PravoAdder.Wrappers
 		        {
 			        if (_projects == null)
 			        {
-				        _projects = ApiRouter.Projects.GetProjects(_httpAuthenticator, headerInfo.FolderName);					
+				        _projects = ApiRouter.Projects.GetProjects(_httpAuthenticator, headerInfo.ProjectFolder);					
 			        }
-			        var projectResponse = _projects.GetByName(headerInfo.ProjectName);
+			        var projectResponse = _projects.GetByName(headerInfo.Name);
 			        if (projectResponse != null) return projectResponse;
 				}
 		        else
 		        {
-			        var projects = ApiRouter.Projects.GetProjects(_httpAuthenticator, headerInfo.FolderName);
-			        var projectResponse = projects.GetByName(headerInfo.ProjectName);
+			        var projects = ApiRouter.Projects.GetProjects(_httpAuthenticator, headerInfo.ProjectFolder);
+			        var projectResponse = projects.GetByName(headerInfo.Name);
 			        if (projectResponse != null) return projectResponse;
 				}		       
             }
 
-	        if (string.IsNullOrEmpty(headerInfo.ProjectName)) headerInfo.ProjectName = "Название проекта по-умолчанию";
+	        if (string.IsNullOrEmpty(headerInfo.Name)) headerInfo.Name = "Название проекта по-умолчанию";
 
 			var projectFolder = ApiRouter.ProjectFolders.GetProjectFolders(_httpAuthenticator)
-		        .GetByName(headerInfo.FolderName);
+		        .GetByName(headerInfo.ProjectFolder);
 
 	        if (projectFolder == null)
 	        {
-		        var folderName = headerInfo.FolderName;
+		        var folderName = headerInfo.ProjectFolder;
 
 		        if (folderName.Length > MaxWordLength)
 					folderName = folderName.Remove(MaxWordLength);
@@ -122,34 +122,34 @@ namespace PravoAdder.Wrappers
 			}
 
 	        var projectType = ApiRouter.ProjectTypes.GetProjectTypes(_httpAuthenticator)
-		        .GetByName(headerInfo.ProjectTypeName);
+		        .GetByName(headerInfo.ProjectType);
 	        if (projectType == null)
 	        {
 		        Logger.Error(
-			        $"{DateTime.Now} | {count} | Project type {headerInfo.ProjectTypeName} doesn't exist. Project name: {headerInfo.ProjectName}");
+			        $"{DateTime.Now} | {count} | Project type {headerInfo.ProjectType} doesn't exist. Project name: {headerInfo.Name}");
 		        return null;
 	        }
 
-	        var responsibleName = headerInfo.ResponsibleName?.Replace(".", "");
+	        var responsibleName = headerInfo.Responsible?.Replace(".", "");
 	        if (string.IsNullOrEmpty(responsibleName)) responsibleName = "empty_string";
 	        var responsible = ApiRouter.Responsibles.GetResponsibles(_httpAuthenticator).GetByName(responsibleName);
 	        if (responsible == null)
 	        {
 		        Logger.Error(
-			        $"{DateTime.Now} | {count} | Responsible {responsibleName} doesn't exist. Project name: {headerInfo.ProjectName}");
+			        $"{DateTime.Now} | {count} | Responsible {responsibleName} doesn't exist. Project name: {headerInfo.Name}");
 		        return null;
 	        }
 
-	        var projectGroup = string.IsNullOrEmpty(headerInfo.ProjectGroupName) && projectGroupId == null
+	        var projectGroup = string.IsNullOrEmpty(headerInfo.ProjectGroup) && projectGroupId == null
 		        ? null
-		        : new ProjectGroup(headerInfo.ProjectGroupName, projectGroupId);
+		        : new ProjectGroup(headerInfo.ProjectGroup, projectGroupId);
 
-			var projectName = headerInfo.ProjectName;
+			var projectName = headerInfo.Name;
 	        if (projectName.Length > MaxWordLength) projectName = projectName.Remove(MaxWordLength);
 
 	        var newProject = new Project
 	        {
-		        CasebookNumber = headerInfo.SynchronizationNumber,
+		        CasebookNumber = headerInfo.CasebookNumber,
 		        Name = projectName,
 				ProjectType = projectType,
 				Responsible = responsible,
@@ -158,7 +158,7 @@ namespace PravoAdder.Wrappers
 			};
 
 	        var project = ApiRouter.Projects.CreateProject(_httpAuthenticator, newProject);
-			if (project == null) Logger.Error($"{DateTime.Now} | Failed to add {headerInfo.ProjectName} project");
+			if (project == null) Logger.Error($"{DateTime.Now} | Failed to add {headerInfo.Name} project");
 			return project;
 		}
 

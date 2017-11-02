@@ -44,10 +44,10 @@ namespace PravoAdder.Readers
 
 	    public IEnumerable<CaseInfo> Build()
 	    {
-		    if (HeaderBlockInfo.ProjectTypeName == null) return null;
+		    if (HeaderBlockInfo.ProjectType == null) return null;
 
 		    var projectType = ApiRouter.ProjectTypes.GetProjectTypes(_httpAuthenticator)
-			    .GetByName(HeaderBlockInfo.ProjectTypeName);
+			    .GetByName(HeaderBlockInfo.ProjectType);
 		    var visualBlocks = GetVisualBlocks(projectType.Id);
 
 		    var result = new Dictionary<int, List<BlockInfo>>();
@@ -126,7 +126,7 @@ namespace PravoAdder.Readers
 				    .FirstOrDefault();
 			    if (fieldnameAttibute == null) continue;
 
-			    var langNames = FieldAddress.SystemNames.Zip(fieldnameAttibute.FieldNames,
+			    var langNames = HeaderBlockInfo.SystemNames.Select(k => k.Value).Zip(fieldnameAttibute.FieldNames,
 				    (block, field) => new { Block = block, Field = field });
 			    foreach (var name in langNames)
 			    {
@@ -137,7 +137,7 @@ namespace PravoAdder.Readers
 				    break;
 			    }
 		    }
-		    if (string.IsNullOrEmpty(headerObject.ProjectName) || string.IsNullOrEmpty(headerObject.ProjectTypeName)) return null;
+		    if (string.IsNullOrEmpty(headerObject.Name) || string.IsNullOrEmpty(headerObject.ProjectType)) return null;
 		    HeaderBlockInfo = headerObject;
 		    return headerObject;
 	    }

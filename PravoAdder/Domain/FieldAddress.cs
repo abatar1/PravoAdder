@@ -73,7 +73,8 @@ namespace PravoAdder.Domain
 		}
 
 		private string _fullName;
-		public string FullName
+
+	    public string FullName
 		{
 			get
 			{
@@ -105,8 +106,7 @@ namespace PravoAdder.Domain
 
 		public bool IsKey { get; private set; }
 
-	    public bool IsSystem => SystemNames.Contains(BlockName);
-	    public static IReadOnlyList<string> SystemNames = new[] { "Системный", "Summary" };
+	    public bool IsSystem => HeaderBlockInfo.SystemNames.Select(k => k.Value).Contains(BlockName);	    
 
 		public bool Equals(FieldAddress other)
 		{

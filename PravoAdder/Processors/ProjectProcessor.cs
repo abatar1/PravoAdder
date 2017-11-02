@@ -65,13 +65,13 @@ namespace PravoAdder.Processors
 
 		public Func<EngineMessage, EngineMessage> Synchronize = message =>
 		{
-			if (!string.IsNullOrEmpty(message.HeaderBlock.SynchronizationNumber))
+			if (!string.IsNullOrEmpty(message.HeaderBlock.CasebookNumber))
 			{
 				if (_projects == null) _projects = ApiRouter.Projects.GetProjects(message.Authenticator);
-				var project = _projects.First(p => p.Name == message.HeaderBlock.ProjectName);
+				var project = _projects.First(p => p.Name == message.HeaderBlock.Name);
 
 				var asyncResult = ApiRouter.Casebook.CheckCasebookCaseAsync(message.Authenticator, project.Id,
-					message.HeaderBlock.SynchronizationNumber).Result;
+					message.HeaderBlock.CasebookNumber).Result;
 				message.Item = project;
 				return message;
 			}
