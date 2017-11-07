@@ -40,7 +40,8 @@ namespace PravoAdder.Readers
                     .ToDictionary(key => key.key, value => new FieldAddress(value.value));
 
                 var table = new List<Dictionary<int, FieldAddress>>();
-                for (var rowNum = settings.DataRowPosition + args.RowNum - 1; rowNum <= totalRows; rowNum++)
+	            var startPosition = args.RowNum != 0 ? args.RowNum : settings.DataRowPosition;
+				for (var rowNum = startPosition; rowNum <= totalRows; rowNum++)
                 {
                     var row = new List<string>();
                     for (var columnNum = 1; columnNum <= totalColumns; columnNum++)

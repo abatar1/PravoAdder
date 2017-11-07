@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using NLog;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using PravoAdder.Api.Domain;
@@ -62,6 +60,7 @@ namespace PravoAdder.Processors
 			if (processName.Contains("Participant")) creator = new ParticipantCreator(authenticator, message.Args.ParticipantType); 
 			if (processName.Contains("Task")) creator = new TaskCreator(authenticator);
 			if (processName.Contains("ProjectField")) creator = new ProjectFieldCreator(authenticator);
+			if (processName.Contains("VisualBlockLine")) creator = new VisualBlockLineCreator(authenticator);
 
 			return new EngineMessage
 			{
@@ -91,6 +90,8 @@ namespace PravoAdder.Processors
 		public static Func<EngineMessage, EngineMessage> CreateProjectField = message =>
 		{
 			var projectField = (ProjectField) message.GetCreatable();
+			if (projectField == null) return null;
+
 			var result = ApiRouter.ProjectFields.CreateProjectField(message.Authenticator, projectField);
 			message.Item = result;
 			return message;
@@ -99,7 +100,7 @@ namespace PravoAdder.Processors
 		public static Func<EngineMessage, EngineMessage> ProcessCount = message =>
 		{
 			if (message.Item == null) return message;
-			message.Counter.ProcessCount(message.Count, message.Total, message.Item, 70);
+			message.Counter.ProcessCount(message.Count, message.Total, message.Args.RowNum, message.Item, 70);
 			return message;
 		};
 
@@ -111,41 +112,54 @@ namespace PravoAdder.Processors
 			return message;
 		};
 
-		private static List<VisualBlock> _visualBlocks;
-		private static List<LineType> _lineTypes;
-
-		public static Func<EngineMessage, EngineMessage> AddVisualBlockRow = message =>
+		public static Func<EngineMessage, EngineMessage> AddVisualBlockLine = message =>
 		{
-			if (_visualBlocks == null) _visualBlocks = ApiRouter.VisualBlock.Get(message.Authenticator);
-			var visualBlock = _visualBlocks.FirstOrDefault(vb => vb.Name == message.GetValueFromRow("Data block"));
-			if (visualBlock == null) return null;
+			var line = (VisualBlockLine) message.GetCreatable();
+			if (line == null) return null;
 
-			if (_lineTypes == null)
-				_lineTypes = ApiRouter.VisualBlock.GetLineTypes(message.Authenticator);
+			var sumWidth = line.Fields.Sum(f => f?.Width);
+			if (sumWidth == 0) return null;
 
-			var projectField = ApiRouter.ProjectFields.Get(message.Authenticator, message.GetValueFromRow("Field name")).FirstOrDefault();
-			if (projectField == null) return null;
-
-			var tagNamingRule = new Regex("[^a-яA-Яa-zA-Z0-9_]");
-			var newLine = new VisualBlockLine
+			var creator = (VisualBlockLineCreator) message.Creator;
+			if (sumWidth < 12)
 			{
-				LineType = _lineTypes.First(t => t.Name == message.GetValueFromRow("Row")),
-				Fields = new List<VisualBlockField>
-				{
-					new VisualBlockField
-					{
-						IsRequired = bool.Parse(message.GetValueFromRow("Required")),
-						Tag = tagNamingRule.Replace(message.GetValueFromRow("Tag"), "_"),
-						Width = int.Parse(message.GetValueFromRow("Width")),
-						ProjectField = projectField
-					}
-				},
-				Order = visualBlock.Lines.Count				
-			};
-			visualBlock.Lines.Add(newLine);
+				creator.ConstructedLine = line;
+				return message;
+			}
+			if (sumWidth == 12)
+			{
+				creator.ConstructedLine = null;
+				creator.VisualBlock.Lines.Add(line);
+				var result = ApiRouter.VisualBlock.Update(message.Authenticator, creator.VisualBlock);
+				message.Item = result;				
+				return message;
+			}
+			return null;
+		};
 
-			var result = ApiRouter.VisualBlock.Update(message.Authenticator, visualBlock);
-			message.Item = result;
+		private static List<DictionaryInfo> _dictionaries;
+
+		public static Func<EngineMessage, EngineMessage> CreateDictionary = message =>
+		{
+			var dictionaryName = message.GetValueFromRow("Name");
+			if (string.IsNullOrEmpty(dictionaryName)) return null;
+
+			if (_dictionaries == null) _dictionaries = ApiRouter.Dictionary.GetDictionaryList(message.Authenticator);
+			var dictionary =
+				_dictionaries.FirstOrDefault(d => d.DisplayName.Equals(dictionaryName, StringComparison.InvariantCultureIgnoreCase));
+			if (dictionary == null)
+			{
+				dictionary = ApiRouter.Dictionary.Create(message.Authenticator, new DictionaryInfo {Name = dictionaryName});
+			}
+
+			var dictionaryItemName = message.GetValueFromRow("Value");
+			var dictItems = ApiRouter.Dictionary.GetDictionaryItems(message.Authenticator, dictionary.SystemName);
+			if (!dictItems.Any(d => d.Name.Equals(dictionaryItemName)))
+			{
+				ApiRouter.Dictionary.SaveDictionaryItem(message.Authenticator, dictionary.SystemName, dictionaryItemName);
+			}			
+
+			message.Item = dictionary;
 			return message;
 		};
 

@@ -170,8 +170,8 @@ namespace PravoAdder
 				case ProcessType.CreateProjectField:
 					SetSimpleTableProcessor(SingleProcessors.CreateProjectField);
 					break;
-				case ProcessType.AddVisualBlockRow:
-					SetSimpleTableProcessor(SingleProcessors.AddVisualBlockRow);
+				case ProcessType.AddVisualBlockLine:
+					SetSimpleTableProcessor(SingleProcessors.AddVisualBlockLine);
 					break;
 				case ProcessType.UnloadCases:
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
@@ -179,6 +179,9 @@ namespace PravoAdder
 					conveyor.Add(SingleProcessors.ProcessCount, 2);
 					conveyor.Add(ForEachProcessors.ProjectByType, 1);
 					conveyor.Add(ForEachProcessors.ProjectGroup);
+					break;
+				case ProcessType.CreateDictionaries:
+					SetSimpleTableProcessor(SingleProcessors.CreateDictionary);
 					break;
 				default:
 					throw new ArgumentException("Неизвестный тип конвеера.");

@@ -15,14 +15,14 @@ namespace PravoAdder.Wrappers
 			_count = 0;
 		}
 
-		public void ProcessCount(int current, int total, DatabaseEntityItem item, int sliceNum = int.MaxValue)
+		public void ProcessCount(int current, int total, int rowOffset, DatabaseEntityItem item, int sliceNum = int.MaxValue)
 		{
 			_count += 1;
 
 			var itemName = item.Name ?? item.DisplayName;
 
 			Logger.Info(
-				$"{DateTime.Now} | Progress: {current + 1}/{total} ({_count}) | Name: {itemName.SliceSpaceIfMore(sliceNum)} | Id: {item.Id}");
+				$"{DateTime.Now} | Progress: {current + 1 + rowOffset}/{total + rowOffset} ({_count}) | Name: {itemName.SliceSpaceIfMore(sliceNum)} | Id: {item.Id}");
 		}
 	}
 }

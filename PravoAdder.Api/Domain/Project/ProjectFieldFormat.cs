@@ -1,8 +1,11 @@
-﻿namespace PravoAdder.Api.Domain
+﻿using System.Collections.Generic;
+
+namespace PravoAdder.Api.Domain
 {
-	public class ProjectFieldFormat
+	public class ProjectFieldFormat : DatabaseEntityItem
 	{
-		public string SysName { get; set; }
-		public DictionaryInfo Dictionary { get; set; } 
+		public DictionaryInfo Dictionary { get; set; }
+		public string ParentId { get; set; }
+		public List<ProjectFieldFormat> Childrens { get; set; }
 	}
 }

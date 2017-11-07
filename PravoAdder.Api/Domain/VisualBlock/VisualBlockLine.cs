@@ -3,9 +3,8 @@ using Newtonsoft.Json;
 
 namespace PravoAdder.Api.Domain
 {
-	public class VisualBlockLine
-	{
-		public string Id { get; set; }
+	public class VisualBlockLine : DatabaseEntityItem, ICreatable
+	{		
 		public string BlockLineId { get; set; }
 		public List<VisualBlockField> Fields { get; set; }
 		public LineType LineType { get; set; }

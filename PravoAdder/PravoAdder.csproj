@@ -117,6 +117,7 @@
     <Compile Include="Readers\ParticipantCreator.cs" />
     <Compile Include="Readers\ProjectFieldCreator.cs" />
     <Compile Include="Readers\TaskCreator.cs" />
+    <Compile Include="Readers\VisualBlockLineCreator.cs" />
     <Compile Include="Wrappers\AuthentificatorWrapper.cs" />
     <Compile Include="Domain\Attributes\FieldNameAttribute.cs" />
     <Compile Include="Domain\Table.cs" />

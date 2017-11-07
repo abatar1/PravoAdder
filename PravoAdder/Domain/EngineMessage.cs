@@ -19,6 +19,7 @@ namespace PravoAdder.Domain
 		public bool IsUpdate { get; set; }
 		public bool IsFinal { get; set; }
 		public DatabaseEntityItem Item { get; set; }
+		public DatabaseEntityItem ConstructedItem { get; set; }
 		public HeaderBlockInfo HeaderBlock { get; set; }
 		public Counter Counter { get; set; }
 		public ParallelOptions ParallelOptions { get; set; }	
@@ -50,7 +51,7 @@ namespace PravoAdder.Domain
 
 		public string GetValueFromRow(string name)
 		{
-			return Table.GetValue(Table.Header, Row, name).Trim();
+			return Table.GetValue(Table.Header, Row, name);
 		}
 
 		#region IDisposable Support
