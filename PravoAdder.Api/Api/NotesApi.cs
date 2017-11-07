@@ -8,7 +8,7 @@ namespace PravoAdder.Api
 	{
 		public void Create(HttpAuthenticator authenticator, Note note)
 		{
-			ApiHelper.SendItem(authenticator, "Notes/Create", HttpMethod.Post, new Content());
+			ApiHelper.SendItem(authenticator, "Notes/Create", HttpMethod.Post, note);
 		}
 	}
 }

@@ -11,7 +11,7 @@ namespace PravoAdder.Api.Domain
 
 		public override string ToString()
 		{
-			return Name;
+			return Name ?? DisplayName;
 		}
 
 		public bool Equals(DatabaseEntityItem other)

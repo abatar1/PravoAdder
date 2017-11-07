@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -60,14 +61,15 @@ namespace PravoAdder.Api.Helpers
 				if (dictionary.Count > 0)
 				{
 					var parametersBuilder = new StringBuilder();
+					parametersBuilder.Append("?");
 					foreach (var parameter in dictionary)
 					{
 						parametersBuilder.Append($"{parameter.Key}={parameter.Value}&");
 					}
 					parametersString = parametersBuilder.ToString().Remove(parametersBuilder.Length - 1);
 				}
-				
-				request = new HttpRequestMessage(method, $"{requestUri}?{parametersString}");
+
+				request = new HttpRequestMessage(method, $"{requestUri}{parametersString}");
 			}
 			else
 			{
@@ -75,7 +77,7 @@ namespace PravoAdder.Api.Helpers
 				var serializedContent = JsonConvert.SerializeObject(content);
 				{
 					request.Content = new StringContent(serializedContent, Encoding.UTF8, "application/json");
-				}				
+				}
 			}
 
 			request.Headers.Add("Cookie", cookie.ToString());
@@ -83,30 +85,39 @@ namespace PravoAdder.Api.Helpers
 			return request;
 		}
 
-		public static List<T> GetItems<T>(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, Content content = null)
+		public static List<T> GetItems<T>(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, IDictionary<string, string> parameters = null)
 		{
 			var count = 1;
 			var resultContainer = new List<T>();
 			do
 			{
-				if (content == null) content = new Content();
-				var request = CreateHttpRequest(content.Get(count), $"api/{path}", httpMethod,
+				var content = new ExpandoObject() as IDictionary<string, object>;
+				content.Add("PageSize", ApiRouter.PageSize);
+				content.Add("Page", count);
+				if (parameters != null)
+				{
+					foreach (var pair in parameters)
+					{
+						content.Add(pair.Key, pair.Value);
+					}
+				}
+				var request = CreateHttpRequest(content, $"api/{path}", httpMethod,
 					httpAuthenticator.UserCookie);
 
 				var responseMessage = GetResponseFromRequest(request, httpAuthenticator);
-				if (responseMessage == null) throw new HttpRequestException();			
+				if (responseMessage == null) throw new HttpRequestException();
 
 				var newItems = new List<object>(responseMessage.Result)
-					.Select(r => (T) JsonConvert.DeserializeObject(r.ToString(), typeof(T)));
+					.Select(r => (T)JsonConvert.DeserializeObject(r.ToString(), typeof(T)));
 				resultContainer.AddRange(newItems);
 
 				count += 1;
-				if (!(bool) responseMessage.NextPageExists) break;
+				if (!(bool)responseMessage.NextPageExists) break;
 
 			} while (true);
 
 			return resultContainer;
-		}	
+		}
 
 		public static T GetItem<T>(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, object content)
 			where T : new()

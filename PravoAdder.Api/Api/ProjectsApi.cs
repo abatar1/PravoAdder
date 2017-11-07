@@ -29,9 +29,8 @@ namespace PravoAdder.Api
 			{
 				parameters = ApiHelper.CreateParameters(("FolderId", projectFolder.Id));
 			}
-			var content = new Content(parameters);
 			return ApiHelper.GetItems<GroupedProjects>(httpAuthenticator, "Projects/GetGroupedProjects",
-				HttpMethod.Post, content);
+				HttpMethod.Post, parameters);
 		}
 
 		public Project Get(HttpAuthenticator httpAuthenticator, string projectId)

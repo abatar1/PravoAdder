@@ -92,7 +92,6 @@
     <Compile Include="Domain\Other\ContactDetail.cs" />
     <Compile Include="Domain\Other\CalculationFormula.cs" />
     <Compile Include="Domain\Other\CalculationFormulaValue.cs" />
-    <Compile Include="Domain\Content.cs" />
     <Compile Include="Domain\DatabaseEntityItem.cs" />
     <Compile Include="Domain\Other\DictionaryItem.cs" />
     <Compile Include="Domain\Participant\DetailedParticipant.cs" />
