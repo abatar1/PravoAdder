@@ -1,5 +1,4 @@
 ﻿using PravoAdder.Api;
-using PravoAdder.Api.Api;
 
 namespace PravoAdder
 {

@@ -40,7 +40,7 @@ namespace PravoAdder.Readers
 			switch (fieldFormat)
 			{
 				case "Dictionary":
-					if (_dictionaries == null) _dictionaries = ApiRouter.Dictionary.GetDictionaryList(HttpAuthenticator);
+					if (_dictionaries == null) _dictionaries = ApiRouter.Dictionary.GetMany(HttpAuthenticator);
 					var dictionary =
 						_dictionaries.FirstOrDefault(d => d.DisplayName.Equals(format[1], StringComparison.InvariantCultureIgnoreCase));
 					if (dictionary == null)

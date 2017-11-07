@@ -7,7 +7,7 @@ namespace PravoAdder.Api
 {
 	public class CurrenciesApi
 	{
-		public List<DictionaryItem> GetCurrencies(HttpAuthenticator httpAuthenticator)
+		public List<DictionaryItem> GetMany(HttpAuthenticator httpAuthenticator)
 		{
 			return ApiHelper.GetItems<DictionaryItem>(httpAuthenticator, "Currencies/GetCurrencies", HttpMethod.Post);
 		}

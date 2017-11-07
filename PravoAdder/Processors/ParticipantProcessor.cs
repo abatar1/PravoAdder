@@ -18,10 +18,10 @@ namespace PravoAdder.Processors
 
 		private static void SetDetailedParticipant(HttpAuthenticator authenticator)
 		{
-			if (_participants == null) _participants = ApiRouter.Participants.GetParticipants(authenticator);
+			if (_participants == null) _participants = ApiRouter.Participants.GetMany(authenticator);
 			_detailedParticipants = _participants
 				.Where(p => p.TypeName == ParticipantCreator.Person)
-				.Select(p => new Lazy<DetailedParticipant>(() => ApiRouter.Participants.GetParticipant(authenticator, p.Id)))
+				.Select(p => new Lazy<DetailedParticipant>(() => ApiRouter.Participants.Get(authenticator, p.Id)))
 				.ToList();		
 		}
 
@@ -65,26 +65,26 @@ namespace PravoAdder.Processors
 
 		public static DetailedParticipant GetParticipantByName(HttpAuthenticator authenticator, Row header, Row row, string name)
 		{
-			if (_participants == null) _participants = ApiRouter.Participants.GetParticipants(authenticator);
+			if (_participants == null) _participants = ApiRouter.Participants.GetMany(authenticator);
 			var participant = _participants.FirstOrDefault(p => p.Name == name);
 			if (participant == null) return null;
-			return ApiRouter.Participants.GetParticipant(authenticator, participant.Id);
+			return ApiRouter.Participants.Get(authenticator, participant.Id);
 		}
 
 		public Func<EngineMessage, EngineMessage> Create = message =>
 		{
-			if (_participants == null) _participants = ApiRouter.Participants.GetParticipants(message.Authenticator);
+			if (_participants == null) _participants = ApiRouter.Participants.GetMany(message.Authenticator);
 
 			var newParticipant = (DetailedParticipant) message.GetCreatable();
 			var existedParticipant = _participants.FirstOrDefault(p => p.Name == newParticipant.FullName);
 			if (existedParticipant != null) return new EngineMessage { Item = existedParticipant };
-			var participantResponse = ApiRouter.Participants.PutParticipant(message.Authenticator, newParticipant);
+			var participantResponse = ApiRouter.Participants.Put(message.Authenticator, newParticipant);
 			return new EngineMessage { Item = participantResponse };
 		};
 
 		public Func<EngineMessage, EngineMessage> Distinct = message =>
 		{
-			var response = ApiRouter.Participants.GetParticipants(message.Authenticator);
+			var response = ApiRouter.Participants.GetMany(message.Authenticator);
 			var counter = message.Counter.CloneJson();
 			response.GroupBy(p => p.Name).ForEach(g =>
 			{
@@ -93,7 +93,7 @@ namespace PravoAdder.Processors
 					var gCount = g.Count() - 1;
 					g.Skip(1).Select((p, c) => new { Participant = p, Count = c }).ForEach(pair =>
 					{
-						ApiRouter.Participants.DeleteParticipant(message.Authenticator, pair.Participant.Id);
+						ApiRouter.Participants.Delete(message.Authenticator, pair.Participant.Id);
 
 						var countMessage = new EngineMessage
 						{
@@ -111,7 +111,7 @@ namespace PravoAdder.Processors
 
 		public Func<EngineMessage, EngineMessage> Delete = message =>
 		{
-			ApiRouter.Participants.DeleteParticipant(message.Authenticator, message.Item.Id);
+			ApiRouter.Participants.Delete(message.Authenticator, message.Item.Id);
 			return message;
 		};	
 
@@ -134,7 +134,7 @@ namespace PravoAdder.Processors
 			var editedParticipant = EditParticipant(participant, message.Authenticator, message.Table.Header, message.Row, message.Args.SearchKey);
 			if (editedParticipant == null) return null;
 
-			var result = ApiRouter.Participants.PutParticipant(message.Authenticator, editedParticipant);
+			var result = ApiRouter.Participants.Put(message.Authenticator, editedParticipant);
 
 			return new EngineMessage { Item = result };
 		};
@@ -150,7 +150,7 @@ namespace PravoAdder.Processors
 			var editedParticipant = EditParticipant(detailedParticipant, message.Authenticator, message.Table.Header, message.Row, message.Args.SearchKey);
 			if (editedParticipant == null) return null;
 
-			var result = ApiRouter.Participants.PutParticipant(message.Authenticator, editedParticipant);
+			var result = ApiRouter.Participants.Put(message.Authenticator, editedParticipant);
 
 			return new EngineMessage { Item = result };
 		};

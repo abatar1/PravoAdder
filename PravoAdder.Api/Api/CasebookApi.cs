@@ -6,7 +6,7 @@ namespace PravoAdder.Api
 {
 	public class CasebookApi
 	{
-		public async Task<bool> CheckCasebookCaseAsync(HttpAuthenticator httpAuthenticator, string projectId, string syncNumber)
+		public async Task<bool> CheckAsync(HttpAuthenticator httpAuthenticator, string projectId, string syncNumber)
 		{
 			var content = new
 			{

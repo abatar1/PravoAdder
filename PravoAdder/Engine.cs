@@ -3,7 +3,6 @@ using System.Linq;
 using Fclp;
 using NLog;
 using PravoAdder.Domain;
-using PravoAdder.Helpers;
 
 namespace PravoAdder
 {
@@ -26,7 +25,7 @@ namespace PravoAdder
 		{
 			ProcessType.Migration, ProcessType.Sync, ProcessType.CreateParticipants, ProcessType.Analyze, ProcessType.Notes,
 			ProcessType.EditParticipantsByKey, ProcessType.RenameCases, ProcessType.AttachParticipant,
-			ProcessType.EditParticipants, ProcessType.CreateProjectField, ProcessType.AddVisualBlockRow
+			ProcessType.EditParticipants, ProcessType.CreateProjectField, ProcessType.AddVisualBlockLine, ProcessType.CreateDictionaries
 		};
 
 		public Engine Initialize(string[] args)
@@ -60,7 +59,7 @@ namespace PravoAdder
 					.Required();
 				parser.Setup(arg => arg.RowNum)
 					.As('r', "row")
-					.SetDefault(1);
+					.SetDefault(0);
 				parser.Setup(arg => arg.IsOverwrite)
 					.As('o', "overwrite")
 					.SetDefault(true);

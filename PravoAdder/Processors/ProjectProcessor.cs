@@ -37,12 +37,12 @@ namespace PravoAdder.Processors
 		{
 
 			var projectName = Table.GetValue(message.Table.Header, message.Row, "Case name");
-			if (_projects == null) _projects = ApiRouter.Projects.GetProjects(message.Authenticator);
+			if (_projects == null) _projects = ApiRouter.Projects.GetMany(message.Authenticator);
 			var project = _projects.FirstOrDefault(p => p.Name == projectName);
 			if (project == null) return null;
 
 			project.Name = Table.GetValue(message.Table.Header, message.Row, "New case name");
-			message.Item = ApiRouter.Projects.PutProject(message.Authenticator, project);
+			message.Item = ApiRouter.Projects.Put(message.Authenticator, project);
 			return message;
 		};
 
@@ -50,7 +50,7 @@ namespace PravoAdder.Processors
 		{
 			var projectName = Table.GetValue(message.Table.Header, message.Row, "Case");
 
-			if (_projects == null) _projects = ApiRouter.Projects.GetProjects(message.Authenticator);
+			if (_projects == null) _projects = ApiRouter.Projects.GetMany(message.Authenticator);
 			var project = _projects.FirstOrDefault(p => projectName.Contains(p.Name));
 			if (project == null) return null;
 
@@ -67,10 +67,10 @@ namespace PravoAdder.Processors
 		{
 			if (!string.IsNullOrEmpty(message.HeaderBlock.CasebookNumber))
 			{
-				if (_projects == null) _projects = ApiRouter.Projects.GetProjects(message.Authenticator);
+				if (_projects == null) _projects = ApiRouter.Projects.GetMany(message.Authenticator);
 				var project = _projects.First(p => p.Name == message.HeaderBlock.Name);
 
-				var asyncResult = ApiRouter.Casebook.CheckCasebookCaseAsync(message.Authenticator, project.Id,
+				var asyncResult = ApiRouter.Casebook.CheckAsync(message.Authenticator, project.Id,
 					message.HeaderBlock.CasebookNumber).Result;
 				message.Item = project;
 				return message;
@@ -96,7 +96,7 @@ namespace PravoAdder.Processors
 		public Func<EngineMessage, EngineMessage> AttachParticipant = message =>
 		{
 			var projectName = Table.GetValue(message.Table.Header, message.Row, "Case name");
-			if (_projects == null) _projects = ApiRouter.Projects.GetProjects(message.Authenticator);
+			if (_projects == null) _projects = ApiRouter.Projects.GetMany(message.Authenticator);
 			var project = _projects.FirstOrDefault(p => p.Name == projectName);
 			if (project == null) return null;
 
@@ -108,7 +108,7 @@ namespace PravoAdder.Processors
 
 			detailedParticipant.IncludeInProjectId = project.Id;
 
-			ApiRouter.Participants.PutParticipant(message.Authenticator, detailedParticipant);
+			ApiRouter.Participants.Put(message.Authenticator, detailedParticipant);
 			message.Item = (Participant) detailedParticipant;
 			return message;
 		};

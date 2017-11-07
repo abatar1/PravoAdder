@@ -45,7 +45,7 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> Project = message =>
 		{
-			var projects = ApiRouter.Projects.GetProjects(message.Authenticator, message.Item.Id);
+			var projects = ApiRouter.Projects.GetMany(message.Authenticator, message.Item.Id);
 			return ProcessForEach(projects, message, (msg, item) =>
 			{
 				msg.Item = (Project) item;
@@ -55,7 +55,7 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> ProjectByDate = message =>
 		{
-			var projects = ApiRouter.Projects.GetProjects(message.Authenticator, message.Item.Id)
+			var projects = ApiRouter.Projects.GetMany(message.Authenticator, message.Item.Id)
 				.Where(p => p.CreationDate == DateTime.Parse(message.Args.Date))
 				.ToList();
 			return ProcessForEach(projects, message, (msg, item) =>
@@ -67,7 +67,7 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> ProjectByType = message =>
 		{
-			var type = ApiRouter.ProjectTypes.GetProjectTypes(message.Authenticator)
+			var type = ApiRouter.ProjectTypes.GetMany(message.Authenticator)
 				.FirstOrDefault(t => t.Name.Equals(message.Args.ProjectType.Replace('_', ' ')));
 			if (type == null)
 			{
@@ -75,7 +75,7 @@ namespace PravoAdder.Processors
 				return message;
 			}
 
-			var projects = ApiRouter.Projects.GetProjects(message.Authenticator, message.Item.Id)
+			var projects = ApiRouter.Projects.GetMany(message.Authenticator, message.Item.Id)
 				.Where(p => p.ProjectType.Equals(type))
 				.ToList();
 			return ProcessForEach(projects, message, (msg, item) =>
@@ -87,14 +87,14 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> Folder = message =>
 		{
-			var folders = ApiRouter.ProjectFolders.GetProjectFolders(message.Authenticator);
+			var folders = ApiRouter.ProjectFolders.GetMany(message.Authenticator);
 			return ProcessForEach(folders, message,
 				(msg, item) =>
 				{
 					msg.Item = (ProjectFolder) item;
 					return msg;
 				},
-				item => ApiRouter.Projects.GetGroupedProjects(message.Authenticator, item.Name) == null);
+				item => ApiRouter.Projects.GetGroupedMany(message.Authenticator, item.Name) == null);
 		};
 
 		public static Func<EngineMessage, EngineMessage> ProjectGroup = message =>
@@ -109,7 +109,7 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> Participant = message =>
 		{
-			var participants = ApiRouter.Participants.GetParticipants(message.Authenticator);
+			var participants = ApiRouter.Participants.GetMany(message.Authenticator);
 			return ProcessForEach(participants, message, (msg, item) =>
 			{
 				msg.Item = (Participant) item;
@@ -120,8 +120,8 @@ namespace PravoAdder.Processors
 		public static Func<EngineMessage, EngineMessage> ParticipantByDate = message =>
 		{
 			var neededDatetime = DateTime.Parse(message.Args.Date).ToString("d");
-			var participants = ApiRouter.Participants.GetParticipants(message.Authenticator)
-				.Select(p => ApiRouter.Participants.GetParticipant(message.Authenticator, p.Id))
+			var participants = ApiRouter.Participants.GetMany(message.Authenticator)
+				.Select(p => ApiRouter.Participants.Get(message.Authenticator, p.Id))
 				.Where(p => DateTime.Parse(p.CreationDate).ToString("d") == neededDatetime)
 				.ToList();
 

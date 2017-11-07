@@ -3,16 +3,16 @@ using System.Net.Http;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
 
-namespace PravoAdder.Api.Api
+namespace PravoAdder.Api
 {
 	public class ProjectFieldsApi
 	{
-		public ProjectField CreateProjectField(HttpAuthenticator httpAuthenticator, ProjectField projectField)
+		public ProjectField Create(HttpAuthenticator httpAuthenticator, ProjectField projectField)
 		{
 			return ApiHelper.GetItem<ProjectField>(httpAuthenticator, "ProjectFields/CreateProjectField", HttpMethod.Post, projectField);
 		}
 
-		public List<ProjectField> Get(HttpAuthenticator httpAuthenticator, string name)
+		public List<ProjectField> GetMany(HttpAuthenticator httpAuthenticator, string name)
 		{
 			var content = new
 			{

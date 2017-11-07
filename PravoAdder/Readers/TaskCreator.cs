@@ -38,21 +38,21 @@ namespace PravoAdder.Readers
 		        var value = valuePair.Value.Value?.Trim();
 		        if (fieldName == "Case name")
 		        {
-		            if (_projectFolders == null) _projectFolders = ApiRouter.ProjectFolders.GetProjectFolders(HttpAuthenticator);
+		            if (_projectFolders == null) _projectFolders = ApiRouter.ProjectFolders.GetMany(HttpAuthenticator);
 		            foreach (var folder in _projectFolders)
 		            {
 		                if (!_projects.ContainsKey(folder.Name))
 		                {
 		                    _projects.Add(folder.Name, new List<Project>());
-			                _projects[folder.Name] = ApiRouter.Projects.GetProjects(HttpAuthenticator, folder.Name);
+			                _projects[folder.Name] = ApiRouter.Projects.GetMany(HttpAuthenticator, folder.Name);
 		                }
 		                var project = _projects[folder.Name]
 		                    .FirstOrDefault(s => s.Name == value);
 		                if (project != null)
 		                {
-		                    if (ApiRouter.Projects.GetProject(HttpAuthenticator, project.Id).IsArchive)
+		                    if (ApiRouter.Projects.Get(HttpAuthenticator, project.Id).IsArchive)
 		                    {
-		                        ApiRouter.Projects.RestoreProject(HttpAuthenticator, project.Id);
+		                        ApiRouter.Projects.Restore(HttpAuthenticator, project.Id);
 		                        task.IsArchive = true;
 		                    }
 		                    task.Project = project;
@@ -80,7 +80,7 @@ namespace PravoAdder.Readers
                 else if (fieldName == "Completed")
 		        {
 		            if (_taskStates == null)
-		                _taskStates = ApiRouter.Dictionary.GetDefaultDictionaryItems(HttpAuthenticator, "Tasks.TaskState");
+		                _taskStates = ApiRouter.Dictionary.GetDefaultItems(HttpAuthenticator, "Tasks.TaskState");
 
 		            task.TaskState = GetState(bool.Parse(value) ? "Completed" : "In Progress");
 		        }
@@ -90,7 +90,7 @@ namespace PravoAdder.Readers
 		        }               
                 else if (fieldName == "Responsible")
 		        {
-		            if (_responsibles == null) _responsibles = ApiRouter.Responsibles.GetResponsibles(HttpAuthenticator);
+		            if (_responsibles == null) _responsibles = ApiRouter.Responsibles.GetMany(HttpAuthenticator);
 		            task.ResponseUser = _responsibles.First(r => r.Name == value);
 		        }
 		    }

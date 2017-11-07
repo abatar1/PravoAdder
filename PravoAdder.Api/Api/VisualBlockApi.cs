@@ -20,7 +20,7 @@ namespace PravoAdder.Api
 				HttpMethod.Post, content);
 		}
 
-		public List<VisualBlock> Get(HttpAuthenticator httpAuthenticator)
+		public List<VisualBlock> GetMany(HttpAuthenticator httpAuthenticator)
 		{
 			return ApiHelper.GetItems<VisualBlock>(httpAuthenticator, "VisualBlocks/GetCustomVisualBlocks", HttpMethod.Post);
 		}
@@ -38,21 +38,21 @@ namespace PravoAdder.Api
 
 		public List<LineType> GetLineTypes(HttpAuthenticator httpAuthenticator)
 		{
-			var bootstrap = ApiRouter.Bootstrap.GetShellBootstrap(httpAuthenticator);
+			var bootstrap = ApiRouter.Bootstrap.GetShell(httpAuthenticator);
 			IEnumerable<dynamic> participantTypes = bootstrap["ProjectFieldFormats"]["LineTypes"];
 			return participantTypes.Select(o => (LineType) JsonConvert.DeserializeObject<LineType>(o.ToString())).ToList();
 		}
 
 		public List<ProjectFieldFormat> GetFieldTypes(HttpAuthenticator httpAuthenticator)
 		{
-			var bootstrap = ApiRouter.Bootstrap.GetShellBootstrap(httpAuthenticator);
+			var bootstrap = ApiRouter.Bootstrap.GetShell(httpAuthenticator);
 			IEnumerable<dynamic> participantTypes = bootstrap["ProjectFieldFormats"]["ProjectFieldFormats"];
 			return participantTypes.Select(o => (ProjectFieldFormat) JsonConvert.DeserializeObject<ProjectFieldFormat>(o.ToString())).ToList();
 		}
 
 		public List<ProjectFieldFormat> GetEntityTypes(HttpAuthenticator httpAuthenticator)
 		{
-			var bootstrap = ApiRouter.Bootstrap.GetShellBootstrap(httpAuthenticator);
+			var bootstrap = ApiRouter.Bootstrap.GetShell(httpAuthenticator);
 			IEnumerable<dynamic> participantTypes = bootstrap["ProjectFieldFormats"]["EntityTypes"];
 			return participantTypes.Select(o => (ProjectFieldFormat) JsonConvert.DeserializeObject<ProjectFieldFormat>(o.ToString())).ToList();
 		}

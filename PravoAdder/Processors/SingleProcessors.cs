@@ -92,7 +92,7 @@ namespace PravoAdder.Processors
 			var projectField = (ProjectField) message.GetCreatable();
 			if (projectField == null) return null;
 
-			var result = ApiRouter.ProjectFields.CreateProjectField(message.Authenticator, projectField);
+			var result = ApiRouter.ProjectFields.Create(message.Authenticator, projectField);
 			message.Item = result;
 			return message;
 		};
@@ -108,7 +108,7 @@ namespace PravoAdder.Processors
 		{
 			var task = (Api.Domain.Task) message.GetCreatable();
 			ApiRouter.Task.Create(message.Authenticator, task);
-			if (task.IsArchive) ApiRouter.Projects.ArchiveProject(message.Authenticator, task.Project.Id);
+			if (task.IsArchive) ApiRouter.Projects.Archive(message.Authenticator, task.Project.Id);
 			return message;
 		};
 
@@ -144,19 +144,20 @@ namespace PravoAdder.Processors
 			var dictionaryName = message.GetValueFromRow("Name");
 			if (string.IsNullOrEmpty(dictionaryName)) return null;
 
-			if (_dictionaries == null) _dictionaries = ApiRouter.Dictionary.GetDictionaryList(message.Authenticator);
+			if (_dictionaries == null) _dictionaries = ApiRouter.Dictionary.GetMany(message.Authenticator);
 			var dictionary =
 				_dictionaries.FirstOrDefault(d => d.DisplayName.Equals(dictionaryName, StringComparison.InvariantCultureIgnoreCase));
 			if (dictionary == null)
 			{
 				dictionary = ApiRouter.Dictionary.Create(message.Authenticator, new DictionaryInfo {Name = dictionaryName});
+				_dictionaries.Add(dictionary);
 			}
 
 			var dictionaryItemName = message.GetValueFromRow("Value");
-			var dictItems = ApiRouter.Dictionary.GetDictionaryItems(message.Authenticator, dictionary.SystemName);
+			var dictItems = ApiRouter.Dictionary.GetItems(message.Authenticator, dictionary.SystemName);
 			if (!dictItems.Any(d => d.Name.Equals(dictionaryItemName)))
 			{
-				ApiRouter.Dictionary.SaveDictionaryItem(message.Authenticator, dictionary.SystemName, dictionaryItemName);
+				ApiRouter.Dictionary.SaveItem(message.Authenticator, dictionary.SystemName, dictionaryItemName);
 			}			
 
 			message.Item = dictionary;
@@ -196,7 +197,7 @@ namespace PravoAdder.Processors
 			}
 			if (worksheet == null) worksheet = excelPackage.Workbook.Worksheets.First(w => w.Name == pageName);
 
-			var project = ApiRouter.Projects.GetProject(message.Authenticator, message.Item.Id);
+			var project = ApiRouter.Projects.Get(message.Authenticator, message.Item.Id);
 			var projectProperties = typeof(Project).GetProperties();
 
 			foreach (var p in headProperties.Zip(Enumerable.Range(1, headProperties.Length + 1), (info, i) => new {Info = info, Count = i}))
@@ -217,7 +218,7 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> AnalyzeHeader = message =>
 		{
-			var types = ApiRouter.ProjectTypes.GetProjectTypes(message.Authenticator);
+			var types = ApiRouter.ProjectTypes.GetMany(message.Authenticator);
 			var blockTypes = new Dictionary<string, List<(string, List<string>)>>();
 			var errorKeys = new List<int>();
 			foreach (var cell in message.Table.Header)

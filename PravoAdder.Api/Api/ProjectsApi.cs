@@ -8,21 +8,21 @@ namespace PravoAdder.Api
 {
 	public class ProjectsApi
 	{
-		public List<Project> GetProjects(HttpAuthenticator httpAuthenticator, string folderName = null)
+		public List<Project> GetMany(HttpAuthenticator httpAuthenticator, string folderName = null)
 		{
-			return GetGroupedProjects(httpAuthenticator, folderName).SelectMany(g => g.Projects).ToList();
+			return GetGroupedMany(httpAuthenticator, folderName).SelectMany(g => g.Projects).ToList();
 		}
 
-		public List<GroupedProjects> GetGroupedProjects(HttpAuthenticator httpAuthenticator, string folderName = null)
+		public List<GroupedProjects> GetGroupedMany(HttpAuthenticator httpAuthenticator, string folderName = null)
 		{
 			var projectFolder = ApiRouter.ProjectFolders
-				.GetProjectFolders(httpAuthenticator)
+				.GetMany(httpAuthenticator)
 				.FirstOrDefault(folder => folder.Name == folderName);
 
 			Dictionary<string, string> parameters = null;
 			if (projectFolder == null && folderName != null)
 			{
-				projectFolder = ApiRouter.ProjectFolders.InsertProjectFolder(folderName, httpAuthenticator);
+				projectFolder = ApiRouter.ProjectFolders.Insert(folderName, httpAuthenticator);
 				parameters = ApiHelper.CreateParameters(("FolderId", projectFolder.Id));
 			}
 			else if (projectFolder != null && folderName != null)
@@ -34,35 +34,35 @@ namespace PravoAdder.Api
 				HttpMethod.Post, content);
 		}
 
-		public Project GetProject(HttpAuthenticator httpAuthenticator, string projectId)
+		public Project Get(HttpAuthenticator httpAuthenticator, string projectId)
 		{
 			var parameters = ApiHelper.CreateParameters(("ProjectId", projectId));
 			return ApiHelper.GetItem<Project>(httpAuthenticator, "Projects/GetProject", HttpMethod.Get, parameters);
 		}
 
-		public Project PutProject(HttpAuthenticator httpAuthenticator, Project project)
+		public Project Put(HttpAuthenticator httpAuthenticator, Project project)
 		{
 			return ApiHelper.GetItem<Project>(httpAuthenticator, "projects", HttpMethod.Put, project);
 		}
 
-		public Project CreateProject(HttpAuthenticator httpAuthenticator, object content)
+		public Project Create(HttpAuthenticator httpAuthenticator, object content)
 		{
 			return ApiHelper.GetItem<Project>(httpAuthenticator, "Projects/CreateProject", HttpMethod.Post, content);
 		}
 
-		public void DeleteProject(HttpAuthenticator httpAuthenticator, string projectId)
+		public void Delete(HttpAuthenticator httpAuthenticator, string projectId)
 		{
 			var parameters = ApiHelper.CreateParameters(("Id", projectId));
 			ApiHelper.SendItem(httpAuthenticator, "Projects/DeleteProject", HttpMethod.Delete, parameters);
 		}
 
-		public void ArchiveProject(HttpAuthenticator httpAuthenticator, string projectId)
+		public void Archive(HttpAuthenticator httpAuthenticator, string projectId)
 		{
 			var parameters = ApiHelper.CreateParameters(("Id", projectId));
 			ApiHelper.SendItem(httpAuthenticator, "projects/Archive", HttpMethod.Put, parameters);
 		}
 
-		public void RestoreProject(HttpAuthenticator httpAuthenticator, string projectId)
+		public void Restore(HttpAuthenticator httpAuthenticator, string projectId)
 		{
 			var parameters = ApiHelper.CreateParameters(("Id", projectId));
 			ApiHelper.SendItem(httpAuthenticator, "Projects/Restore", HttpMethod.Put, parameters);

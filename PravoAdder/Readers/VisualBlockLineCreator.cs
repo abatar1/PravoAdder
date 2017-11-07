@@ -19,7 +19,7 @@ namespace PravoAdder.Readers
 		{
 			VisualBlockLine line;
 
-			if (_visualBlocks == null) _visualBlocks = ApiRouter.VisualBlock.Get(HttpAuthenticator);
+			if (_visualBlocks == null) _visualBlocks = ApiRouter.VisualBlock.GetMany(HttpAuthenticator);
 			var visualBlockName = Table.GetValue(header, row, "Data Block");
 		
 			if (string.IsNullOrEmpty(visualBlockName)) return null;
@@ -78,11 +78,11 @@ namespace PravoAdder.Readers
 			var name = Table.GetValue(header, row, "Field Name")?.SliceSpaceIfMore(256);
 			if (string.IsNullOrEmpty(name)) return null;
 
-			var projectField = ApiRouter.ProjectFields.Get(autentificator, name).FirstOrDefault(f => f.Name.Equals(name));
+			var projectField = ApiRouter.ProjectFields.GetMany(autentificator, name).FirstOrDefault(f => f.Name.Equals(name));
 			if (projectField == null)
 			{
 				if (_formats == null) _formats = ApiRouter.VisualBlock.GetFieldTypes(autentificator);
-				projectField = ApiRouter.ProjectFields.CreateProjectField(autentificator,
+				projectField = ApiRouter.ProjectFields.Create(autentificator,
 					new ProjectField
 					{
 						Name = name,

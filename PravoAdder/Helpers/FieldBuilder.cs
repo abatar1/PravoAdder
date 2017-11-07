@@ -87,7 +87,7 @@ namespace PravoAdder.Helpers
 			if (_formulas == null)
 			{
 				_formulas = ApiRouter.CalculationFormulas
-					.GetCalculationFormulas(httpAuthenticator)
+					.Get(httpAuthenticator)
 					.ToList();
 			}
 			var calculationFormula = _formulas.GetByName(specialData);
@@ -103,13 +103,13 @@ namespace PravoAdder.Helpers
 		{
 			if (_participants == null)
 			{
-				_participants = new Lazy<IList<Participant>>(() => ApiRouter.Participants.GetParticipants(httpAuthenticator));
+				_participants = new Lazy<IList<Participant>>(() => ApiRouter.Participants.GetMany(httpAuthenticator));
 			}
 			var correctFieldData = fieldData.Trim();
 
 			if (_participants.Value.All(p => !p.Name.Equals(correctFieldData)))
 			{
-				var participant = ApiRouter.Participants.PutParticipant(httpAuthenticator, fieldData);
+				var participant = ApiRouter.Participants.Put(httpAuthenticator, fieldData);
 				if (participant == null) return null;
 				_participants.Value.Add(participant);
 			}
@@ -128,11 +128,11 @@ namespace PravoAdder.Helpers
 
 				if (dictionaryName == "Currency")
 				{
-					dictionaryItems = ApiRouter.Currencies.GetCurrencies(httpAuthenticator);
+					dictionaryItems = ApiRouter.Currencies.GetMany(httpAuthenticator);
 				}
 				else
 				{
-					dictionaryItems = ApiRouter.Dictionary.GetDictionaryItems(httpAuthenticator, dictionaryName)
+					dictionaryItems = ApiRouter.Dictionary.GetItems(httpAuthenticator, dictionaryName)
 						.Select(d => new DictionaryItem(FormatDictionaryItemName(d.Name), d.Id))
 						.ToList();
 				}
@@ -151,7 +151,7 @@ namespace PravoAdder.Helpers
 
 			if (itemsBag.All(d => !InvEqual(d.Name, correctName)))
 			{
-				var dictionaryItem = ApiRouter.Dictionary.SaveDictionaryItem(httpAuthenticator, dictionaryName, correctName);
+				var dictionaryItem = ApiRouter.Dictionary.SaveItem(httpAuthenticator, dictionaryName, correctName);
 				if (dictionaryItem == null) return null;
 
 				Dictionaries[dictionaryName].Add(new DictionaryItem(correctName, dictionaryItem.Id));

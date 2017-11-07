@@ -24,7 +24,7 @@ namespace PravoAdder.Readers
 
 			_currentType = typeName;
 			HttpAuthenticator = authenticator;
-			_participantTypes = ApiRouter.Participants.GetParticipantTypes(HttpAuthenticator);
+			_participantTypes = ApiRouter.Participants.GetTypes(HttpAuthenticator);
 		}
 
 		public HttpAuthenticator HttpAuthenticator { get; }
@@ -74,7 +74,7 @@ namespace PravoAdder.Readers
 					}
 					if (fieldName == "Company Name")
 					{
-						if (_participants == null) _participants = ApiRouter.Participants.GetParticipants(HttpAuthenticator);
+						if (_participants == null) _participants = ApiRouter.Participants.GetMany(HttpAuthenticator);
 						var company = _participants.FirstOrDefault(p => p.Name == value) ?? new Participant {Name = value};
 						participant.Company = company;
 					}

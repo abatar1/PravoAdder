@@ -7,7 +7,7 @@ namespace PravoAdder.Api
 {
 	public class DictionaryApi
 	{
-		public DictionaryItem SaveDictionaryItem(HttpAuthenticator httpAuthenticator, string sysName, string itemName)
+		public DictionaryItem SaveItem(HttpAuthenticator httpAuthenticator, string sysName, string itemName)
 		{
 			var content = new
 			{
@@ -19,18 +19,18 @@ namespace PravoAdder.Api
 				content);
 		}
 
-		public List<DictionaryItem> GetDictionaryItems(HttpAuthenticator httpAuthenticator, string dictionaryName)
+		public List<DictionaryItem> GetItems(HttpAuthenticator httpAuthenticator, string dictionaryName)
 		{
 			return ApiHelper.GetItems<DictionaryItem>(httpAuthenticator, $"dictionary/{dictionaryName}/getdictionaryitems", HttpMethod.Post);
 		}
 
-		public IList<DictionaryItem> GetDefaultDictionaryItems(HttpAuthenticator httpAuthenticator, string dictionaryName)
+		public IList<DictionaryItem> GetDefaultItems(HttpAuthenticator httpAuthenticator, string dictionaryName)
 		{
 			var content = new Content(ApiHelper.CreateParameters(("SystemName", dictionaryName)));
 			return ApiHelper.GetItems<DictionaryItem>(httpAuthenticator, "dictionary/getdictionaryitems", HttpMethod.Post, content);
 		}
 
-		public List<DictionaryInfo> GetDictionaryList(HttpAuthenticator httpAuthenticator)
+		public List<DictionaryInfo> GetMany(HttpAuthenticator httpAuthenticator)
 		{
 			return ApiHelper.GetItems<DictionaryInfo>(httpAuthenticator, "dictionary/GetDictionaryList", HttpMethod.Post);
 		}

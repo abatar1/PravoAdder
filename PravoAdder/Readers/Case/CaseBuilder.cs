@@ -46,7 +46,7 @@ namespace PravoAdder.Readers
 	    {
 		    if (HeaderBlockInfo.ProjectType == null) return null;
 
-		    var projectType = ApiRouter.ProjectTypes.GetProjectTypes(_httpAuthenticator)
+		    var projectType = ApiRouter.ProjectTypes.GetMany(_httpAuthenticator)
 			    .GetByName(HeaderBlockInfo.ProjectType);
 		    var visualBlocks = GetVisualBlocks(projectType.Id);
 

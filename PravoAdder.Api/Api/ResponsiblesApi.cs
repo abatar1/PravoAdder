@@ -7,7 +7,7 @@ namespace PravoAdder.Api
 {
 	public class ResponsiblesApi
 	{
-		public IList<Responsible> GetResponsibles(HttpAuthenticator httpAuthenticator)
+		public IList<Responsible> GetMany(HttpAuthenticator httpAuthenticator)
 		{
 			return ApiHelper.GetItems<Responsible>(httpAuthenticator, "CompanyUsersSuggest", HttpMethod.Post);
 		}
