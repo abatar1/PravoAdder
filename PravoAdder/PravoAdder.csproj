@@ -95,9 +95,9 @@
     <Compile Include="Domain\Enums.cs" />
     <Compile Include="Domain\Attributes\ProcessTypeAttribute.cs" />
     <Compile Include="Domain\Attributes\ReadingTypeAttribute.cs" />
+    <Compile Include="Domain\HeaderBlockInfo.cs" />
     <Compile Include="Domain\Row.cs" />
     <Compile Include="Domain\ApplicationArguments.cs" />
-    <Compile Include="Domain\Info\CaseInfo.cs" />
     <Compile Include="Domain\XmlAddress.cs" />
     <Compile Include="Domain\ConveyorItem.cs" />
     <Compile Include="Engine.cs" />
@@ -128,13 +128,9 @@
     <Compile Include="Processors\GroupedProcessors.cs" />
     <Compile Include="Wrappers\Counter.cs" />
     <Compile Include="Wrappers\SettingsWrapper.cs" />
-    <Compile Include="Domain\Info\HeaderBlockInfo.cs" />
     <Compile Include="Readers\Case\CaseBuilder.cs" />
     <Compile Include="Readers\Case\ExcelReader.cs" />
     <Compile Include="Wrappers\ApiEnviroment.cs" />
-    <Compile Include="Domain\Info\BlockInfo.cs" />
-    <Compile Include="Domain\Info\BlockFieldInfo.cs" />
-    <Compile Include="Domain\Info\BlockLineInfo.cs" />
     <Compile Include="Domain\Settings.cs" />
     <Compile Include="Readers\Case\TemplateTableReader.cs" />
     <Compile Include="Program.cs" />

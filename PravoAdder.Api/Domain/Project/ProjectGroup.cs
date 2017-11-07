@@ -12,7 +12,8 @@
 			Name = name;
 			Id = id;
 		}
-
+		public ProjectFolder ProjectFolder { get; set; }
+		public string Description { get; set; }
 		public static ProjectGroup Empty => new ProjectGroup(null, null);
 	}
 }

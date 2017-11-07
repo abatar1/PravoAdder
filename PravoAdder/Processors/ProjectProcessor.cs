@@ -85,7 +85,7 @@ namespace PravoAdder.Processors
 			var blocksInfo = message.CaseBuilder.Build();
 			foreach (var repeatBlock in blocksInfo)
 			{
-				foreach (var blockInfo in repeatBlock.Blocks)
+				foreach (var blockInfo in repeatBlock.VisualBlocks)
 				{
 					message.ApiEnviroment.AddInformation(blockInfo, message.Row, message.Item.Id, repeatBlock.Order);
 				}

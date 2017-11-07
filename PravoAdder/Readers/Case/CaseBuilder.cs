@@ -6,6 +6,8 @@ using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
 using PravoAdder.Domain;
 using PravoAdder.Domain.Attributes;
+using PravoAdder.Helpers;
+using PravoAdder.Wrappers;
 
 namespace PravoAdder.Readers
 {
@@ -42,15 +44,14 @@ namespace PravoAdder.Readers
 		    return visualBlocks;
 	    }   
 
-	    public IEnumerable<CaseInfo> Build()
+	    public IEnumerable<VisualBlockWrapper> Build()
 	    {
 		    if (HeaderBlockInfo.ProjectType == null) return null;
+	   
+		    var projectType = ApiEnviroment.GetProjectType(_httpAuthenticator, HeaderBlockInfo, 0);
+			var visualBlocks = GetVisualBlocks(projectType.Id);
 
-		    var projectType = ApiRouter.ProjectTypes.GetMany(_httpAuthenticator)
-			    .GetByName(HeaderBlockInfo.ProjectType);
-		    var visualBlocks = GetVisualBlocks(projectType.Id);
-
-		    var result = new Dictionary<int, List<BlockInfo>>();
+		    var result = new Dictionary<int, List<VisualBlock>>();
 		    foreach (var block in visualBlocks)
 		    {
 			    var correctBlockName = block.Name.Split('-')[0].Trim();
@@ -59,61 +60,71 @@ namespace PravoAdder.Readers
 				    : new List<int> {0};
 			    foreach (var blockNumber in blockNumbers)
 			    {
-				    var lines = new List<BlockLineInfo>();
+				    var newLines = new List<VisualBlockLine>();
 				    foreach (var line in block.Lines)
 				    {
-					    var simpleRepeatsLines = new List<BlockLineInfo>();
-					    var complexMultilines = new Dictionary<int, BlockLineInfo>();
+					    var clonedLine = line.CloneJson();
 
-					    foreach (var field in line.Fields)
+					    var simpleRepeatsLines = new List<VisualBlockLine>();
+					    var complexMultilines = new Dictionary<int, VisualBlockLine>();
+
+					    foreach (var field in clonedLine.Fields)
 					    {
-						    var fieldAddress = new FieldAddress(correctBlockName, field.ProjectField.Name);
-						    var fieldCount = line.Fields.Count;
+						    var clonedField = field.CloneJson();
 
-						    if (line.IsRepeated && fieldCount > 1)
+						    var fieldAddress = new FieldAddress(correctBlockName, clonedField.ProjectField.Name);
+						    var fieldCount = clonedLine.Fields.Count;
+
+						    if (clonedLine.IsRepeated && fieldCount > 1)
 						    {
 							    var complexIndexes = Table.GetComplexIndexes(fieldAddress, blockNumber);
 							    foreach (var key in complexIndexes.Keys)
 							    {
 								    if (!complexMultilines.ContainsKey(key))
 								    {
-									    complexMultilines.Add(key, new BlockLineInfo(line.Id, key - 1));
+									    complexMultilines.Add(key, new VisualBlockLine(clonedLine.Id, key - 1));
 								    }
-								    complexMultilines[key].Fields
-									    .Add(BlockFieldInfo.Create(field, complexIndexes[key]));
+								    clonedField.ColumnNumber = complexIndexes[key];
+								    complexMultilines[key].Fields.Add(clonedField);
 							    }
 							    continue;
 						    }
 
 						    var indexes = Table.GetIndexes(fieldAddress, blockNumber);
 						    if (indexes == null || indexes.Count == 0) continue;
-						    if (line.IsRepeated && fieldCount == 1)
+						    if (clonedLine.IsRepeated && fieldCount == 1)
 						    {
 							    simpleRepeatsLines = indexes
-								    .Select(i => new BlockLineInfo
+								    .Select(i =>
 								    {
-									    BlockLineId = line.Id,
-									    Order = 0,
-									    Fields = new List<BlockFieldInfo> {BlockFieldInfo.Create(field, i)}
+									    clonedField.ColumnNumber = i;
+									    return new VisualBlockLine
+									    {
+										    BlockLineId = clonedLine.Id,
+										    Order = 0,
+										    Fields = new List<VisualBlockField> {clonedField}
+									    };
 								    })
 								    .ToList();
+								continue;
 						    }
-						    if (line.IsSimple)
+						    if (clonedLine.IsSimple)
 						    {
-							    if (simpleRepeatsLines.Count == 0) simpleRepeatsLines.Add(new BlockLineInfo(line.Id, 0));
-							    simpleRepeatsLines[0].Fields.Add(BlockFieldInfo.Create(field, indexes.First()));
-						    }
+							    if (simpleRepeatsLines.Count == 0) simpleRepeatsLines.Add(new VisualBlockLine(clonedLine.Id, 0));
+							    clonedField.ColumnNumber = indexes.First();
+								simpleRepeatsLines[0].Fields.Add(clonedField);
+							}
 					    }
-					    lines.AddRange(simpleRepeatsLines);
-					    lines.AddRange(complexMultilines.Select(d => (BlockLineInfo) d.Value.Clone()));
+					    newLines.AddRange(simpleRepeatsLines);
+					    newLines.AddRange(complexMultilines.Select(d => d.Value.CloneJson()));
 				    }
-
-				    if (!result.ContainsKey(blockNumber)) result.Add(blockNumber, new List<BlockInfo>());
-				    result[blockNumber].Add(new BlockInfo(correctBlockName, block.Id, lines));
+				    block.Lines = new List<VisualBlockLine>(newLines);
+				    if (!result.ContainsKey(blockNumber)) result.Add(blockNumber, new List<VisualBlock>());
+				    result[blockNumber].Add(block);
 			    }			  
 		    }
 		    return result
-				.Select(x => new CaseInfo {Blocks = x.Value, Order = x.Key});
+				.Select(x => new VisualBlockWrapper {VisualBlocks = x.Value, Order = x.Key});
 	    }
 
 	    public HeaderBlockInfo ReadHeaderBlock(Row excelRow)
@@ -140,12 +151,6 @@ namespace PravoAdder.Readers
 		    if (string.IsNullOrEmpty(headerObject.Name) || string.IsNullOrEmpty(headerObject.ProjectType)) return null;
 		    HeaderBlockInfo = headerObject;
 		    return headerObject;
-	    }
-
-		public BlockInfo GetByName(IEnumerable<BlockInfo> blocks, string name)
-	    {
-		    return blocks
-			    .FirstOrDefault(block => block.Name == name);
 	    }
 	}
 }

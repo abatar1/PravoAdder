@@ -1,13 +1,29 @@
-﻿namespace PravoAdder.Api.Domain
+﻿using Newtonsoft.Json;
+
+namespace PravoAdder.Api.Domain
 {
-	public class VisualBlockField
+	public class VisualBlockField : DatabaseEntityItem
 	{
-		public string Id { get; set; }
 		public ProjectField ProjectField { get; set; }
 		public int Width { get; set; }
 		public string Tag { get; set; }
 		public bool IsRequired { get; set; }
 
-		public override string ToString() => ProjectField.Name;
+		[JsonIgnore]
+		public int ColumnNumber { get; set; }
+
+		[JsonIgnore]
+		public object Value { get; set; }
+
+		public VisualBlockField CloneWithValue(object value)
+		{
+			return new VisualBlockField
+			{
+				ColumnNumber = ColumnNumber,
+				Id = Id,
+				Name = Name,
+				Value = value
+			};
+		}
 	}
 }

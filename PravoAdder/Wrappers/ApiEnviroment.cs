@@ -16,6 +16,9 @@ namespace PravoAdder.Wrappers
 	    private const int MaxWordLength = 350;
 		private readonly HttpAuthenticator _httpAuthenticator;
 	    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+	    private static List<ProjectType> _projectTypes;
+	    private static List<Responsible> _responsibles;
 	    private static List<Project> _projects;
 
 		public ApiEnviroment(HttpAuthenticator httpAuthenticator)
@@ -67,18 +70,13 @@ namespace PravoAdder.Wrappers
 				if (projectGroupResponse != null) return projectGroupResponse;
 			}
 
-	        var projectFolder = ApiRouter.ProjectFolders.GetMany(_httpAuthenticator)
-		        .GetByName(headerInfo.ProjectFolder);
-	        if (projectFolder == null)
-	        {
-		        ApiRouter.ProjectFolders.Insert(headerInfo.ProjectFolder, _httpAuthenticator);
-			}               
+	        var projectFolder = TryCreateProjectFolder(_httpAuthenticator, headerInfo);
 
-            var content = new
-            {
+			var content = new ProjectGroup
+			{
                 Name = headerInfo.ProjectGroup,
                 ProjectFolder = projectFolder,
-                headerInfo.Description
+                Description = headerInfo.Description
             };
 
 	        var projectGroup = ApiRouter.ProjectGroups.Create(_httpAuthenticator, content);
@@ -86,61 +84,69 @@ namespace PravoAdder.Wrappers
 	        return projectGroup;			
 		}
 
+	    public static ProjectFolder TryCreateProjectFolder(HttpAuthenticator authenticator, HeaderBlockInfo headerInfo)
+	    {
+			var projectFolder = ApiRouter.ProjectFolders.GetMany(authenticator)
+			    .GetByName(headerInfo.ProjectFolder);
+
+		    if (projectFolder == null)
+		    {
+			    var folderName = headerInfo.ProjectFolder;
+
+			    if (folderName.Length > MaxWordLength)
+				    folderName = folderName.Remove(MaxWordLength);
+			    projectFolder = ApiRouter.ProjectFolders.Insert(folderName, authenticator);
+		    }
+		    return projectFolder;
+	    }
+
+	    public static ProjectType GetProjectType(HttpAuthenticator authenticator, HeaderBlockInfo headerInfo, int count)
+	    {
+		    if (_projectTypes == null) _projectTypes = ApiRouter.ProjectTypes.GetMany(authenticator);
+			var projectType = _projectTypes.GetByName(headerInfo.ProjectType);
+		    if (projectType == null)
+		    {
+			    Logger.Error(
+				    $"{DateTime.Now} | {count} | Project type {headerInfo.ProjectType} doesn't exist. Project name: {headerInfo.Name}");
+			    return null;
+		    }
+		    return projectType;
+	    }
+
+	    public static Responsible GetResponsible(HttpAuthenticator authenticator, HeaderBlockInfo headerInfo, int count)
+	    {
+		    if (_responsibles == null) _responsibles = ApiRouter.Responsibles.GetMany(authenticator);
+
+			var responsibleName = headerInfo.Responsible?.Replace(".", "");
+		    if (string.IsNullOrEmpty(responsibleName)) responsibleName = "empty_string";
+
+		    var responsible = _responsibles.GetByName(responsibleName);
+		    if (responsible == null)
+		    {
+			    Logger.Error(
+				    $"{DateTime.Now} | {count} | Responsible {responsibleName} doesn't exist. Project name: {headerInfo.Name}");
+			    return null;
+		    }
+		    return responsible;
+	    }
+
         public Project AddProject(bool needOverwrite, HeaderBlockInfo headerInfo, string projectGroupId, int count, bool isUpdate)
-        {
-	        if (isUpdate || needOverwrite)
+        {			
+			if (needOverwrite)
 	        {
-		        if (isUpdate)
-		        {
-			        if (_projects == null)
-			        {
-				        _projects = ApiRouter.Projects.GetMany(_httpAuthenticator, headerInfo.ProjectFolder);					
-			        }
-			        var projectResponse = _projects.GetByName(headerInfo.Name);
-			        if (projectResponse != null) return projectResponse;
-				}
-		        else
-		        {
-			        var projects = ApiRouter.Projects.GetMany(_httpAuthenticator, headerInfo.ProjectFolder);
-			        var projectResponse = projects.GetByName(headerInfo.Name);
-			        if (projectResponse != null) return projectResponse;
-				}		       
+		        if (_projects == null) _projects = ApiRouter.Projects.GetMany(_httpAuthenticator, headerInfo.ProjectFolder);
+				var projectResponse = _projects.GetByName(headerInfo.Name);
+			    if (projectResponse != null) return projectResponse;					       
             }
 
 	        if (string.IsNullOrEmpty(headerInfo.Name)) headerInfo.Name = "Название проекта по-умолчанию";
 
-			var projectFolder = ApiRouter.ProjectFolders.GetMany(_httpAuthenticator)
-		        .GetByName(headerInfo.ProjectFolder);
+	        var projectFolder = TryCreateProjectFolder(_httpAuthenticator, headerInfo);
+	        var projectType = GetProjectType(_httpAuthenticator, headerInfo, count);
 
-	        if (projectFolder == null)
-	        {
-		        var folderName = headerInfo.ProjectFolder;
+	        var responsible = GetResponsible(_httpAuthenticator, headerInfo, count);
 
-		        if (folderName.Length > MaxWordLength)
-					folderName = folderName.Remove(MaxWordLength);
-		        projectFolder = ApiRouter.ProjectFolders.Insert(folderName, _httpAuthenticator);
-			}
-
-	        var projectType = ApiRouter.ProjectTypes.GetMany(_httpAuthenticator)
-		        .GetByName(headerInfo.ProjectType);
-	        if (projectType == null)
-	        {
-		        Logger.Error(
-			        $"{DateTime.Now} | {count} | Project type {headerInfo.ProjectType} doesn't exist. Project name: {headerInfo.Name}");
-		        return null;
-	        }
-
-	        var responsibleName = headerInfo.Responsible?.Replace(".", "");
-	        if (string.IsNullOrEmpty(responsibleName)) responsibleName = "empty_string";
-	        var responsible = ApiRouter.Responsibles.GetMany(_httpAuthenticator).GetByName(responsibleName);
-	        if (responsible == null)
-	        {
-		        Logger.Error(
-			        $"{DateTime.Now} | {count} | Responsible {responsibleName} doesn't exist. Project name: {headerInfo.Name}");
-		        return null;
-	        }
-
-	        var projectGroup = string.IsNullOrEmpty(headerInfo.ProjectGroup) && projectGroupId == null
+			var projectGroup = string.IsNullOrEmpty(headerInfo.ProjectGroup) && projectGroupId == null
 		        ? null
 		        : new ProjectGroup(headerInfo.ProjectGroup, projectGroupId);
 
@@ -159,20 +165,20 @@ namespace PravoAdder.Wrappers
 			};
 
 	        var project = ApiRouter.Projects.Create(_httpAuthenticator, newProject);
-			if (project == null) Logger.Error($"{DateTime.Now} | Failed to add {headerInfo.Name} project");
+			if (project == null) Logger.Error($"{DateTime.Now} | {count} | Failed to add {headerInfo.Name} project");
 			return project;
 		}
 
-        public void AddInformation(BlockInfo blockInfo, Row excelRow, string projectId, int order)
+        public void AddInformation(VisualBlock visualBlock, Row excelRow, string projectId, int order)
         {		
-			var contentLines = new List<BlockLineInfo>();
-	        if (blockInfo.Lines == null || !blockInfo.Lines.Any()) return;
+			var contentLines = new List<VisualBlockLine>();
+	        if (visualBlock.Lines == null || !visualBlock.Lines.Any()) return;
 
             var messageBuilder = new StringBuilder();	        
 			var calculationIds = new List<string>();
-			foreach (var line in blockInfo.Lines)
+			foreach (var line in visualBlock.Lines)
             {
-                var contentFields = new List<BlockFieldInfo>();
+                var contentFields = new List<VisualBlockField>();
                 foreach (var fieldInfo in line.Fields)
                 {
                     if (!excelRow.ContainsKey(fieldInfo.ColumnNumber))
@@ -198,19 +204,21 @@ namespace PravoAdder.Wrappers
                     catch (Exception e)
                     {
 	                    messageBuilder.AppendLine(
-		                    $"Error while reading value from table! Message: {e.Message} Id: {projectId} Data: {fieldData} Type: {fieldInfo.Type}");
+		                    $"Error while reading value from table! Message: {e.Message} Id: {projectId} Data: {fieldData}");
                     }
                 }
                 if (!contentFields.Any()) continue;
-                var newLine = line.CloneWithFields(contentFields);
+
+                var newLine = line.CloneJson();
+				newLine.Fields = new List<VisualBlockField>(contentFields);
                 contentLines.Add(newLine);
             }
 
             if (contentLines.All(c => !c.Fields.Any())) return;
 
-            var contentBlock = new
+            var contentBlock = new VisualBlock
             {
-                VisualBlockId = blockInfo.Id,
+                VisualBlockId = visualBlock.Id,
                 ProjectId = projectId,
                 Lines = contentLines,
                 FrontOrder = order,
@@ -265,7 +273,7 @@ namespace PravoAdder.Wrappers
 			if (visualBlockResponse == null)
 			{
 				Logger.Error(
-					$"{DateTime.Now} | Failed to create information block {blockInfo.Name}. {messageBuilder.ToString().Trim()} | Id : {projectId}");
+					$"{DateTime.Now} | Failed to create information block {visualBlock.Name}. {messageBuilder.ToString().Trim()} | Id : {projectId}");
 			}
 		}
     }

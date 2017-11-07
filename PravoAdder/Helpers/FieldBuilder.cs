@@ -7,7 +7,6 @@ using System.Linq;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
-using PravoAdder.Domain;
 
 namespace PravoAdder.Helpers
 {
@@ -22,21 +21,23 @@ namespace PravoAdder.Helpers
 			Dictionaries = new ConcurrentDictionary<string, ConcurrentBag<DictionaryItem>>();
 		}
 
-		public static object CreateFieldValueFromData(HttpAuthenticator httpAuthenticator, BlockFieldInfo fieldInfo, string fieldData)
+		public static object CreateFieldValueFromData(HttpAuthenticator httpAuthenticator, VisualBlockField fieldInfo, string fieldData)
 		{
 			if (string.IsNullOrEmpty(fieldData)) return null;
-			switch (fieldInfo.Type)
+			switch (fieldInfo.ProjectField.ProjectFieldFormat.SysName)
 			{
-				case "Value":
-					return FormatFieldData(fieldData);
+				case "Number":
+					return GetNumberFromData(fieldData);
 				case "Text":
+				case "Date":
+				case "TextArea":
 					if (fieldData == "True") return "Да";
 					if (fieldData == "False") return "Нет";
 					return fieldData;
 				case "CalculationFormula":
-					return GetCalculationFormulaValueFromData(httpAuthenticator, fieldData, fieldInfo.SpecialData);
+					return GetCalculationFormulaValueFromData(httpAuthenticator, fieldData, fieldInfo.ProjectField.ProjectFieldFormat.Dictionary.SystemName);
 				case "Dictionary":
-					return GetDictionaryFromData(httpAuthenticator, fieldData, fieldInfo.SpecialData);
+					return GetDictionaryFromData(httpAuthenticator, fieldData, fieldInfo.ProjectField.CalculationFormulas.First().Name);
 				case "Participant":
 					return GetParticipantFromData(httpAuthenticator, fieldData);
 				default:
@@ -44,12 +45,7 @@ namespace PravoAdder.Helpers
 			}
 		}
 
-		public static object CreateFieldValueFromData(HttpAuthenticator httpAuthenticator, VisualBlockField visualField, string fieldData)
-		{
-			return CreateFieldValueFromData(httpAuthenticator, BlockFieldInfo.Create(visualField, 0), fieldData);
-		}
-
-		private static object FormatFieldData(string value)
+		private static object GetNumberFromData(string value)
 		{
 			string correctNumberValue;
 			if (!value.Contains(',') && !value.Contains('.'))
@@ -87,14 +83,14 @@ namespace PravoAdder.Helpers
 			if (_formulas == null)
 			{
 				_formulas = ApiRouter.CalculationFormulas
-					.Get(httpAuthenticator)
+					.GetMany(httpAuthenticator)
 					.ToList();
 			}
 			var calculationFormula = _formulas.GetByName(specialData);
 			if (calculationFormula == null) return null;
 			return new CalculationFormulaValue
 			{
-				Result = FormatFieldData(data),
+				Result = GetNumberFromData(data),
 				CalculationFormulaId = calculationFormula.Id
 			};
 		}
@@ -109,9 +105,11 @@ namespace PravoAdder.Helpers
 
 			if (_participants.Value.All(p => !p.Name.Equals(correctFieldData)))
 			{
-				var participant = ApiRouter.Participants.Put(httpAuthenticator, fieldData);
-				if (participant == null) return null;
-				_participants.Value.Add(participant);
+				// TODO fieldData - это имя участника. Нужно строить от этого имени DetailedParticipant, но нужны еще данные о участнике.
+				//var participant = ApiRouter.Participants.Put(httpAuthenticator, new DetailedParticipant());
+				//if (participant == null) return null;
+				//_participants.Value.Add(participant);
+				throw new NotImplementedException("Не реализовано добавление участника");
 			}
 			return _participants.Value
 				.First(p => p.Name == correctFieldData);

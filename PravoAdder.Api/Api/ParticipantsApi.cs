@@ -9,18 +9,6 @@ namespace PravoAdder.Api
 {
 	public class ParticipantsApi
 	{
-		public Participant Put(HttpAuthenticator httpAuthenticator, string name, string projectId = null)
-		{
-			var content = new
-			{
-				Organization = name,
-				Type = GetTypes(httpAuthenticator).First(p => p.Name == "Организация"),
-				IncludeInProjectId = projectId
-			};
-
-			return ApiHelper.GetItem<Participant>(httpAuthenticator, "participants/PutParticipant", HttpMethod.Put, content);
-		}
-
 		public List<Participant> GetMany(HttpAuthenticator httpAuthenticator)
 		{
 			return ApiHelper.GetItems<Participant>(httpAuthenticator, "ParticipantsSuggest/GetParticipants", HttpMethod.Post);

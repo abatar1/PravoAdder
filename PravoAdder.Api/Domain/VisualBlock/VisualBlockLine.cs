@@ -15,5 +15,16 @@ namespace PravoAdder.Api.Domain
 
 		[JsonIgnore]
 		public bool IsRepeated => LineType.SysName == "Repeated";
+
+		public VisualBlockLine()
+		{
+
+		}
+
+		public VisualBlockLine(string id, int order)
+		{
+			BlockLineId = id;
+			Order = order;
+		}
 	}
 }
