@@ -85,17 +85,7 @@ namespace PravoAdder.Processors
 				message.ApiEnviroment.DeleteProjectGroupItem(message.Item.Id);
 			}
 			return message;
-		};
-
-		public static Func<EngineMessage, EngineMessage> CreateProjectField = message =>
-		{
-			var projectField = (ProjectField) message.GetCreatable();
-			if (projectField == null) return null;
-
-			var result = ApiRouter.ProjectFields.Create(message.Authenticator, projectField);
-			message.Item = result;
-			return message;
-		};
+		};		
 
 		public static Func<EngineMessage, EngineMessage> ProcessCount = message =>
 		{
@@ -155,9 +145,13 @@ namespace PravoAdder.Processors
 
 			var dictionaryItemName = message.GetValueFromRow("Value");
 			var dictItems = ApiRouter.Dictionary.GetItems(message.Authenticator, dictionary.SystemName);
+
+			if (dictionary.Items == null) dictionary.Items = new List<DictionaryItem>(dictItems);
+
 			if (!dictItems.Any(d => d.Name.Equals(dictionaryItemName)))
 			{
-				ApiRouter.Dictionary.SaveItem(message.Authenticator, dictionary.SystemName, dictionaryItemName);
+				var newItem = ApiRouter.Dictionary.SaveItem(message.Authenticator, dictionary.SystemName, dictionaryItemName);
+				dictionary.Items.Add(newItem);
 			}			
 
 			message.Item = dictionary;

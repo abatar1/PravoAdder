@@ -9,6 +9,7 @@ using PravoAdder.Helpers;
 
 namespace PravoAdder.Readers
 {
+	// Need "Data Block", "Field Name", "Row", "Width", "Tag", "Required" in Excel table.
 	public class VisualBlockLineCreator : ICreator
 	{
 		public HttpAuthenticator HttpAuthenticator { get; }
@@ -25,13 +26,14 @@ namespace PravoAdder.Readers
 			if (string.IsNullOrEmpty(visualBlockName)) return null;
 
 			VisualBlock = _visualBlocks.FirstOrDefault(vb => vb.Name.Equals(visualBlockName));
+			var isRepeatingBlock = bool.Parse(Table.GetValue(header, row, "Repeating Block") ?? "false");
 			if (VisualBlock == null)
 			{
 				VisualBlock = ApiRouter.VisualBlock.Create(HttpAuthenticator,
 					new VisualBlock
 					{
 						NameInConstructor = visualBlockName,
-						IsRepeatable = false,
+						IsRepeatable = isRepeatingBlock,
 						Lines = new List<VisualBlockLine>()
 					});
 				_visualBlocks.Add(VisualBlock);
@@ -49,8 +51,9 @@ namespace PravoAdder.Readers
 			{
 				if (_lineTypes == null)
 					_lineTypes = ApiRouter.VisualBlock.GetLineTypes(HttpAuthenticator);
-				var lineType = _lineTypes.First(t => t.Name.Equals(Table.GetValue(header, row, "Row"),
-					StringComparison.InvariantCultureIgnoreCase));
+				var rowNamingRule = new Regex("[^a-яA-Яa-zA-Z ]");
+				var rowType = rowNamingRule.Replace(Table.GetValue(header, row, "Row"), "").Trim();
+				var lineType = _lineTypes.First(t => t.Name.Equals(rowType, StringComparison.InvariantCultureIgnoreCase));
 				line = new VisualBlockLine
 				{
 					LineType = lineType,

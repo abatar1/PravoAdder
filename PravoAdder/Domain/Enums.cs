@@ -33,6 +33,7 @@ namespace PravoAdder.Domain
 		CreateProjectField,
 		AddVisualBlockLine,
 		CreateDictionaries,
+		CreateCaseType,
 		Notes,
 		All
 	}

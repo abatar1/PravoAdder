@@ -18,7 +18,7 @@ namespace PravoAdder.Api.Domain
 		{
 			if (ReferenceEquals(null, other)) return false;
 			if (ReferenceEquals(this, other)) return true;
-			return string.Equals(Name, other.Name) && string.Equals(Id, other.Id);
+			return string.Equals(Id, other.Id);
 		}
 
 		public override bool Equals(object obj)
@@ -31,10 +31,7 @@ namespace PravoAdder.Api.Domain
 
 		public override int GetHashCode()
 		{
-			unchecked
-			{
-				return ((Name != null ? Name.GetHashCode() : 0) * 397) ^ (Id != null ? Id.GetHashCode() : 0);
-			}
+			return (Id != null ? Id.GetHashCode() : 0);
 		}
 	}
 }

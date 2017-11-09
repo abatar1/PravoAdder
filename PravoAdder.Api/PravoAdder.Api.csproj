@@ -78,6 +78,10 @@
     <Compile Include="Api\DictionaryApi.cs" />
     <Compile Include="Api\ProjectFieldsApi.cs" />
     <Compile Include="Api\VisualBlockApi.cs" />
+    <Compile Include="Domain\Event\Attendee.cs" />
+    <Compile Include="Domain\Event\Calendar.cs" />
+    <Compile Include="Domain\Event\Event.cs" />
+    <Compile Include="Domain\Event\EventType.cs" />
     <Compile Include="Domain\Other\DictionaryInfo.cs" />
     <Compile Include="Api\NotesApi.cs" />
     <Compile Include="Api\ParticipantsApi.cs" />

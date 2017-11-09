@@ -12,5 +12,6 @@ namespace PravoAdder.Api.Domain
 		public ProjectGroup ProjectGroup { get; set; }
 		public string CasebookNumber { get; set; }
 		public string Description { get; set; }
+		public Participant Client { get; set; }
 	}
 }

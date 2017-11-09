@@ -25,7 +25,8 @@ namespace PravoAdder
 		{
 			ProcessType.Migration, ProcessType.Sync, ProcessType.CreateParticipants, ProcessType.Analyze, ProcessType.Notes,
 			ProcessType.EditParticipantsByKey, ProcessType.RenameCases, ProcessType.AttachParticipant,
-			ProcessType.EditParticipants, ProcessType.CreateProjectField, ProcessType.AddVisualBlockLine, ProcessType.CreateDictionaries
+			ProcessType.EditParticipants, ProcessType.CreateProjectField, ProcessType.AddVisualBlockLine,
+			ProcessType.CreateDictionaries, ProcessType.CreateCaseType,
 		};
 
 		public Engine Initialize(string[] args)

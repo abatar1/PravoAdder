@@ -9,6 +9,8 @@ namespace PravoAdder.Processors
 	public class ProjectProcessor
 	{
 		private static List<Project> _projects;
+		private static List<ProjectType> _projectTypes;
+		private static List<VisualBlock> _visualBlocks;
 
 		public Func<EngineMessage, EngineMessage> Update = message =>
 		{
@@ -90,6 +92,52 @@ namespace PravoAdder.Processors
 					message.ApiEnviroment.AddInformation(blockInfo, message.Row, message.Item.Id, repeatBlock.Order);
 				}
 			}
+			return message;
+		};
+
+		public static Func<EngineMessage, EngineMessage> CreateProjectField = message =>
+		{
+			var projectField = (ProjectField) message.GetCreatable();
+			if (projectField == null) return null;
+
+			var result = ApiRouter.ProjectFields.Create(message.Authenticator, projectField);
+			message.Item = result;
+			return message;
+		};
+
+		public Func<EngineMessage, EngineMessage> CreateType = message =>
+		{
+			if (_projectTypes == null)
+			{
+				_projectTypes = ApiRouter.ProjectTypes.GetMany(message.Authenticator)
+					.Select(t => ApiRouter.ProjectTypes.Get(message.Authenticator, t.Id))
+					.ToList();
+			}
+
+			var typeName = message.GetValueFromRow("Name");
+			if (string.IsNullOrEmpty(typeName)) return null;
+			var abbreviation = message.GetValueFromRow("Abbreviation");
+			if (string.IsNullOrEmpty(abbreviation)) return null;
+
+			var processingType = _projectTypes.FirstOrDefault(v => v.Name.Equals(typeName, StringComparison.InvariantCultureIgnoreCase));			
+			if (processingType == null)
+			{
+				processingType = ApiRouter.ProjectTypes.PostWithBlocks(message.Authenticator, typeName, abbreviation);
+				_projectTypes.Add(processingType);
+			}				
+
+			var blockName = message.GetValueFromRow("Blocks");
+			if (_visualBlocks == null) _visualBlocks = ApiRouter.VisualBlock.GetMany(message.Authenticator);
+			var block = _visualBlocks.FirstOrDefault(b => b.Name.Equals(blockName, StringComparison.InvariantCultureIgnoreCase));
+			if (block == null) return null;
+
+			if (processingType.VisualBlocks == null) processingType.VisualBlocks = new List<VisualBlock>();
+			if (processingType.VisualBlocks.Contains(block)) return null;
+
+			processingType.VisualBlocks.Add(block);
+			var updatedType = ApiRouter.ProjectTypes.PutWithBlocks(message.Authenticator, processingType);
+
+			message.Item = updatedType;
 			return message;
 		};
 
