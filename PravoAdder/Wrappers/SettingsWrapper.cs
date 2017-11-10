@@ -19,24 +19,24 @@ namespace PravoAdder.Wrappers
 
             foreach (var property in settingsObject.GetType().GetProperties())
             {
-	            var processTypeAttribute = AttributeHelper.LoadAttribute<ProcessTypeAttribute>(property);
+	            var processTypeAttribute = property.LoadAttribute<ProcessTypeAttribute>();
 	            if (!processTypeAttribute.ProcessTypes.Contains(applicationArguments.ProcessType) &&
 	                !processTypeAttribute.ProcessTypes.Contains(ProcessType.All)) continue;
 
-	            var readingTypeAttribute = AttributeHelper.LoadAttribute<ReadingTypeAttribute>(property);
+	            var readingTypeAttribute = property.LoadAttribute<ReadingTypeAttribute>();
 	            if (readingTypeAttribute != null &&
 	                !readingTypeAttribute.ReadingTypes.Contains(_blockReadingMode)) continue;
 	            	          
-	            var ignoreAttibute = AttributeHelper.LoadAttribute<IgnoreAttribute>(property);
+	            var ignoreAttibute = property.LoadAttribute<IgnoreAttribute>();
                 if (ignoreAttibute != null && ignoreAttibute.Ignore) continue;
               
                 var value = property.GetValue(settingsObject);
                 if (!IsEmptyValue(property.PropertyType, value) && property.PropertyType != typeof(bool)) continue;
 
-	            var nameAttribute = AttributeHelper.LoadAttribute<DisplayNameAttribute>(property);
+	            var nameAttribute = property.LoadAttribute<DisplayNameAttribute>();
 				var displayName = nameAttribute != null ? nameAttribute.DisplayName : property.Name;
 
-	            var requiredAttribute = AttributeHelper.LoadAttribute<IsRequiredAttribute>(property);
+	            var requiredAttribute = property.LoadAttribute<IsRequiredAttribute>();
 	            var isRequired = requiredAttribute.IsRequiredValue;
 
 				var propertyValue = LoadValue(displayName, property.PropertyType, ',', isRequired);

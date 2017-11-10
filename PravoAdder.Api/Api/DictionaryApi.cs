@@ -5,9 +5,9 @@ using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api
 {
-	public class DictionaryApi
+	public class DictionaryApi : IGetMany<DictionaryInfo>
 	{
-		public DictionaryItem SaveItem(HttpAuthenticator httpAuthenticator, string sysName, string itemName)
+		public DictionaryItem Put(HttpAuthenticator httpAuthenticator, string sysName, string itemName)
 		{
 			var content = new
 			{
@@ -30,9 +30,14 @@ namespace PravoAdder.Api
 				ApiHelper.CreateParameters(("SystemName", dictionaryName)));
 		}
 
-		public List<DictionaryInfo> GetMany(HttpAuthenticator httpAuthenticator)
+		public List<DictionaryInfo> GetMany(HttpAuthenticator httpAuthenticator, string optional = null)
 		{
 			return ApiHelper.GetItems<DictionaryInfo>(httpAuthenticator, "dictionary/GetDictionaryList", HttpMethod.Post);
+		}
+
+		public DictionaryInfo Get(HttpAuthenticator authenticator, string parameter)
+		{
+			throw new System.NotImplementedException();
 		}
 
 		public DictionaryInfo Create(HttpAuthenticator httpAuthenticator, DictionaryInfo dictionary)

@@ -46,7 +46,7 @@ namespace PravoAdder.Readers
                     var row = new List<string>();
                     for (var columnNum = 1; columnNum <= totalColumns; columnNum++)
                     {
-                        var cell = worksheet.Cells[rowNum, columnNum].Value?.ToString();
+                        var cell = worksheet.Cells[rowNum, columnNum].Text;
                         row.Add(cell);
                     }
                     var coloredRow = row

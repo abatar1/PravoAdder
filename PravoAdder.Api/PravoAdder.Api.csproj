@@ -73,15 +73,22 @@
     <Compile Include="ApiRouter.cs" />
     <Compile Include="Api\BootstrapApi.cs" />
     <Compile Include="Api\CalculationFormulasApi.cs" />
+    <Compile Include="Api\CalendarApi.cs" />
     <Compile Include="Api\CasebookApi.cs" />
     <Compile Include="Api\CurrenciesApi.cs" />
     <Compile Include="Api\DictionaryApi.cs" />
+    <Compile Include="Api\EventApi.cs" />
     <Compile Include="Api\ProjectFieldsApi.cs" />
+    <Compile Include="Api\TimeLogApi.cs" />
     <Compile Include="Api\VisualBlockApi.cs" />
-    <Compile Include="Domain\Event\Attendee.cs" />
+    <Compile Include="Domain\EntityType.cs" />
     <Compile Include="Domain\Event\Calendar.cs" />
+    <Compile Include="Domain\Event\CalendarColor.cs" />
     <Compile Include="Domain\Event\Event.cs" />
     <Compile Include="Domain\Event\EventType.cs" />
+    <Compile Include="Domain\Event\TimeLog.cs" />
+    <Compile Include="Domain\IGetMany.cs" />
+    <Compile Include="Domain\Other\ActivityTag.cs" />
     <Compile Include="Domain\Other\DictionaryInfo.cs" />
     <Compile Include="Api\NotesApi.cs" />
     <Compile Include="Api\ParticipantsApi.cs" />
@@ -124,6 +131,11 @@
     <Compile Include="Helpers\DatabaseEntityItemHelper.cs" />
     <Compile Include="HttpAuthenticator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\CalendarRepository.cs" />
+    <Compile Include="Repositories\EventTypeRepository.cs" />
+    <Compile Include="Repositories\ProjectRepository.cs" />
+    <Compile Include="Repositories\ResponsibleRepository.cs" />
+    <Compile Include="Repositories\TemplateRepository.cs" />
     <Compile Include="RetryHandler.cs" />
   </ItemGroup>
   <ItemGroup>

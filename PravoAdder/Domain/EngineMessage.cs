@@ -44,9 +44,9 @@ namespace PravoAdder.Domain
 			}
 		}
 
-		public ICreatable GetCreatable()
+		public ICreatable GetCreatable(DatabaseEntityItem item = null)
 		{
-			return Creator.Create(Table.Header, Row);
+			return Creator.Create(Table.Header, Row, item);
 		}
 
 		public string GetValueFromRow(string name)

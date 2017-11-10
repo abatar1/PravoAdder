@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using PravoAdder.Api.Domain;
+using PravoAdder.Api.Domain.Other;
+using PravoAdder.Api.Repositories;
 using PravoAdder.Domain;
 using PravoAdder.Domain.Attributes;
 using PravoAdder.Helpers;
@@ -61,6 +63,7 @@ namespace PravoAdder.Processors
 			if (processName.Contains("Task")) creator = new TaskCreator(authenticator);
 			if (processName.Contains("ProjectField")) creator = new ProjectFieldCreator(authenticator);
 			if (processName.Contains("VisualBlockLine")) creator = new VisualBlockLineCreator(authenticator);
+			if (processName.Contains("Event")) creator = new EventCreator(authenticator);
 
 			return new EngineMessage
 			{
@@ -119,12 +122,58 @@ namespace PravoAdder.Processors
 			if (sumWidth == 12)
 			{
 				creator.ConstructedLine = null;
+
+				if (creator.VisualBlock.Lines.Any(l => l.Fields.Select(f => f.Name).SequenceEqual(line.Fields.Select(f => f.Name))))
+				{
+					return null;
+				}
+
 				creator.VisualBlock.Lines.Add(line);
-				var result = ApiRouter.VisualBlock.Update(message.Authenticator, creator.VisualBlock);
+				var result = ApiRouter.VisualBlocks.Update(message.Authenticator, creator.VisualBlock);
 				message.Item = result;				
 				return message;
 			}
+			if (sumWidth > 12)
+			{
+				creator.ConstructedLine = null;
+			}
 			return null;
+		};
+
+		public static Func<EngineMessage, EngineMessage> CreateEvent = message =>
+		{
+			var newEvent = (Event) message.GetCreatable(message.Item);
+			if (newEvent == null) return null;
+
+			var isRestored = false;			
+			if (newEvent.Project.IsArchive)
+			{
+				ApiRouter.Projects.Restore(message.Authenticator, newEvent.Project.Id);
+				isRestored = true;
+			}
+			message.Item = ApiRouter.Events.Create(message.Authenticator, newEvent);
+			if (isRestored)
+			{
+				ApiRouter.Projects.Archive(message.Authenticator, newEvent.Project.Id);
+			}
+			return message;
+		};
+
+		private static List<ActivityTag> _activityTags;
+
+		public static Func<EngineMessage, EngineMessage> CreateTimeLog = message =>
+		{
+			if (_activityTags == null) _activityTags = ApiRouter.Bootstrap.GetActivityTags(message.Authenticator);
+			var newTimeLog = new TimeLog
+			{
+				LogType = EventTypeRepository.Get(message.Authenticator, message.GetValueFromRow("Activity Type")),
+				LogDate = DateTime.Parse(message.GetValueFromRow("Log Date")).ToString("o"),
+				Tag = _activityTags.First(t => t.Name.Equals("Event")),
+				Time = int.Parse(message.GetValueFromRow("Timer"))
+			};
+
+			message.Item = ApiRouter.TimeLogs.Create(message.Authenticator, newTimeLog);
+			return message;
 		};
 
 		private static List<DictionaryInfo> _dictionaries;
@@ -150,7 +199,7 @@ namespace PravoAdder.Processors
 
 			if (!dictItems.Any(d => d.Name.Equals(dictionaryItemName)))
 			{
-				var newItem = ApiRouter.Dictionary.SaveItem(message.Authenticator, dictionary.SystemName, dictionaryItemName);
+				var newItem = ApiRouter.Dictionary.Put(message.Authenticator, dictionary.SystemName, dictionaryItemName);
 				dictionary.Items.Add(newItem);
 			}			
 

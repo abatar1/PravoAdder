@@ -149,7 +149,7 @@ namespace PravoAdder.Helpers
 
 			if (itemsBag.All(d => !InvEqual(d.Name, correctName)))
 			{
-				var dictionaryItem = ApiRouter.Dictionary.SaveItem(httpAuthenticator, dictionaryName, correctName);
+				var dictionaryItem = ApiRouter.Dictionary.Put(httpAuthenticator, dictionaryName, correctName);
 				if (dictionaryItem == null) return null;
 
 				Dictionaries[dictionaryName].Add(new DictionaryItem(correctName, dictionaryItem.Id));

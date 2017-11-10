@@ -16,20 +16,19 @@ namespace PravoAdder.Readers
 		public VisualBlock VisualBlock { get; set; }
 		public VisualBlockLine ConstructedLine { get; set; }
 
-		public ICreatable Create(Row header, Row row)
+		public ICreatable Create(Row header, Row row, DatabaseEntityItem item = null)
 		{
 			VisualBlockLine line;
 
-			if (_visualBlocks == null) _visualBlocks = ApiRouter.VisualBlock.GetMany(HttpAuthenticator);
-			var visualBlockName = Table.GetValue(header, row, "Data Block");
-		
+			if (_visualBlocks == null) _visualBlocks = ApiRouter.VisualBlocks.GetMany(HttpAuthenticator);
+			var visualBlockName = Table.GetValue(header, row, "Data Block");	
 			if (string.IsNullOrEmpty(visualBlockName)) return null;
 
 			VisualBlock = _visualBlocks.FirstOrDefault(vb => vb.Name.Equals(visualBlockName));
 			var isRepeatingBlock = bool.Parse(Table.GetValue(header, row, "Repeating Block") ?? "false");
 			if (VisualBlock == null)
 			{
-				VisualBlock = ApiRouter.VisualBlock.Create(HttpAuthenticator,
+				VisualBlock = ApiRouter.VisualBlocks.Create(HttpAuthenticator,
 					new VisualBlock
 					{
 						NameInConstructor = visualBlockName,
@@ -50,7 +49,7 @@ namespace PravoAdder.Readers
 			else
 			{
 				if (_lineTypes == null)
-					_lineTypes = ApiRouter.VisualBlock.GetLineTypes(HttpAuthenticator);
+					_lineTypes = ApiRouter.Bootstrap.GetLineTypes(HttpAuthenticator);
 				var rowNamingRule = new Regex("[^a-яA-Яa-zA-Z ]");
 				var rowType = rowNamingRule.Replace(Table.GetValue(header, row, "Row"), "").Trim();
 				var lineType = _lineTypes.First(t => t.Name.Equals(rowType, StringComparison.InvariantCultureIgnoreCase));
@@ -58,7 +57,7 @@ namespace PravoAdder.Readers
 				{
 					LineType = lineType,
 					Fields = new List<VisualBlockField>(),
-					Order = VisualBlock.Lines.Count
+					Order = VisualBlock.Lines.Count, 
 				};
 				line.Fields.Add(newField);
 			}
@@ -84,7 +83,7 @@ namespace PravoAdder.Readers
 			var projectField = ApiRouter.ProjectFields.GetMany(autentificator, name).FirstOrDefault(f => f.Name.Equals(name));
 			if (projectField == null)
 			{
-				if (_formats == null) _formats = ApiRouter.VisualBlock.GetFieldTypes(autentificator);
+				if (_formats == null) _formats = ApiRouter.Bootstrap.GetFieldTypes(autentificator);
 				projectField = ApiRouter.ProjectFields.Create(autentificator,
 					new ProjectField
 					{

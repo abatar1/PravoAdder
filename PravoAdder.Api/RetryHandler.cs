@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PravoAdder.Api
 {
-	public class RetryHandler : DelegatingHandler
+	internal class RetryHandler : DelegatingHandler
 	{
 		private static int _maxRetries;
 		private static TimeSpan _waitingTimeSpan;

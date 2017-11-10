@@ -19,7 +19,7 @@ namespace PravoAdder.Readers
 		private static List<DictionaryInfo> _dictionaries;
 		private static List<ProjectFieldFormat> _formats;
 
-		public ICreatable Create(Row header, Row row)
+		public ICreatable Create(Row header, Row row, DatabaseEntityItem item = null)
 		{
 			var projectField = new ProjectField
 			{
@@ -35,7 +35,7 @@ namespace PravoAdder.Readers
 			var format = rawFormat.Split(',').Select(c => c.Trim()).ToArray();
 			var fieldFormat = format[0];
 
-			if (_formats == null) _formats = ApiRouter.VisualBlock.GetFieldTypes(HttpAuthenticator);
+			if (_formats == null) _formats = ApiRouter.Bootstrap.GetFieldTypes(HttpAuthenticator);
 
 			switch (fieldFormat)
 			{

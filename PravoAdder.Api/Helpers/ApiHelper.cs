@@ -4,14 +4,13 @@ using System.Dynamic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using PravoAdder.Api.Domain;
 using System.Net;
 using System.Text;
 using Newtonsoft.Json;
 
 namespace PravoAdder.Api.Helpers
 {
-	public class ApiHelper
+	internal class ApiHelper
 	{
 		private static dynamic GetResponseFromRequest(HttpRequestMessage request, HttpAuthenticator httpAuthenticator)
 		{

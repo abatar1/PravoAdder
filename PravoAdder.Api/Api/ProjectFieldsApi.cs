@@ -5,7 +5,7 @@ using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api
 {
-	public class ProjectFieldsApi
+	public class ProjectFieldsApi : IGetMany<ProjectField>
 	{
 		public ProjectField Create(HttpAuthenticator httpAuthenticator, ProjectField projectField)
 		{
@@ -19,6 +19,11 @@ namespace PravoAdder.Api
 				Name = name
 			};
 			return ApiHelper.GetItem<List<ProjectField>>(httpAuthenticator, "ProjectFieldSuggest/GetProjectFields", HttpMethod.Post, content);
+		}
+
+		public ProjectField Get(HttpAuthenticator authenticator, string parameter)
+		{
+			throw new System.NotImplementedException();
 		}
 	}
 }

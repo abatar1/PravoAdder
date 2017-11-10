@@ -34,6 +34,7 @@ namespace PravoAdder.Domain
 		AddVisualBlockLine,
 		CreateDictionaries,
 		CreateCaseType,
+		CreateEvent,
 		Notes,
 		All
 	}

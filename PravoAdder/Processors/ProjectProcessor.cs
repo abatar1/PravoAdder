@@ -37,7 +37,6 @@ namespace PravoAdder.Processors
 
 		public Func<EngineMessage, EngineMessage> Rename = message =>
 		{
-
 			var projectName = Table.GetValue(message.Table.Header, message.Row, "Case name");
 			if (_projects == null) _projects = ApiRouter.Projects.GetMany(message.Authenticator);
 			var project = _projects.FirstOrDefault(p => p.Name == projectName);
@@ -127,7 +126,7 @@ namespace PravoAdder.Processors
 			}				
 
 			var blockName = message.GetValueFromRow("Blocks");
-			if (_visualBlocks == null) _visualBlocks = ApiRouter.VisualBlock.GetMany(message.Authenticator);
+			if (_visualBlocks == null) _visualBlocks = ApiRouter.VisualBlocks.GetMany(message.Authenticator);
 			var block = _visualBlocks.FirstOrDefault(b => b.Name.Equals(blockName, StringComparison.InvariantCultureIgnoreCase));
 			if (block == null) return null;
 

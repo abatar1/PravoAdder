@@ -5,9 +5,9 @@ using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api
 {
-	public class ProjectTypesApi
+	public class ProjectTypesApi : IGetMany<ProjectType>
 	{
-		public List<ProjectType> GetMany(HttpAuthenticator httpAuthenticator)
+		public List<ProjectType> GetMany(HttpAuthenticator httpAuthenticator, string optional = null)
 		{
 			return ApiHelper.GetItems<ProjectType>(httpAuthenticator, "ProjectTypes/GetProjectTypes", HttpMethod.Post);
 		}

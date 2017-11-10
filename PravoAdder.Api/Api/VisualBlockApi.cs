@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using Newtonsoft.Json;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api
 {
-	public class VisualBlockApi
+	public class VisualBlockApi : IGetMany<VisualBlock>
 	{
 		public VisualBlock GetEntityCard(HttpAuthenticator httpAuthenticator, string entityId, string entityTypeId)
 		{
@@ -20,7 +18,7 @@ namespace PravoAdder.Api
 				HttpMethod.Post, content);
 		}
 
-		public List<VisualBlock> GetMany(HttpAuthenticator httpAuthenticator)
+		public List<VisualBlock> GetMany(HttpAuthenticator httpAuthenticator, string optional = null)
 		{
 			return ApiHelper.GetItems<VisualBlock>(httpAuthenticator, "VisualBlocks/GetCustomVisualBlocks", HttpMethod.Post);
 		}
@@ -34,28 +32,7 @@ namespace PravoAdder.Api
 		public VisualBlock Update(HttpAuthenticator httpAuthenticator, VisualBlock updatedBlock)
 		{
 			return ApiHelper.GetItem<VisualBlock>(httpAuthenticator, "VisualBlocks/UpdateCustomVisualBlock", HttpMethod.Put, updatedBlock);
-		}
-
-		public List<LineType> GetLineTypes(HttpAuthenticator httpAuthenticator)
-		{
-			var bootstrap = ApiRouter.Bootstrap.GetShell(httpAuthenticator);
-			IEnumerable<dynamic> participantTypes = bootstrap["ProjectFieldFormats"]["LineTypes"];
-			return participantTypes.Select(o => (LineType) JsonConvert.DeserializeObject<LineType>(o.ToString())).ToList();
-		}
-
-		public List<ProjectFieldFormat> GetFieldTypes(HttpAuthenticator httpAuthenticator)
-		{
-			var bootstrap = ApiRouter.Bootstrap.GetShell(httpAuthenticator);
-			IEnumerable<dynamic> participantTypes = bootstrap["ProjectFieldFormats"]["ProjectFieldFormats"];
-			return participantTypes.Select(o => (ProjectFieldFormat) JsonConvert.DeserializeObject<ProjectFieldFormat>(o.ToString())).ToList();
-		}
-
-		public List<ProjectFieldFormat> GetEntityTypes(HttpAuthenticator httpAuthenticator)
-		{
-			var bootstrap = ApiRouter.Bootstrap.GetShell(httpAuthenticator);
-			IEnumerable<dynamic> participantTypes = bootstrap["ProjectFieldFormats"]["EntityTypes"];
-			return participantTypes.Select(o => (ProjectFieldFormat) JsonConvert.DeserializeObject<ProjectFieldFormat>(o.ToString())).ToList();
-		}
+		}		
 
 		public VisualBlock Create(HttpAuthenticator httpAuthenticator, VisualBlock block)
 		{

@@ -7,6 +7,6 @@ namespace PravoAdder.Readers
 	public interface ICreator
 	{
 		HttpAuthenticator HttpAuthenticator { get; }
-		ICreatable Create(Row header, Row row);
+		ICreatable Create(Row header, Row row, DatabaseEntityItem item = null);
 	}
 }

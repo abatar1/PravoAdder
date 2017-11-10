@@ -5,11 +5,16 @@ using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api
 {
-	public class ProjectGroupsApi
+	public class ProjectGroupsApi : IGetMany<ProjectGroup>
 	{
-		public IList<ProjectGroup> GetMany(HttpAuthenticator httpAuthenticator)
+		public List<ProjectGroup> GetMany(HttpAuthenticator httpAuthenticator, string optional = null)
 		{
 			return ApiHelper.GetItems<ProjectGroup>(httpAuthenticator, "ProjectGroups/PostProjectGroups", HttpMethod.Post);
+		}
+
+		public ProjectGroup Get(HttpAuthenticator authenticator, string parameter)
+		{
+			throw new System.NotImplementedException();
 		}
 
 		public ProjectGroup Create(HttpAuthenticator httpAuthenticator, object content)

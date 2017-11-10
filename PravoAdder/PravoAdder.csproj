@@ -113,6 +113,7 @@
     <Compile Include="Helpers\AttributeHelper.cs" />
     <Compile Include="Readers\Case\ExcelRuleReader.cs" />
     <Compile Include="Readers\Case\ExcelReferenceReader.cs" />
+    <Compile Include="Readers\EventCreator.cs" />
     <Compile Include="Readers\ICreator.cs" />
     <Compile Include="Readers\ParticipantCreator.cs" />
     <Compile Include="Readers\ProjectFieldCreator.cs" />

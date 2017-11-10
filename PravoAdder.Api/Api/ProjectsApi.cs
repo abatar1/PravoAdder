@@ -6,7 +6,7 @@ using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api
 {
-	public class ProjectsApi
+	public class ProjectsApi : IGetMany<Project>
 	{
 		public List<Project> GetMany(HttpAuthenticator httpAuthenticator, string folderName = null)
 		{

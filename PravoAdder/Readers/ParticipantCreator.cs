@@ -24,12 +24,12 @@ namespace PravoAdder.Readers
 
 			_currentType = typeName;
 			HttpAuthenticator = authenticator;
-			_participantTypes = ApiRouter.Participants.GetTypes(HttpAuthenticator);
+			_participantTypes = ApiRouter.Bootstrap.GetParticipantTypes(HttpAuthenticator);
 		}
 
 		public HttpAuthenticator HttpAuthenticator { get; }
 
-		public ICreatable Create(Row info, Row row)
+		public ICreatable Create(Row info, Row row, DatabaseEntityItem item = null)
 		{
 			var type = _participantTypes.First(p => p.Name == _currentType);
 
@@ -57,7 +57,7 @@ namespace PravoAdder.Readers
 
 				if (fieldName == "INN")
 				{
-					participant.INN = value;
+					participant.Inn = value;
 				}
 
 				if (_currentType == Person)
@@ -91,7 +91,7 @@ namespace PravoAdder.Readers
 				if (_visualBlock == null)
 				{
 					var participantTypeId = _participantTypes.First(p => p.TypeName == _currentType).Id;
-					_visualBlock = ApiRouter.VisualBlock.GetEntityCard(HttpAuthenticator, participantTypeId, "Participant");
+					_visualBlock = ApiRouter.VisualBlocks.GetEntityCard(HttpAuthenticator, participantTypeId, "Participant");
 				}
 				foreach (var line in _visualBlock.Lines)
 				{

@@ -28,9 +28,9 @@ namespace PravoAdder.Readers
 
 		public HttpAuthenticator HttpAuthenticator { get; }
 
-		public ICreatable Create(Row info, Row row)
+		public ICreatable Create(Row info, Row row, DatabaseEntityItem item = null)
 		{
-			var task = new Task {Id = null};
+			var task = new Task {Id = null, TimeLogs = new List<string> {item?.Id}};
 
 		    foreach (var valuePair in row.Content)
 		    {

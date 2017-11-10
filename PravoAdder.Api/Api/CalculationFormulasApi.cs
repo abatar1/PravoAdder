@@ -5,11 +5,16 @@ using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api
 {
-	public class CalculationFormulasApi
+	public class CalculationFormulasApi : IGetMany<CalculationFormula>
 	{
-		public List<CalculationFormula> GetMany(HttpAuthenticator httpAuthenticator)
+		public List<CalculationFormula> GetMany(HttpAuthenticator httpAuthenticator, string optional = null)
 		{
 			return ApiHelper.GetItems<CalculationFormula>(httpAuthenticator, "CalculationFormulasSuggest/GetCalculationFormulas", HttpMethod.Post);
+		}
+
+		public CalculationFormula Get(HttpAuthenticator authenticator, string parameter)
+		{
+			throw new System.NotImplementedException();
 		}
 
 		public int GetInputData(HttpAuthenticator httpAuthenticator, string projectId, string calculationId, string visualBlockId, string blockLineId)

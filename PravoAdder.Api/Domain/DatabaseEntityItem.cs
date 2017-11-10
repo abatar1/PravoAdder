@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json;
 
 namespace PravoAdder.Api.Domain
 {
@@ -8,6 +9,8 @@ namespace PravoAdder.Api.Domain
 		public string Id { get; set; }
 		public string SysName { get; set; }
 		public string DisplayName { get; set; }
+
+		public virtual bool ShouldSerializeId() => true;
 
 		public override string ToString()
 		{
@@ -33,5 +36,8 @@ namespace PravoAdder.Api.Domain
 		{
 			return (Id != null ? Id.GetHashCode() : 0);
 		}
+
+		[JsonIgnore]
+		public bool WasDetailed { get; set; }
 	}
 }

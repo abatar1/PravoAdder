@@ -1,4 +1,5 @@
 ﻿using PravoAdder.Api;
+using PravoAdder.Api.Api;
 
 namespace PravoAdder
 {
@@ -19,7 +20,10 @@ namespace PravoAdder
 		public static BootstrapApi Bootstrap;
 		public static NotesApi Notes;
 		public static ProjectFieldsApi ProjectFields;
-		public static VisualBlockApi VisualBlock;
+		public static VisualBlockApi VisualBlocks;
+		public static EventApi Events;
+		public static CalendarApi Calendars;
+		public static TimeLogApi TimeLogs;
 
 		public static int PageSize = 50;
 
@@ -40,7 +44,10 @@ namespace PravoAdder
 			Bootstrap = new BootstrapApi();
 			Notes = new NotesApi();
 			ProjectFields = new ProjectFieldsApi();
-			VisualBlock = new VisualBlockApi();
+			VisualBlocks = new VisualBlockApi();
+			Events = new EventApi();
+			Calendars = new CalendarApi();
+			TimeLogs = new TimeLogApi();
 		}
 	}
 }

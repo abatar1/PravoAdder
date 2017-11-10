@@ -26,11 +26,11 @@ namespace PravoAdder
 			Conveyor.Add(new ConveyorItem {Depth = depth, Processor = processor, Message = new EngineMessage()});
 		}
 
-		public void AddRange(List<Func<EngineMessage, EngineMessage>> processors)
+		public void AddRange(IEnumerable<Func<EngineMessage, EngineMessage>> processors, int depth = 0)
 		{
 			foreach (var processor in processors)
 			{
-				Add(processor);
+				Add(processor, depth);
 			}
 		}
 
@@ -73,11 +73,10 @@ namespace PravoAdder
 			}
 			return true;
 		}
-
-		private void SetSimpleTableProcessor(Func<EngineMessage, EngineMessage> simpleProcessor)
+		private void SetTableProcessor(params Func<EngineMessage, EngineMessage>[] processors)
 		{
 			AddRange(GroupedProcessors.LoadWithTable);
-			Add(simpleProcessor, 1);
+			AddRange(processors, 1);
 			Add(SingleProcessors.ProcessCount, 1);
 			Add(ForEachProcessors.Row);
 		}
@@ -91,22 +90,14 @@ namespace PravoAdder
 
 			switch (processType)
 			{
-				case ProcessType.Migration:					
-					conveyor.AddRange(GroupedProcessors.LoadWithTable);
-					conveyor.Add(SingleProcessors.Project.TryCreate, 1);
-					conveyor.Add(SingleProcessors.Project.AddInformation, 1);
-					conveyor.Add(SingleProcessors.ProcessCount, 1);
-					conveyor.Add(ForEachProcessors.Row);
+				case ProcessType.Migration:
+					SetTableProcessor(SingleProcessors.Project.TryCreate, SingleProcessors.Project.AddInformation);
 					break;					
 				case ProcessType.Update:
-					SetSimpleTableProcessor(SingleProcessors.Project.Update);
+					SetTableProcessor(SingleProcessors.Project.Update);
 					break;				
-				case ProcessType.Sync:					
-					conveyor.AddRange(GroupedProcessors.LoadWithTable);
-					conveyor.Add(SingleProcessors.Project.TryCreate, 1);
-					conveyor.Add(SingleProcessors.Project.Synchronize, 1);
-					conveyor.Add(SingleProcessors.ProcessCount, 1);
-					conveyor.Add(ForEachProcessors.Row);
+				case ProcessType.Sync:
+					SetTableProcessor(SingleProcessors.Project.TryCreate, SingleProcessors.Project.Synchronize);
 					break;					
 				case ProcessType.DeleteCases:					
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
@@ -127,10 +118,10 @@ namespace PravoAdder
 					conveyor.Add(ForEachProcessors.ProjectGroup);
 					break;					
 				case ProcessType.CreateTask:
-					SetSimpleTableProcessor(SingleProcessors.CreateTask);
+					SetTableProcessor(SingleProcessors.CreateTask);
 					break;					
 				case ProcessType.CreateParticipants:
-					SetSimpleTableProcessor(SingleProcessors.Participant.Create);
+					SetTableProcessor(SingleProcessors.Participant.Create);
 					break;					
 				case ProcessType.DeleteParticipants:
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
@@ -153,25 +144,25 @@ namespace PravoAdder
 					conveyor.Add(SingleProcessors.AnalyzeHeader);
 					break;
 				case ProcessType.Notes:
-					SetSimpleTableProcessor(SingleProcessors.Project.AddNote);
+					SetTableProcessor(SingleProcessors.Project.AddNote);
 					break;
 				case ProcessType.EditParticipantsByKey:
-					SetSimpleTableProcessor(SingleProcessors.Participant.EditById);
+					SetTableProcessor(SingleProcessors.Participant.EditById);
 					break;
 				case ProcessType.RenameCases:
-					SetSimpleTableProcessor(SingleProcessors.Project.Rename);
+					SetTableProcessor(SingleProcessors.Project.Rename);
 					break;
 				case ProcessType.AttachParticipant:
-					SetSimpleTableProcessor(SingleProcessors.Project.AttachParticipant);
+					SetTableProcessor(SingleProcessors.Project.AttachParticipant);
 					break;
 				case ProcessType.EditParticipants:
-					SetSimpleTableProcessor(SingleProcessors.Participant.Edit);
+					SetTableProcessor(SingleProcessors.Participant.Edit);
 					break;
 				case ProcessType.CreateProjectField:
-					SetSimpleTableProcessor(ProjectProcessor.CreateProjectField);
+					SetTableProcessor(ProjectProcessor.CreateProjectField);
 					break;
 				case ProcessType.AddVisualBlockLine:
-					SetSimpleTableProcessor(SingleProcessors.AddVisualBlockLine);
+					SetTableProcessor(SingleProcessors.AddVisualBlockLine);
 					break;
 				case ProcessType.UnloadCases:
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
@@ -181,10 +172,13 @@ namespace PravoAdder
 					conveyor.Add(ForEachProcessors.ProjectGroup);
 					break;
 				case ProcessType.CreateDictionaries:
-					SetSimpleTableProcessor(SingleProcessors.CreateDictionary);
+					SetTableProcessor(SingleProcessors.CreateDictionary);
 					break;
 				case ProcessType.CreateCaseType:
-					SetSimpleTableProcessor(SingleProcessors.Project.CreateType);
+					SetTableProcessor(SingleProcessors.Project.CreateType);
+					break;
+				case ProcessType.CreateEvent:
+					SetTableProcessor(SingleProcessors.CreateTimeLog, SingleProcessors.CreateEvent);
 					break;
 				default:
 					throw new ArgumentException("Неизвестный тип конвеера.");

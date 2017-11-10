@@ -21,7 +21,7 @@ namespace PravoAdder.Processors
 			if (_participants == null) _participants = ApiRouter.Participants.GetMany(authenticator);
 			_detailedParticipants = _participants
 				.Where(p => p.TypeName == ParticipantCreator.Person)
-				.Select(p => new Lazy<DetailedParticipant>(() => ApiRouter.Participants.Get(authenticator, p.Id)))
+				.Select(p => new Lazy<DetailedParticipant>(() => ApiRouter.Participants.GetDetailed(authenticator, p.Id)))
 				.ToList();		
 		}
 
@@ -68,7 +68,7 @@ namespace PravoAdder.Processors
 			if (_participants == null) _participants = ApiRouter.Participants.GetMany(authenticator);
 			var participant = _participants.FirstOrDefault(p => p.Name == name);
 			if (participant == null) return null;
-			return ApiRouter.Participants.Get(authenticator, participant.Id);
+			return ApiRouter.Participants.GetDetailed(authenticator, participant.Id);
 		}
 
 		public Func<EngineMessage, EngineMessage> Create = message =>

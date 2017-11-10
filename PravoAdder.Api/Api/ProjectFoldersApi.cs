@@ -5,11 +5,16 @@ using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api
 {
-	public class ProjectFoldersApi
+	public class ProjectFoldersApi : IGetMany<ProjectFolder>
 	{
-		public List<ProjectFolder> GetMany(HttpAuthenticator httpAuthenticator)
+		public List<ProjectFolder> GetMany(HttpAuthenticator httpAuthenticator, string optional = null)
 		{
 			return ApiHelper.GetItems<ProjectFolder>(httpAuthenticator, "ProjectFolders/GetProjectFolders", HttpMethod.Post);
+		}
+
+		public ProjectFolder Get(HttpAuthenticator authenticator, string parameter)
+		{
+			throw new System.NotImplementedException();
 		}
 
 		public ProjectFolder Insert(string name, HttpAuthenticator httpAuthenticator)

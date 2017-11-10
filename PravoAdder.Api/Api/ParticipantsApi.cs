@@ -1,20 +1,23 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using Newtonsoft.Json;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api
 {
-	public class ParticipantsApi
+	public class ParticipantsApi : IGetMany<Participant>
 	{
-		public List<Participant> GetMany(HttpAuthenticator httpAuthenticator)
+		public List<Participant> GetMany(HttpAuthenticator httpAuthenticator, string optional = null)
 		{
 			return ApiHelper.GetItems<Participant>(httpAuthenticator, "ParticipantsSuggest/GetParticipants", HttpMethod.Post);
 		}
 
-		public DetailedParticipant Get(HttpAuthenticator httpAuthenticator, string participantId)
+		public Participant Get(HttpAuthenticator authenticator, string parameter)
+		{
+			throw new System.NotImplementedException();
+		}
+
+		public DetailedParticipant GetDetailed(HttpAuthenticator httpAuthenticator, string participantId)
 		{
 			var parameters = ApiHelper.CreateParameters(("participantId", participantId));
 			return ApiHelper.GetItem<DetailedParticipant>(httpAuthenticator, "participants/GetParticipant", HttpMethod.Get, parameters);
@@ -25,14 +28,7 @@ namespace PravoAdder.Api
 			var parameters = ApiHelper.CreateParameters(("participantId", participantId));
 			return ApiHelper.GetItem<VisualBlockWrapper>(httpAuthenticator, "participants/GetParticipant", HttpMethod.Get, parameters).VisualBlock;
 		}
-
-		public List<ParticipantType> GetTypes(HttpAuthenticator httpAuthenticator)
-		{
-			var bootstrap = ApiRouter.Bootstrap.Get(httpAuthenticator);
-			IEnumerable<dynamic> participantTypes = bootstrap["CaseMap.Modules.Main"]["CaseMap.Modules.Participants"]["ParticipantTypes"];
-			return participantTypes.Select(o => (ParticipantType) JsonConvert.DeserializeObject<ParticipantType>(o.ToString())).ToList();
-		}
-
+		
 		public Participant Put(HttpAuthenticator httpAuthenticator, DetailedParticipant participant)
 		{
 			return ApiHelper.GetItem<Participant>(httpAuthenticator, "participants/PutParticipant", HttpMethod.Put, participant);

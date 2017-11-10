@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace PravoAdder.Api.Domain
 {
-    public class Task : ICreatable 
+    public class Task : DatabaseEntityItem, ICreatable
     {
         public Project Project { get; set; }
         public TaskName TaskName { get; set; }
@@ -12,8 +13,8 @@ namespace PravoAdder.Api.Domain
         public string Description { get; set; }
         public int Priority { get; set; }
         public TaskState TaskState { get; set; }
-        public string Id { get; set; }
-        [JsonIgnore]
+	    public List<string> TimeLogs { get; set; }
+		[JsonIgnore]
         public bool IsArchive { get; set; }
     }
 }

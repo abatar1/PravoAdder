@@ -14,5 +14,10 @@
 
 		public string SystemName { get; set; }
 		public string LetterCode { get; set; }
+
+		public static explicit operator EventType(DictionaryItem other)
+		{
+			return new EventType {Name = other.Name, Id = other.Id, SysName = other.SysName};
+		}
 	}
 }
