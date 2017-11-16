@@ -10,12 +10,12 @@ namespace PravoAdder.Wrappers
 {
     public class SettingsWrapper
     {
-	    private static ReaderMode _blockReadingMode = ReaderMode.All;
+	    private static ReadingMode _blockReadingMode = ReadingMode.All;
 
 		public Settings LoadSettingsFromConsole(ApplicationArguments applicationArguments, Dictionary<string, dynamic> additionalSettings = null)
         {
             Console.WriteLine("Reading config files...");
-            var settingsObject = SettingsHelper.Read(applicationArguments.ConfigFileName);
+            var settingsObject = Settings.Read(applicationArguments.ConfigFileName);
 
             foreach (var property in settingsObject.GetType().GetProperties())
             {
@@ -82,9 +82,9 @@ namespace PravoAdder.Wrappers
 					}
 	                if (type.IsEnum)
 	                {
-		                if (Enum.TryParse(data, out ReaderMode result))
+		                if (Enum.TryParse(data, out ReadingMode result))
 		                {
-			                if (type == typeof(ReaderMode)) _blockReadingMode = result;
+			                if (type == typeof(ReadingMode)) _blockReadingMode = result;
 							return result;
 		                }
 						Console.WriteLine("Wrong enum item passed.");

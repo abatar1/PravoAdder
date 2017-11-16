@@ -4,5 +4,6 @@
 	{
 		public Project Project { get; set; }
 		public string Text { get; set; }
+		public bool IsPrivate { get; set; }
 	}
 }

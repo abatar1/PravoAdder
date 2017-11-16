@@ -5,31 +5,20 @@ using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api
 {
-	public class ParticipantsApi : IGetMany<Participant>
+	public class ParticipantsApi : IApi<Participant>
 	{
 		public List<Participant> GetMany(HttpAuthenticator httpAuthenticator, string optional = null)
 		{
 			return ApiHelper.GetItems<Participant>(httpAuthenticator, "ParticipantsSuggest/GetParticipants", HttpMethod.Post);
 		}
 
-		public Participant Get(HttpAuthenticator authenticator, string parameter)
-		{
-			throw new System.NotImplementedException();
-		}
-
-		public DetailedParticipant GetDetailed(HttpAuthenticator httpAuthenticator, string participantId)
+		public Participant Get(HttpAuthenticator httpAuthenticator, string participantId)
 		{
 			var parameters = ApiHelper.CreateParameters(("participantId", participantId));
-			return ApiHelper.GetItem<DetailedParticipant>(httpAuthenticator, "participants/GetParticipant", HttpMethod.Get, parameters);
-		}
-
-		public VisualBlock GetVisualBlock(HttpAuthenticator httpAuthenticator, string participantId)
-		{
-			var parameters = ApiHelper.CreateParameters(("participantId", participantId));
-			return ApiHelper.GetItem<VisualBlockWrapper>(httpAuthenticator, "participants/GetParticipant", HttpMethod.Get, parameters).VisualBlock;
+			return ApiHelper.GetItem<Participant>(httpAuthenticator, "participants/GetParticipant", HttpMethod.Get, parameters);
 		}
 		
-		public Participant Put(HttpAuthenticator httpAuthenticator, DetailedParticipant participant)
+		public Participant Create(HttpAuthenticator httpAuthenticator, Participant participant)
 		{
 			return ApiHelper.GetItem<Participant>(httpAuthenticator, "participants/PutParticipant", HttpMethod.Put, participant);
 		}

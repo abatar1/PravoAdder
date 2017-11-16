@@ -2,7 +2,7 @@
 
 namespace PravoAdder.Domain
 {
-	public enum ReaderMode
+	public enum ReadingMode
 	{
 		All,
 		Excel,
@@ -11,31 +11,38 @@ namespace PravoAdder.Domain
 		ExcelReference
 	}
 
+	//
+	// Naming rule {Entity}{Action}
+	//
 	[Flags]
 	public enum ProcessType
 	{
-		Migration,
-		Update,
-		Sync,
-		Analyze,
-		AttachParticipant,
-		DeleteCases,
-		RenameCases,
-		UnloadCases,
-		DeleteCasesByDate,
-		CreateTask,
-		CreateParticipants,
-		EditParticipantsByKey,
-		EditParticipants,
-		DistinctParticipants,
-		DeleteParticipants,
-		DeleteParticipantsByDate,
-		CreateProjectField,
-		AddVisualBlockLine,
-		CreateDictionaries,
-		CreateCaseType,
-		CreateEvent,
-		Notes,
+		CaseCreate,
+		CaseUpdate,
+		CaseSync,
+		CaseDelete,
+		CaseUpdateSettings,
+		CaseRename,
+		CaseUnload,
+		CaseDeleteByDate,
+		HeaderAnalyze,		
+		TaskCreate,
+		ParticipantAttach,
+		ParticipantCreate,
+		ParticipantEditByKey,
+		ParticipantEdit,
+		ParticipantDistinct,
+		ParticipantDelete,
+		ParticipantDeleteByDate,
+		ProjectFieldCreate,
+		VisualBlockLineAdd,
+		DictionaryCreate,
+		CaseTypeCreate,
+		EventCreate,
+		EventDelete,
+		ExpenseCreate,
+		BillingRuleUpdate,
+		NoteCreate,
 		All
 	}
 }

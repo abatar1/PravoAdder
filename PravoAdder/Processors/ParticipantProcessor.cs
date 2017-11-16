@@ -4,41 +4,24 @@ using System.Linq;
 using Fclp.Internals.Extensions;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
+using PravoAdder.Api.Repositories;
 using PravoAdder.Domain;
 using PravoAdder.Helpers;
-using PravoAdder.Readers;
 
 namespace PravoAdder.Processors
 {
 	public class ParticipantProcessor
 	{
-		private static List<Lazy<DetailedParticipant>> _detailedParticipants;
-		private static List<VisualBlockLine> _blockLines;
-		private static List<Participant> _participants;
-
-		private static void SetDetailedParticipant(HttpAuthenticator authenticator)
-		{
-			if (_participants == null) _participants = ApiRouter.Participants.GetMany(authenticator);
-			_detailedParticipants = _participants
-				.Where(p => p.TypeName == ParticipantCreator.Person)
-				.Select(p => new Lazy<DetailedParticipant>(() => ApiRouter.Participants.GetDetailed(authenticator, p.Id)))
-				.ToList();		
-		}
-
-		private static DetailedParticipant EditParticipant(DetailedParticipant participant, HttpAuthenticator authenticator, Row header, Row row, string searchKey)
+		private static Participant EditParticipant(Participant participant, HttpAuthenticator authenticator, Row header, Row row, string searchKey)
 		{
 			if (participant.VisualBlockValueLines == null) participant.VisualBlockValueLines = new List<VisualBlockParticipantLine>();
-
-			if (_blockLines == null)
-			{
-				var fParticipantId = _detailedParticipants.First().Value.Id;
-				_blockLines = ApiRouter.Participants.GetVisualBlock(authenticator, fParticipantId).Lines.ToList();
-			}
+		
+			var blockLines = ParticipantsRepository.Get<ParticipantsApi>(authenticator, participant.Id).VisualBlock.Lines;			
 
 			var fieldValue = Table.GetValue(header, row, searchKey)?.Trim();
 			if (string.IsNullOrEmpty(fieldValue)) return null;
 
-			var editingLine = _blockLines.FirstOrDefault(line => line.Fields.Any(field =>
+			var editingLine = blockLines.FirstOrDefault(line => line.Fields.Any(field =>
 			{
 				var isRequiredFieldName = field.ProjectField.Name.Contains(searchKey);
 				var doesAlreadyContains = participant.VisualBlockValueLines.FirstOrDefault(pl => pl.BlockLineId == line.Id) != null;
@@ -63,23 +46,13 @@ namespace PravoAdder.Processors
 			return participant;
 		}
 
-		public static DetailedParticipant GetParticipantByName(HttpAuthenticator authenticator, Row header, Row row, string name)
-		{
-			if (_participants == null) _participants = ApiRouter.Participants.GetMany(authenticator);
-			var participant = _participants.FirstOrDefault(p => p.Name == name);
-			if (participant == null) return null;
-			return ApiRouter.Participants.GetDetailed(authenticator, participant.Id);
-		}
-
 		public Func<EngineMessage, EngineMessage> Create = message =>
 		{
-			if (_participants == null) _participants = ApiRouter.Participants.GetMany(message.Authenticator);
-
-			var newParticipant = (DetailedParticipant) message.GetCreatable();
-			var existedParticipant = _participants.FirstOrDefault(p => p.Name == newParticipant.FullName);
-			if (existedParticipant != null) return new EngineMessage { Item = existedParticipant };
-			var participantResponse = ApiRouter.Participants.Put(message.Authenticator, newParticipant);
-			return new EngineMessage { Item = participantResponse };
+			var newParticipant = (Participant) message.GetCreatable();
+			var existedParticipant =
+				ParticipantsRepository.GetOrCreate<ParticipantsApi>(message.Authenticator, newParticipant.FullName, newParticipant);
+			message.Item = existedParticipant;
+			return message;
 		};
 
 		public Func<EngineMessage, EngineMessage> Distinct = message =>
@@ -102,7 +75,7 @@ namespace PravoAdder.Processors
 							Total = gCount,
 							Item = pair.Participant
 						};
-						SingleProcessors.ProcessCount(countMessage);
+						SingleProcessors.Core.ProcessCount(countMessage);
 					});
 				}
 			});
@@ -117,40 +90,37 @@ namespace PravoAdder.Processors
 
 		public Func<EngineMessage, EngineMessage> EditById = message =>
 		{
-			SetDetailedParticipant(message.Authenticator);
-
 			var uniqueId = Table.GetValue(message.Table.Header, message.Row, "UniqueId");
-			var participant = _detailedParticipants.FirstOrDefault(p =>
+			
+			var participant = ParticipantsRepository.GetManyDetailed(message.Authenticator).FirstOrDefault(p =>
 				{
-					var visualBlock = p.Value.VisualBlockValueLines;
+					var visualBlock = p.VisualBlockValueLines;
 					if (visualBlock == null) return false;
 					return visualBlock
 						.SelectMany(line => line.Values.Select(value => value.Value))
 						.Contains(uniqueId);
 				}
-			)?.Value;
+			);
 			if (participant == null) return null;
 
 			var editedParticipant = EditParticipant(participant, message.Authenticator, message.Table.Header, message.Row, message.Args.SearchKey);
 			if (editedParticipant == null) return null;
 
-			var result = ApiRouter.Participants.Put(message.Authenticator, editedParticipant);
+			var result = ApiRouter.Participants.Create(message.Authenticator, editedParticipant);
 
 			return new EngineMessage { Item = result };
 		};
 
 		public Func<EngineMessage, EngineMessage> Edit = message =>
 		{
-			SetDetailedParticipant(message.Authenticator);
-
 			var participantName = Table.GetValue(message.Table.Header, message.Row, "Participant");
-			var detailedParticipant = GetParticipantByName(message.Authenticator, message.Table.Header, message.Row, participantName);
+			var detailedParticipant = ParticipantsRepository.GetDetailed<ParticipantsApi>(message.Authenticator, participantName);
 			if (detailedParticipant == null) return null;
 
 			var editedParticipant = EditParticipant(detailedParticipant, message.Authenticator, message.Table.Header, message.Row, message.Args.SearchKey);
 			if (editedParticipant == null) return null;
 
-			var result = ApiRouter.Participants.Put(message.Authenticator, editedParticipant);
+			var result = ApiRouter.Participants.Create(message.Authenticator, editedParticipant);
 
 			return new EngineMessage { Item = result };
 		};

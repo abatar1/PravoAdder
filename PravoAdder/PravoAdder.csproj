@@ -104,13 +104,20 @@
     <Compile Include="Domain\EngineMessage.cs" />
     <Compile Include="Helpers\StringHelper.cs" />
     <Compile Include="Processors\ConveyorException.cs" />
+    <Compile Include="Processors\CoreProcessors.cs" />
     <Compile Include="Processors\ForEachProcessors.cs" />
     <Compile Include="Processors\ParticipantProcessor.cs" />
     <Compile Include="ProcessConveyor.cs" />
     <Compile Include="Processors\ProjectProcessor.cs" />
     <Compile Include="Processors\SingleProcessors.cs" />
-    <Compile Include="Helpers\FieldBuilder.cs" />
+    <Compile Include="Resources\MessageResource.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MessageResource.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Wrappers\FieldBuilder.cs" />
     <Compile Include="Helpers\AttributeHelper.cs" />
+    <Compile Include="Readers\BillingRulesCreator.cs" />
     <Compile Include="Readers\Case\ExcelRuleReader.cs" />
     <Compile Include="Readers\Case\ExcelReferenceReader.cs" />
     <Compile Include="Readers\EventCreator.cs" />
@@ -119,6 +126,11 @@
     <Compile Include="Readers\ProjectFieldCreator.cs" />
     <Compile Include="Readers\TaskCreator.cs" />
     <Compile Include="Readers\VisualBlockLineCreator.cs" />
+    <Compile Include="Resources\TableResource.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TableResource.resx</DependentUpon>
+    </Compile>
     <Compile Include="Wrappers\AuthentificatorWrapper.cs" />
     <Compile Include="Domain\Attributes\FieldNameAttribute.cs" />
     <Compile Include="Domain\Table.cs" />
@@ -136,7 +148,6 @@
     <Compile Include="Readers\Case\TemplateTableReader.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Helpers\SettingsHelper.cs" />
     <Compile Include="Readers\Case\XmlMappingReader.cs" />
     <Compile Include="Wrappers\TableEnviroment.cs" />
   </ItemGroup>
@@ -167,6 +178,16 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\MessageResource.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>MessageResource.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\TableResource.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>TableResource.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

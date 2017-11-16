@@ -6,7 +6,7 @@ using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api
 {
-	public class ProjectsApi : IGetMany<Project>
+	public class ProjectsApi : IApi<Project>
 	{
 		public List<Project> GetMany(HttpAuthenticator httpAuthenticator, string folderName = null)
 		{
@@ -22,7 +22,7 @@ namespace PravoAdder.Api
 			Dictionary<string, string> parameters = null;
 			if (projectFolder == null && folderName != null)
 			{
-				projectFolder = ApiRouter.ProjectFolders.Insert(folderName, httpAuthenticator);
+				projectFolder = ApiRouter.ProjectFolders.Create(httpAuthenticator, new ProjectFolder {Name = folderName});
 				parameters = ApiHelper.CreateParameters(("FolderId", projectFolder.Id));
 			}
 			else if (projectFolder != null && folderName != null)
@@ -44,9 +44,9 @@ namespace PravoAdder.Api
 			return ApiHelper.GetItem<Project>(httpAuthenticator, "projects", HttpMethod.Put, project);
 		}
 
-		public Project Create(HttpAuthenticator httpAuthenticator, object content)
+		public Project Create(HttpAuthenticator httpAuthenticator, Project project)
 		{
-			return ApiHelper.GetItem<Project>(httpAuthenticator, "Projects/CreateProject", HttpMethod.Post, content);
+			return ApiHelper.GetItem<Project>(httpAuthenticator, "Projects/CreateProject", HttpMethod.Post, project);
 		}
 
 		public void Delete(HttpAuthenticator httpAuthenticator, string projectId)

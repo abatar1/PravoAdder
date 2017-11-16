@@ -3,9 +3,9 @@ using System.Net.Http;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
 
-namespace PravoAdder.Api.Api
+namespace PravoAdder.Api
 {
-	public class CalendarApi : IGetMany<Calendar>
+	public class CalendarApi : IApi<Calendar>
 	{
 		public List<Calendar> GetMany(HttpAuthenticator authenticator, string optional = null)
 		{
@@ -13,6 +13,11 @@ namespace PravoAdder.Api.Api
 		}
 
 		public Calendar Get(HttpAuthenticator authenticator, string parameter)
+		{
+			throw new System.NotImplementedException();
+		}
+
+		public Calendar Create(HttpAuthenticator authenticator, Calendar puttingObject)
 		{
 			throw new System.NotImplementedException();
 		}

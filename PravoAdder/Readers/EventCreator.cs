@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using PravoAdder.Api;
+using PravoAdder.Api.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Repositories;
 using PravoAdder.Domain;
+using PravoAdder.Helpers;
 
 namespace PravoAdder.Readers
 {
@@ -21,21 +22,20 @@ namespace PravoAdder.Readers
 		{
 			var eventTypeName = Table.GetValue(header, row, "Activity Type");
 			var eventType = EventTypeRepository.GetOrPut(HttpAuthenticator, eventTypeName);
+			if (eventType == null) return null;
 
 			var projectName = Table.GetValue(header, row, "Case Name");
-			var project = ProjectRepository.GetDetailed(HttpAuthenticator, projectName);			
+			var project = ProjectRepository.GetDetailed<ProjectsApi>(HttpAuthenticator, projectName);			
 			if (project == null) return null;			
 
-			var calendar = CalendarRepository.Get(HttpAuthenticator, "Firm");
+			var calendar = CalendarRepository.Get<CalendarApi>(HttpAuthenticator, "Firm");
 
-			var rawEndDate = Table.GetValue(header, row, "End Date").Replace("UTC", "").Trim();
-			DateTime.TryParseExact(rawEndDate, new[] {"MM/dd/yyyy hh:mm tt", "MM/dd/yyyy h:mm tt"}, CultureInfo.InvariantCulture,
-				DateTimeStyles.None, out var date);
-			var endDate = date.ToString("o");
-			var startDate = DateTime.Parse(Table.GetValue(header, row, "Log Date")).ToString("o");
+			var endDate = Table.GetValue(header, row, "Log Date").FormatDate();
+			var logTimer = int.Parse(Table.GetValue(header, row, "Timer"));
+			var startDate = endDate.Subtract(new TimeSpan(0, logTimer, 0));
 			return new Event
 			{
-				Name = Table.GetValue(header, row, "Name"),		
+				Name = Table.GetValue(header, row, "Event Name"),		
 				EventType = eventType,
 				Description = Table.GetValue(header, row, "Description"),
 				StartDate = startDate,

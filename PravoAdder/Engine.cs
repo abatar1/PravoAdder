@@ -23,10 +23,11 @@ namespace PravoAdder
 
 		public static readonly ProcessType[] TableProcesses =
 		{
-			ProcessType.Migration, ProcessType.Sync, ProcessType.CreateParticipants, ProcessType.Analyze, ProcessType.Notes,
-			ProcessType.EditParticipantsByKey, ProcessType.RenameCases, ProcessType.AttachParticipant,
-			ProcessType.EditParticipants, ProcessType.CreateProjectField, ProcessType.AddVisualBlockLine,
-			ProcessType.CreateDictionaries, ProcessType.CreateCaseType, ProcessType.CreateEvent
+			ProcessType.CaseCreate, ProcessType.CaseSync, ProcessType.ParticipantCreate, ProcessType.HeaderAnalyze, ProcessType.NoteCreate,
+			ProcessType.ParticipantEditByKey, ProcessType.CaseRename, ProcessType.ParticipantAttach,
+			ProcessType.ParticipantEdit, ProcessType.ProjectFieldCreate, ProcessType.VisualBlockLineAdd,
+			ProcessType.DictionaryCreate, ProcessType.CaseTypeCreate, ProcessType.EventCreate, ProcessType.CaseUpdateSettings,
+			ProcessType.ExpenseCreate, ProcessType.BillingRuleUpdate
 		};
 
 		public Engine Initialize(string[] args)
@@ -65,20 +66,20 @@ namespace PravoAdder
 					.As('o', "overwrite")
 					.SetDefault(true);
 			}
-			if (processType == ProcessType.EditParticipantsByKey || processType == ProcessType.EditParticipants)
+			if (processType == ProcessType.ParticipantEditByKey || processType == ProcessType.ParticipantEdit)
 			{
 				parser.Setup(arg => arg.SearchKey)
 					.As('k', "searchkey")
 					.Required();
 			}
-			if (processType == ProcessType.DeleteCasesByDate || processType == ProcessType.DeleteParticipantsByDate)
+			if (processType == ProcessType.CaseDeleteByDate || processType == ProcessType.ParticipantDeleteByDate)
 			{
 				parser.Setup(arg => arg.Date)
 					.As('k', "date")
 					.Required();
 			}
 
-			if (processType == ProcessType.UnloadCases)
+			if (processType == ProcessType.CaseUnload)
 			{
 				parser.Setup(arg => arg.ProjectType)
 					.As('k', "projectType")
@@ -88,7 +89,7 @@ namespace PravoAdder
 					.Required();
 			}
 
-			if (processType == ProcessType.CreateParticipants)
+			if (processType == ProcessType.ParticipantCreate)
 			{
 				parser.Setup(arg => arg.ParticipantType)
 					.As('k', "participantType")

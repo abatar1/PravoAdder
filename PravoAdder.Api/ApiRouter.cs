@@ -11,6 +11,8 @@ namespace PravoAdder
 		public static ProjectTypesApi ProjectTypes;
 		public static ParticipantsApi Participants;
 		public static DictionaryApi Dictionary;
+		public static DictionaryItemApi DictionaryItems;
+		public static DefaultDictionaryItemsApi DefaultDictionaryItems;
 		public static CasebookApi Casebook;
 		public static ProjectCustomValuesApi ProjectCustomValues;
 		public static CalculationFormulasApi CalculationFormulas;
@@ -21,9 +23,13 @@ namespace PravoAdder
 		public static NotesApi Notes;
 		public static ProjectFieldsApi ProjectFields;
 		public static VisualBlockApi VisualBlocks;
+		public static EventTypeApi EventTypes;
 		public static EventApi Events;
 		public static CalendarApi Calendars;
 		public static TimeLogApi TimeLogs;
+		public static ProjectSettingsApi ProjectSettings;
+		public static ExpensesApi Expenses;
+		public static BillingSettingsApi BillingSettings;
 
 		public static int PageSize = 50;
 
@@ -45,9 +51,15 @@ namespace PravoAdder
 			Notes = new NotesApi();
 			ProjectFields = new ProjectFieldsApi();
 			VisualBlocks = new VisualBlockApi();
-			Events = new EventApi();
+			EventTypes = new EventTypeApi();
 			Calendars = new CalendarApi();
 			TimeLogs = new TimeLogApi();
+			Events = new EventApi();
+			ProjectSettings = new ProjectSettingsApi();
+			DictionaryItems = new DictionaryItemApi();
+			DefaultDictionaryItems = new DefaultDictionaryItemsApi();
+			Expenses = new ExpensesApi();
+			BillingSettings = new BillingSettingsApi();
 		}
 	}
 }

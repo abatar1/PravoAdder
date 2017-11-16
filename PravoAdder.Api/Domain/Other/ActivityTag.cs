@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PravoAdder.Api.Domain.Other
+namespace PravoAdder.Api.Domain
 {
 	public class ActivityTag : DatabaseEntityItem
 	{

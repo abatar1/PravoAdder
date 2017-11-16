@@ -3,7 +3,6 @@ using System.Linq;
 using System.Net.Http;
 using Newtonsoft.Json;
 using PravoAdder.Api.Domain;
-using PravoAdder.Api.Domain.Other;
 using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api

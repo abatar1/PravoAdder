@@ -6,6 +6,7 @@ using NLog;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
+using PravoAdder.Api.Repositories;
 using PravoAdder.Domain;
 using PravoAdder.Helpers;
 
@@ -16,10 +17,6 @@ namespace PravoAdder.Wrappers
 	    private const int MaxWordLength = 350;
 		private readonly HttpAuthenticator _httpAuthenticator;
 	    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
-	    private static List<ProjectType> _projectTypes;
-	    private static List<Responsible> _responsibles;
-	    private static List<Project> _projects;
 
 		public ApiEnviroment(HttpAuthenticator httpAuthenticator)
         {
@@ -95,15 +92,14 @@ namespace PravoAdder.Wrappers
 
 			    if (folderName.Length > MaxWordLength)
 				    folderName = folderName.Remove(MaxWordLength);
-			    projectFolder = ApiRouter.ProjectFolders.Insert(folderName, authenticator);
+			    projectFolder = ApiRouter.ProjectFolders.Create(authenticator, new ProjectFolder {Name = folderName});
 		    }
 		    return projectFolder;
 	    }
 
 	    public static ProjectType GetProjectType(HttpAuthenticator authenticator, HeaderBlockInfo headerInfo, int count)
 	    {
-		    if (_projectTypes == null) _projectTypes = ApiRouter.ProjectTypes.GetMany(authenticator);
-			var projectType = _projectTypes.GetByName(headerInfo.ProjectType);
+		    var projectType = ProjectTypeRepository.Get<ProjectTypesApi>(authenticator, headerInfo.ProjectType);
 		    if (projectType == null)
 		    {
 			    Logger.Error(
@@ -113,14 +109,12 @@ namespace PravoAdder.Wrappers
 		    return projectType;
 	    }
 
-	    public static Responsible GetResponsible(HttpAuthenticator authenticator, HeaderBlockInfo headerInfo, int count)
+	    public Responsible GetResponsible(HttpAuthenticator authenticator, HeaderBlockInfo headerInfo, int count)
 	    {
-		    if (_responsibles == null) _responsibles = ApiRouter.Responsibles.GetMany(authenticator);
-
 			var responsibleName = headerInfo.Responsible?.Replace(".", "");
 		    if (string.IsNullOrEmpty(responsibleName)) responsibleName = "empty_string";
 
-		    var responsible = _responsibles.GetByName(responsibleName);
+		    var responsible = ResponsibleRepository.Get<ResponsiblesApi>(_httpAuthenticator, responsibleName);
 		    if (responsible == null)
 		    {
 			    Logger.Error(
@@ -133,9 +127,8 @@ namespace PravoAdder.Wrappers
         public Project AddProject(bool needOverwrite, HeaderBlockInfo headerInfo, string projectGroupId, int count, bool isUpdate)
         {			
 			if (needOverwrite)
-	        {
-		        if (_projects == null) _projects = ApiRouter.Projects.GetMany(_httpAuthenticator, headerInfo.ProjectFolder);
-				var projectResponse = _projects.GetByName(headerInfo.Name);
+			{
+				var projectResponse = ProjectRepository.Get<ProjectsApi>(_httpAuthenticator, headerInfo.Name);
 			    if (projectResponse != null) return projectResponse;					       
             }
 

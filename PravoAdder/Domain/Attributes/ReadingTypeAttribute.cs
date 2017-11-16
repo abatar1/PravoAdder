@@ -4,11 +4,11 @@ namespace PravoAdder.Domain.Attributes
 {
 	public class ReadingTypeAttribute : Attribute
 	{
-		public ReadingTypeAttribute(params ReaderMode[] readingTypes)
+		public ReadingTypeAttribute(params ReadingMode[] readingTypes)
 		{
 			ReadingTypes = readingTypes;
 		}
 
-		public ReaderMode[] ReadingTypes { get; set; }
+		public ReadingMode[] ReadingTypes { get; set; }
 	}
 }

@@ -9,7 +9,6 @@ namespace PravoAdder.Processors
 {
 	public class ForEachProcessors
 	{
-		//TODO Точно работает только с depth <= 2. Нужно понять, будет ли это работать с любой глубиной.
 		private static EngineMessage ProcessForEach<T>(IReadOnlyCollection<T> items, EngineMessage message,
 			Func<EngineMessage, object, EngineMessage> messageProcessor, Func<T, bool> continuationProcessor = null)
 		{
@@ -49,6 +48,16 @@ namespace PravoAdder.Processors
 			return ProcessForEach(projects, message, (msg, item) =>
 			{
 				msg.Item = (Project) item;
+				return msg;
+			});
+		};
+
+		public static Func<EngineMessage, EngineMessage> Event = message =>
+		{
+			var projects = ApiRouter.Events.GetMany(message.Authenticator);
+			return ProcessForEach(projects, message, (msg, item) =>
+			{
+				msg.Item = (GroupItem) item;
 				return msg;
 			});
 		};
@@ -127,7 +136,7 @@ namespace PravoAdder.Processors
 
 			return ProcessForEach(participants, message, (msg, item) =>
 			{
-				msg.Item = (Participant)item;
+				msg.Item = (Participant) item;
 				return msg;
 			});
 		};

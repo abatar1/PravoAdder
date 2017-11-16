@@ -2,7 +2,7 @@
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
 
-namespace PravoAdder.Api.Api
+namespace PravoAdder.Api
 {
 	public class TimeLogApi
 	{

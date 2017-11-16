@@ -6,7 +6,7 @@
 		public string SourceFileName { get; set; }
 		public ProcessType ProcessType { get; set; }
 		public string Password { get; set; }
-		public ReaderMode ReaderMode { get; set; }
+		public ReadingMode ReaderMode { get; set; }
 		public int RowNum { get; set; }
 		public int ParallelOptions { get; set; }
 		public bool IsOverwrite { get; set; }

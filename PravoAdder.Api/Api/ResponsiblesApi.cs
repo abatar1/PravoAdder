@@ -5,7 +5,7 @@ using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api
 {
-	public class ResponsiblesApi : IGetMany<Responsible>
+	public class ResponsiblesApi : IApi<Responsible>
 	{
 		public List<Responsible> GetMany(HttpAuthenticator httpAuthenticator, string optional = null)
 		{
@@ -13,6 +13,11 @@ namespace PravoAdder.Api
 		}
 
 		public Responsible Get(HttpAuthenticator authenticator, string parameter)
+		{
+			throw new System.NotImplementedException();
+		}
+
+		public Responsible Create(HttpAuthenticator authenticator, Responsible puttingObject)
 		{
 			throw new System.NotImplementedException();
 		}

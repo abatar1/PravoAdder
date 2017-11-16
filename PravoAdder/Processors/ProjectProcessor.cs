@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using PravoAdder.Api;
 using PravoAdder.Api.Domain;
+using PravoAdder.Api.Domain.Other;
+using PravoAdder.Api.Repositories;
 using PravoAdder.Domain;
 
 namespace PravoAdder.Processors
 {
 	public class ProjectProcessor
 	{
-		private static List<Project> _projects;
-		private static List<ProjectType> _projectTypes;
-		private static List<VisualBlock> _visualBlocks;
-
 		public Func<EngineMessage, EngineMessage> Update = message =>
 		{
 			throw new NotImplementedException();
@@ -38,8 +37,7 @@ namespace PravoAdder.Processors
 		public Func<EngineMessage, EngineMessage> Rename = message =>
 		{
 			var projectName = Table.GetValue(message.Table.Header, message.Row, "Case name");
-			if (_projects == null) _projects = ApiRouter.Projects.GetMany(message.Authenticator);
-			var project = _projects.FirstOrDefault(p => p.Name == projectName);
+			var project = ProjectRepository.Get<ProjectsApi>(message.Authenticator, projectName);
 			if (project == null) return null;
 
 			project.Name = Table.GetValue(message.Table.Header, message.Row, "New case name");
@@ -49,16 +47,16 @@ namespace PravoAdder.Processors
 
 		public Func<EngineMessage, EngineMessage> AddNote = message =>
 		{
-			var projectName = Table.GetValue(message.Table.Header, message.Row, "Case");
+			var projectName = message.GetValueFromRow("Case Name");
 
-			if (_projects == null) _projects = ApiRouter.Projects.GetMany(message.Authenticator);
-			var project = _projects.FirstOrDefault(p => projectName.Contains(p.Name));
+			var project = ProjectRepository.Get<ProjectsApi>(message.Authenticator, projectName);
 			if (project == null) return null;
 
 			var note = new Note
 			{
 				Project = project,
-				Text = Table.GetValue(message.Table.Header, message.Row, "Notes")
+				Text = message.GetValueFromRow("Note"),
+				IsPrivate = bool.Parse(message.GetValueFromRow("Is Private"))
 			};
 			ApiRouter.Notes.Create(message.Authenticator, note);
 			return new EngineMessage { Item = project };
@@ -67,9 +65,9 @@ namespace PravoAdder.Processors
 		public Func<EngineMessage, EngineMessage> Synchronize = message =>
 		{
 			if (!string.IsNullOrEmpty(message.HeaderBlock.CasebookNumber))
-			{
-				if (_projects == null) _projects = ApiRouter.Projects.GetMany(message.Authenticator);
-				var project = _projects.First(p => p.Name == message.HeaderBlock.Name);
+			{			
+				var project = ProjectRepository.Get<ProjectsApi>(message.Authenticator, message.HeaderBlock.Name);
+				if (project == null) return null;
 
 				var asyncResult = ApiRouter.Casebook.CheckAsync(message.Authenticator, project.Id,
 					message.HeaderBlock.CasebookNumber).Result;
@@ -106,35 +104,22 @@ namespace PravoAdder.Processors
 
 		public Func<EngineMessage, EngineMessage> CreateType = message =>
 		{
-			if (_projectTypes == null)
-			{
-				_projectTypes = ApiRouter.ProjectTypes.GetMany(message.Authenticator)
-					.Select(t => ApiRouter.ProjectTypes.Get(message.Authenticator, t.Id))
-					.ToList();
-			}
-
 			var typeName = message.GetValueFromRow("Name");
 			if (string.IsNullOrEmpty(typeName)) return null;
 			var abbreviation = message.GetValueFromRow("Abbreviation");
 			if (string.IsNullOrEmpty(abbreviation)) return null;
 
-			var processingType = _projectTypes.FirstOrDefault(v => v.Name.Equals(typeName, StringComparison.InvariantCultureIgnoreCase));			
-			if (processingType == null)
-			{
-				processingType = ApiRouter.ProjectTypes.PostWithBlocks(message.Authenticator, typeName, abbreviation);
-				_projectTypes.Add(processingType);
-			}				
+			var processingType = ProjectTypeRepository.GetDetailedOrPut(message.Authenticator, typeName, abbreviation);		
 
 			var blockName = message.GetValueFromRow("Blocks");
-			if (_visualBlocks == null) _visualBlocks = ApiRouter.VisualBlocks.GetMany(message.Authenticator);
-			var block = _visualBlocks.FirstOrDefault(b => b.Name.Equals(blockName, StringComparison.InvariantCultureIgnoreCase));
+			var block = VisualBlockRepository.Get<VisualBlockApi>(message.Authenticator, blockName);
 			if (block == null) return null;
 
 			if (processingType.VisualBlocks == null) processingType.VisualBlocks = new List<VisualBlock>();
 			if (processingType.VisualBlocks.Contains(block)) return null;
 
 			processingType.VisualBlocks.Add(block);
-			var updatedType = ApiRouter.ProjectTypes.PutWithBlocks(message.Authenticator, processingType);
+			var updatedType = ApiRouter.ProjectTypes.Create(message.Authenticator, processingType);
 
 			message.Item = updatedType;
 			return message;
@@ -142,21 +127,40 @@ namespace PravoAdder.Processors
 
 		public Func<EngineMessage, EngineMessage> AttachParticipant = message =>
 		{
-			var projectName = Table.GetValue(message.Table.Header, message.Row, "Case name");
-			if (_projects == null) _projects = ApiRouter.Projects.GetMany(message.Authenticator);
-			var project = _projects.FirstOrDefault(p => p.Name == projectName);
+			var projectName = message.GetValueFromRow("Case Name");
+			var project = ProjectRepository.Get<ProjectsApi>(message.Authenticator, projectName);
 			if (project == null) return null;
 
-			var participantName = Table.GetValue(message.Table.Header, message.Row, "Participant");
+			var participantName = message.GetValueFromRow("Participant");
 			var detailedParticipant =
-				ParticipantProcessor.GetParticipantByName(message.Authenticator, message.Table.Header, message.Row,
-					participantName);
+				ParticipantsRepository.GetDetailed<ParticipantsApi>(message.Authenticator, participantName);
 			if (detailedParticipant == null) return null;
 
 			detailedParticipant.IncludeInProjectId = project.Id;
 
-			ApiRouter.Participants.Put(message.Authenticator, detailedParticipant);
-			message.Item = (Participant) detailedParticipant;
+			ApiRouter.Participants.Create(message.Authenticator, detailedParticipant);
+			message.Item = detailedParticipant;
+			return message;
+		};
+
+		private static List<DictionaryItem> _calculationTypes;
+
+		public Func<EngineMessage, EngineMessage> UpdateSettings = message =>
+		{
+			var projectName = message.GetValueFromRow("Case Name");
+			var project = ProjectRepository.Get<ProjectsApi>(message.Authenticator, projectName);
+			if (project == null) return null;
+
+			var billingRules = (BillingRuleWrapper) message.GetCreatable(project);
+
+			var projectSettings = ApiRouter.ProjectSettings.Get(message.Authenticator, project.Id);
+			if (_calculationTypes == null)
+				_calculationTypes = ApiRouter.DefaultDictionaryItems.GetMany(message.Authenticator, "CalculationTypes");
+
+			projectSettings.BillingRules.AddRange(billingRules.BillingRules);
+			ApiRouter.ProjectSettings.Save(message.Authenticator, projectSettings);
+
+			message.Item = project;
 			return message;
 		};
 	}

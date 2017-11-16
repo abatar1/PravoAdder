@@ -7,6 +7,7 @@ namespace PravoAdder.Api.Domain
 		public string PlaceholderText { get; set; }
 		public ProjectFieldFormat ProjectFieldFormat { get; set; }
 		public List<CalculationFormula> CalculationFormulas { get; set; }
+		public string Tag { get; set; }
 
 		public override string ToString() => Name;
 	}

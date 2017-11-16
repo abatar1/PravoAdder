@@ -5,7 +5,7 @@ using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api
 {
-	public class ProjectTypesApi : IGetMany<ProjectType>
+	public class ProjectTypesApi : IApi<ProjectType>
 	{
 		public List<ProjectType> GetMany(HttpAuthenticator httpAuthenticator, string optional = null)
 		{
@@ -25,19 +25,13 @@ namespace PravoAdder.Api
 				parameters).VisualBlocks;
 		}
 
-		public ProjectType PostWithBlocks(HttpAuthenticator httpAuthenticator, string name, string abbreviation)
+		public ProjectType Create(HttpAuthenticator httpAuthenticator, ProjectType projectType)
 		{
-			var content = new ProjectType
-			{
-				Name = name,
-				Abbreviation = abbreviation,
-				VisualBlocks = new List<VisualBlock>()
-			};
 			return ApiHelper.GetItem<ProjectType>(httpAuthenticator, "ProjectTypes/PostProjectTypeWithBlocks", HttpMethod.Post,
-				content);
+				projectType);
 		}
 
-		public ProjectType PutWithBlocks(HttpAuthenticator httpAuthenticator, ProjectType updatingProjectType)
+		public ProjectType Update(HttpAuthenticator httpAuthenticator, ProjectType updatingProjectType)
 		{
 			return ApiHelper.GetItem<ProjectType>(httpAuthenticator, "ProjectTypes/PutProjectTypeWithBlocks", HttpMethod.Put,
 				updatingProjectType);

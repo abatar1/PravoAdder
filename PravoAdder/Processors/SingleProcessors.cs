@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
+using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Domain.Other;
 using PravoAdder.Api.Repositories;
@@ -13,67 +13,23 @@ using PravoAdder.Domain;
 using PravoAdder.Domain.Attributes;
 using PravoAdder.Helpers;
 using PravoAdder.Readers;
-using PravoAdder.Wrappers;
 
 namespace PravoAdder.Processors
 {
 	public class SingleProcessors
 	{
 		public static ParticipantProcessor Participant;
-		public static ProjectProcessor Project;		
+		public static ProjectProcessor Project;
+		public static CoreProcessors Core;
+
+		private static List<ActivityTag> _activityTags;
 
 		static SingleProcessors()
 		{
 			Participant = new ParticipantProcessor();
 			Project = new ProjectProcessor();
-		}
-
-		public static Func<EngineMessage, EngineMessage> LoadSettings = message =>
-		{
-			var settingsController = new SettingsWrapper();
-			return new EngineMessage
-			{
-				Settings = settingsController.LoadSettingsFromConsole(message.Args),
-				ParallelOptions = new ParallelOptions {MaxDegreeOfParallelism = message.Args.ParallelOptions}
-			};
-		};
-
-		public static Func<EngineMessage, EngineMessage> LoadTable = message =>
-		{
-			TableEnviroment.Initialize(message.Args, message.Settings);
-			return new EngineMessage {Table = TableEnviroment.Table, Settings = message.Settings};
-		};
-
-		public static Func<EngineMessage, EngineMessage> InitializeApp = message =>
-		{
-			var authenticatorController = new AuthentificatorWrapper(message.Settings, message.Args);
-			var authenticator = authenticatorController.Authenticate();
-			if (authenticator == null)
-			{
-				message.IsFinal = true;
-				return message;
-			}
-
-			var processType = message.Args.ProcessType;
-			var processName = Enum.GetName(typeof(ProcessType), processType);
-			if (processName == null) return new EngineMessage {IsFinal = true};
-
-			ICreator creator = null;
-			if (processName.Contains("Participant")) creator = new ParticipantCreator(authenticator, message.Args.ParticipantType); 
-			if (processName.Contains("Task")) creator = new TaskCreator(authenticator);
-			if (processName.Contains("ProjectField")) creator = new ProjectFieldCreator(authenticator);
-			if (processName.Contains("VisualBlockLine")) creator = new VisualBlockLineCreator(authenticator);
-			if (processName.Contains("Event")) creator = new EventCreator(authenticator);
-
-			return new EngineMessage
-			{
-				Authenticator = authenticator,
-				CaseBuilder = new CaseBuilder(message.Table, message.Settings, authenticator),
-				ApiEnviroment = new ApiEnviroment(authenticator),
-				Counter = new Counter(),
-				Creator = creator
-			};
-		};
+			Core = new CoreProcessors();
+		}	
 
 		public static Func<EngineMessage, EngineMessage> DeleteFolder = message =>
 		{
@@ -88,18 +44,11 @@ namespace PravoAdder.Processors
 				message.ApiEnviroment.DeleteProjectGroupItem(message.Item.Id);
 			}
 			return message;
-		};		
-
-		public static Func<EngineMessage, EngineMessage> ProcessCount = message =>
-		{
-			if (message.Item == null) return message;
-			message.Counter.ProcessCount(message.Count, message.Total, message.Args.RowNum, message.Item, 70);
-			return message;
-		};
+		};				
 
 		public static Func<EngineMessage, EngineMessage> CreateTask = message =>
 		{
-			var task = (Api.Domain.Task) message.GetCreatable();
+			var task = (Task) message.GetCreatable();
 			ApiRouter.Task.Create(message.Authenticator, task);
 			if (task.IsArchive) ApiRouter.Projects.Archive(message.Authenticator, task.Project.Id);
 			return message;
@@ -123,7 +72,7 @@ namespace PravoAdder.Processors
 			{
 				creator.ConstructedLine = null;
 
-				if (creator.VisualBlock.Lines.Any(l => l.Fields.Select(f => f.Name).SequenceEqual(line.Fields.Select(f => f.Name))))
+				if (creator.VisualBlock.Lines.Any(l => l.Fields.SequenceEqual(line.Fields)))
 				{
 					return null;
 				}
@@ -159,15 +108,28 @@ namespace PravoAdder.Processors
 			return message;
 		};
 
-		private static List<ActivityTag> _activityTags;
+		public static Func<EngineMessage, EngineMessage> DeleteEvent = message =>
+		{
+			var groupItem = (GroupItem) message.Item;
+			if (!groupItem.Date.Date.Equals(new DateTime(2017, 11, 10))) return null;
+
+			ApiRouter.Events.Delete(message.Authenticator, groupItem.EntityId);
+			return message;
+		};
 
 		public static Func<EngineMessage, EngineMessage> CreateTimeLog = message =>
 		{
 			if (_activityTags == null) _activityTags = ApiRouter.Bootstrap.GetActivityTags(message.Authenticator);
+			var activityType = message.GetValueFromRow("Activity Type");
+			if (string.IsNullOrEmpty(activityType)) return null;
+
+			var logType = EventTypeRepository.GetOrPut(message.Authenticator, message.GetValueFromRow("Activity Type"));
+			if (logType == null) return null;
+
 			var newTimeLog = new TimeLog
 			{
-				LogType = EventTypeRepository.Get(message.Authenticator, message.GetValueFromRow("Activity Type")),
-				LogDate = DateTime.Parse(message.GetValueFromRow("Log Date")).ToString("o"),
+				LogType = logType,
+				LogDate = message.GetValueFromRow("Log Date").FormatDate(),
 				Tag = _activityTags.First(t => t.Name.Equals("Event")),
 				Time = int.Parse(message.GetValueFromRow("Timer"))
 			};
@@ -176,30 +138,22 @@ namespace PravoAdder.Processors
 			return message;
 		};
 
-		private static List<DictionaryInfo> _dictionaries;
-
 		public static Func<EngineMessage, EngineMessage> CreateDictionary = message =>
 		{
 			var dictionaryName = message.GetValueFromRow("Name");
 			if (string.IsNullOrEmpty(dictionaryName)) return null;
 
-			if (_dictionaries == null) _dictionaries = ApiRouter.Dictionary.GetMany(message.Authenticator);
-			var dictionary =
-				_dictionaries.FirstOrDefault(d => d.DisplayName.Equals(dictionaryName, StringComparison.InvariantCultureIgnoreCase));
-			if (dictionary == null)
-			{
-				dictionary = ApiRouter.Dictionary.Create(message.Authenticator, new DictionaryInfo {Name = dictionaryName});
-				_dictionaries.Add(dictionary);
-			}
+			var dictionary = DictionaryRepository.GetOrCreate<DictionaryApi>(message.Authenticator, dictionaryName, new DictionaryInfo { Name = dictionaryName });
 
 			var dictionaryItemName = message.GetValueFromRow("Value");
-			var dictItems = ApiRouter.Dictionary.GetItems(message.Authenticator, dictionary.SystemName);
+			var dictItems = ApiRouter.DictionaryItems.GetMany(message.Authenticator, dictionary.SystemName);
 
 			if (dictionary.Items == null) dictionary.Items = new List<DictionaryItem>(dictItems);
 
 			if (!dictItems.Any(d => d.Name.Equals(dictionaryItemName)))
 			{
-				var newItem = ApiRouter.Dictionary.Put(message.Authenticator, dictionary.SystemName, dictionaryItemName);
+				var newItem = ApiRouter.DictionaryItems.Create(message.Authenticator,
+					new DictionaryItem {SystemName = dictionary.SystemName, Name = dictionaryItemName});
 				dictionary.Items.Add(newItem);
 			}			
 
@@ -306,6 +260,37 @@ namespace PravoAdder.Processors
 				}			
 				xlPackage.Save();
 			}
+			return message;
+		};
+
+		public static Func<EngineMessage, EngineMessage> CreateExpense = message =>
+		{
+			var projectName = Table.GetValue(message.Table.Header, message.Row, "Project Name");
+			var project = ProjectRepository.Get<ProjectsApi>(message.Authenticator, projectName);
+
+			if (project == null) return null;
+
+			var expense = new Expense
+			{
+				Amount = double.Parse(message.GetValueFromRow("Amount")),
+				Date = DateTime.Parse(message.GetValueFromRow("Date")),
+				Name = message.GetValueFromRow("Note"),
+				Description = message.GetValueFromRow("Note"),
+				Project = project,
+				Files = new List<string>()
+			};
+
+			message.Item = ApiRouter.Expenses.Create(message.Authenticator, expense);
+			return message;
+		};
+
+		public static Func<EngineMessage, EngineMessage> UpdateBillingSettings = message =>
+		{
+			var billingSettings = ApiRouter.BillingSettings.Get(message.Authenticator);
+			var newBillingRules = ((BillingRuleWrapper) message.GetCreatable()).BillingRules;
+			billingSettings.BillingRules.AddRange(newBillingRules);
+
+			message.Item = ApiRouter.BillingSettings.Put(message.Authenticator, billingSettings);
 			return message;
 		};
 	}

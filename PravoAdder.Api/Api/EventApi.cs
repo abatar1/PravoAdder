@@ -2,17 +2,13 @@
 using System.Net.Http;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
+using System.Linq;
 
-namespace PravoAdder.Api.Api
+namespace PravoAdder.Api
 {
-	public class EventApi : IGetMany<EventType>
+	public class EventApi : IApi<Event>
 	{
-		public List<EventType> GetMany(HttpAuthenticator authenticator, string optional = null)
-		{
-			return ApiHelper.GetItems<EventType>(authenticator, "EventTypes/GetEventTypes", HttpMethod.Post);
-		}
-
-		public EventType Get(HttpAuthenticator authenticator, string parameter)
+		public Event Get(HttpAuthenticator authenticator, string parameter)
 		{
 			throw new System.NotImplementedException();
 		}
@@ -20,6 +16,22 @@ namespace PravoAdder.Api.Api
 		public Event Create(HttpAuthenticator authenticator, Event newEvent)
 		{
 			return ApiHelper.GetItem<Event>(authenticator, "events", HttpMethod.Put, newEvent);
+		}
+
+		public List<Event> GetMany(HttpAuthenticator authenticator, string optional = null)
+		{
+			return ApiHelper.GetItems<GroupWrapper>(authenticator, "feed/Groups", HttpMethod.Post)
+				.SelectMany(w => w.Result)
+				.SelectMany(w => w.Result)
+				.Where(e => e.EntityName.Equals("Event"))
+				.Select(w => (Event) w)
+				.ToList();
+		}
+
+		public void Delete(HttpAuthenticator authenticator, string id)
+		{
+			var parameters = ApiHelper.CreateParameters(("Id", id));
+			ApiHelper.SendItem(authenticator, "events", HttpMethod.Delete, parameters);
 		}
 	}
 }

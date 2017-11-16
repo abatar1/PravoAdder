@@ -9,12 +9,12 @@ namespace PravoAdder.Api.Repositories
 	public abstract class TemplateRepository<T> where T : DatabaseEntityItem
 	{
 		protected static ConcurrentDictionary<string, T> Container;
-		protected static IGetMany<T> Router;
+		protected static IApi<T> Api;
 
 		public static bool IsContainerEmpty;
 		private static readonly object IsContainerEmptyLock = new object();	
 
-		private static void FillContainer(HttpAuthenticator authenticator)
+		private static void FillContainer<TRouter>(HttpAuthenticator authenticator, string optional = null) where TRouter : IApi<T>
 		{
 			lock (IsContainerEmptyLock)
 			{
@@ -23,50 +23,68 @@ namespace PravoAdder.Api.Repositories
 
 			if (IsContainerEmpty)
 			{
-				var routerType = typeof(ApiRouter).GetFields()
-					.FirstOrDefault(pf => pf.FieldType.GetInterfaces()
-						.Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IGetMany<>) &&
-							        x.GetGenericArguments()[0] == typeof(T)))?.FieldType;
-				
-				if (routerType == null) throw new NotImplementedException($"Не существует маршрута для Api вызова {typeof(T).Name}");
+				Api = (IApi<T>) Activator.CreateInstance(typeof(TRouter));
 
-				Router = (IGetMany<T>) Activator.CreateInstance(routerType);
-
-				var container = Router.GetMany(authenticator).Select(a => new KeyValuePair<string, T>(a.Name, a));
-				Container = new ConcurrentDictionary<string, T>(container);
+				var container = Api.GetMany(authenticator, optional).Select(a => new KeyValuePair<string, T>(a.Name?.ToLower() ?? a.DisplayName.ToLower(), a)).ToList();
+				if (optional != null)
+				{
+					if (Container == null) Container = new ConcurrentDictionary<string, T>();
+					container.ForEach(c => Container.AddOrUpdate(c.Key, c.Value, (s, arg2) => arg2));
+				}
+				else
+				{
+					Container = new ConcurrentDictionary<string, T>(container);
+				}				
 			}
 		}
 
-		public static List<T> GetMany(HttpAuthenticator authenticator)
+		public static List<T> GetMany<TRouter>(HttpAuthenticator authenticator, string optional = null) where TRouter : IApi<T>
 		{
-			FillContainer(authenticator);
+			FillContainer<TRouter>(authenticator, optional);
 			return Container?.Values.ToList() ?? new List<T>();
 		}
 
-		public static T Get(HttpAuthenticator authenticator, string name)
+		public static T Get<TRouter>(HttpAuthenticator authenticator, string name) where TRouter : IApi<T>
 		{
-			FillContainer(authenticator);
+			if (string.IsNullOrEmpty(name)) return null;
 
-			var value = Container.TryGetValue(name, out var result) ? result : null;
+			FillContainer<TRouter>(authenticator);
+
+			var value = Container.TryGetValue(name.ToLower(), out var result) ? result : null;
 
 			if (value != null) return value;
 
-			var mKey = Container.Keys.FirstOrDefault(name.Contains);
+			var mKey = Container.Keys.FirstOrDefault(name.Contains) ?? Container.Keys.FirstOrDefault(key => key.Contains(name));
 			return mKey != null ? Container[mKey] : null;
 		}
 
-		public static T GetDetailed(HttpAuthenticator authenticator, string name)
+		public static T GetDetailed<TRouter>(HttpAuthenticator authenticator, string name) where TRouter : IApi<T>
 		{
-			var project = Get(authenticator, name);
+			var item = Get<TRouter>(authenticator, name);
 
-			if (project == null) return null;
-			if (project.WasDetailed) return project;
+			if (item == null) return null;
+			if (item.WasDetailed) return item;
 
-			var detailedItem = Router.Get(authenticator, project.Id);
+			var detailedItem = Api.Get(authenticator, item.Id);
 			detailedItem.WasDetailed = true;
-			Container.AddOrUpdate(name, detailedItem, (key, item) => item);
+			Container.AddOrUpdate(name, detailedItem, (key, value) => value);
 
 			return detailedItem;
+		}
+
+		public static T GetOrCreate<TRouter>(HttpAuthenticator authenticator, string name, T puttingObject) where TRouter : IApi<T>
+		{
+			if (string.IsNullOrEmpty(name)) return null;
+
+			var item = Get<TRouter>(authenticator, name);
+
+			if (item == null)
+			{
+				item = Api.Create(authenticator, puttingObject);
+				Container.AddOrUpdate(name, item, (key, type) => type);
+			}
+
+			return item;
 		}
 	}
 }

@@ -5,7 +5,7 @@ using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api
 {
-	public class CurrenciesApi : IGetMany<DictionaryItem>
+	public class CurrenciesApi : IApi<DictionaryItem>
 	{
 		public List<DictionaryItem> GetMany(HttpAuthenticator httpAuthenticator, string optional = null)
 		{
@@ -13,6 +13,11 @@ namespace PravoAdder.Api
 		}
 
 		public DictionaryItem Get(HttpAuthenticator authenticator, string parameter)
+		{
+			throw new System.NotImplementedException();
+		}
+
+		public DictionaryItem Create(HttpAuthenticator authenticator, DictionaryItem puttingObject)
 		{
 			throw new System.NotImplementedException();
 		}

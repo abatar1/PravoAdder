@@ -4,12 +4,15 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
+using PravoAdder.Api.Repositories;
 using PravoAdder.Domain;
 using PravoAdder.Helpers;
 
 namespace PravoAdder.Readers
 {
+	//
 	// Need "Data Block", "Field Name", "Row", "Width", "Tag", "Required" in Excel table.
+	//
 	public class VisualBlockLineCreator : ICreator
 	{
 		public HttpAuthenticator HttpAuthenticator { get; }
@@ -18,29 +21,31 @@ namespace PravoAdder.Readers
 
 		public ICreatable Create(Row header, Row row, DatabaseEntityItem item = null)
 		{
-			VisualBlockLine line;
+			var visualBlockName = Table.GetValue(header, row, "Data Block");
 
-			if (_visualBlocks == null) _visualBlocks = ApiRouter.VisualBlocks.GetMany(HttpAuthenticator);
-			var visualBlockName = Table.GetValue(header, row, "Data Block");	
-			if (string.IsNullOrEmpty(visualBlockName)) return null;
-
-			VisualBlock = _visualBlocks.FirstOrDefault(vb => vb.Name.Equals(visualBlockName));
-			var isRepeatingBlock = bool.Parse(Table.GetValue(header, row, "Repeating Block") ?? "false");
-			if (VisualBlock == null)
+			string repeatingFieldValue;
+			try
 			{
-				VisualBlock = ApiRouter.VisualBlocks.Create(HttpAuthenticator,
-					new VisualBlock
-					{
-						NameInConstructor = visualBlockName,
-						IsRepeatable = isRepeatingBlock,
-						Lines = new List<VisualBlockLine>()
-					});
-				_visualBlocks.Add(VisualBlock);
+				repeatingFieldValue = Table.GetValue(header, row, "Repeating Block");
 			}
+			catch (Exception)
+			{
+				repeatingFieldValue = null;
+			}
+			var isRepeatingBlock = bool.Parse(repeatingFieldValue ?? "false");
+
+			var puttingVisualBlock = new VisualBlock
+			{
+				NameInConstructor = visualBlockName,
+				IsRepeatable = isRepeatingBlock,
+				Lines = new List<VisualBlockLine>()
+			};
+			VisualBlock = VisualBlockRepository.GetOrCreate<VisualBlockApi>(HttpAuthenticator, visualBlockName, puttingVisualBlock);
 
 			var newField = GetVisualBlockField(HttpAuthenticator, header, row);
 			if (newField == null) return null;
 
+			VisualBlockLine line;
 			if (ConstructedLine != null)
 			{
 				line = ConstructedLine.CloneJson();
@@ -48,8 +53,6 @@ namespace PravoAdder.Readers
 			}
 			else
 			{
-				if (_lineTypes == null)
-					_lineTypes = ApiRouter.Bootstrap.GetLineTypes(HttpAuthenticator);
 				var rowNamingRule = new Regex("[^a-яA-Яa-zA-Z ]");
 				var rowType = rowNamingRule.Replace(Table.GetValue(header, row, "Row"), "").Trim();
 				var lineType = _lineTypes.First(t => t.Name.Equals(rowType, StringComparison.InvariantCultureIgnoreCase));
@@ -65,39 +68,33 @@ namespace PravoAdder.Readers
 			return line;
 		}
 
-		private static Random _random;
 		private static List<ProjectFieldFormat> _formats;
-		private static List<VisualBlock> _visualBlocks;
 		private static List<LineType> _lineTypes;
 
 		public VisualBlockLineCreator(HttpAuthenticator httpAuthenticator)
 		{
 			HttpAuthenticator = httpAuthenticator;
+			_formats = ApiRouter.Bootstrap.GetFieldTypes(httpAuthenticator);
+			_lineTypes = ApiRouter.Bootstrap.GetLineTypes(HttpAuthenticator);
 		}
 
-		private static VisualBlockField GetVisualBlockField(HttpAuthenticator autentificator, Row header, Row row)
+		private static VisualBlockField GetVisualBlockField(HttpAuthenticator autenticator, Row header, Row row)
 		{
-			var name = Table.GetValue(header, row, "Field Name")?.SliceSpaceIfMore(256);
-			if (string.IsNullOrEmpty(name)) return null;
-
-			var projectField = ApiRouter.ProjectFields.GetMany(autentificator, name).FirstOrDefault(f => f.Name.Equals(name));
-			if (projectField == null)
+			var fieldName = Table.GetValue(header, row, "Field Name")?.SliceSpaceIfMore(256);
+			if (string.IsNullOrEmpty(fieldName)) return null;
+			
+			var newProjectField = new ProjectField
 			{
-				if (_formats == null) _formats = ApiRouter.Bootstrap.GetFieldTypes(autentificator);
-				projectField = ApiRouter.ProjectFields.Create(autentificator,
-					new ProjectField
-					{
-						Name = name,
-						PlaceholderText = name,
-						ProjectFieldFormat = _formats.FirstOrDefault(f => f.Name.Equals("Text"))
-					});
-			}
-			if (_random == null) _random = new Random();
-			var tagNamingRule = new Regex("[^a-яA-Яa-zA-Z0-9_]");
+				Name = fieldName,
+				PlaceholderText = fieldName,
+				ProjectFieldFormat = _formats.FirstOrDefault(f => f.Name.Equals("Text"))
+			};
+			var projectField = ProjectFieldRepository.GetOrCreate<ProjectFieldsApi>(autenticator, fieldName, newProjectField);
+			
 			return new VisualBlockField
 			{
 				IsRequired = bool.Parse(Table.GetValue(header, row, "Required")),
-				Tag = tagNamingRule.Replace(Table.GetValue(header, row, "Tag"), "_") + $"_{_random.Next(0, 1000000)}",
+				Tag = Table.GetValue(header, row, "Tag").ToTag(),
 				Width = int.Parse(Table.GetValue(header, row, "Width")),
 				ProjectField = projectField
 			};

@@ -51,8 +51,6 @@ namespace PravoAdder.Api.Helpers
 		public static HttpRequestMessage CreateHttpRequest(object content, string requestUri, HttpMethod method,
 			Cookie cookie)
 		{
-			if (content == null) throw new ArgumentException("Cannot create http json request because content is null.");
-
 			HttpRequestMessage request;
 			if (content is IDictionary<string, string> dictionary)
 			{
@@ -71,12 +69,13 @@ namespace PravoAdder.Api.Helpers
 				request = new HttpRequestMessage(method, $"{requestUri}{parametersString}");
 			}
 			else
-			{
+			{			
 				request = new HttpRequestMessage(method, requestUri);
-				var serializedContent = JsonConvert.SerializeObject(content);
+				if (content != null)
 				{
+					var serializedContent = JsonConvert.SerializeObject(content);
 					request.Content = new StringContent(serializedContent, Encoding.UTF8, "application/json");
-				}
+				}				
 			}
 
 			request.Headers.Add("Cookie", cookie.ToString());

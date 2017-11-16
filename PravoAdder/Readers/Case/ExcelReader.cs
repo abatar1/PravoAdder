@@ -20,7 +20,7 @@ namespace PravoAdder.Readers
 
             using (var xlPackage = new ExcelPackage(info))
             {
-                var worksheet = xlPackage.Workbook.Worksheets.First();
+                var worksheet = xlPackage.Workbook.Worksheets.First(w => w.Hidden == eWorkSheetHidden.Visible);
 
                 var totalRows = worksheet.Dimension.End.Row;
                 var totalColumns = worksheet.Dimension.End.Column;

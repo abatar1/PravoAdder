@@ -5,7 +5,7 @@ using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api
 {
-	public class VisualBlockApi : IGetMany<VisualBlock>
+	public class VisualBlockApi : IApi<VisualBlock>
 	{
 		public VisualBlock GetEntityCard(HttpAuthenticator httpAuthenticator, string entityId, string entityTypeId)
 		{

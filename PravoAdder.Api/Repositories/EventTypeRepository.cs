@@ -7,14 +7,19 @@ namespace PravoAdder.Api.Repositories
 	{
 		private static EntityType _entityType;
 
-		public static EventType GetOrPut(HttpAuthenticator authenticator, string name)
+		public static EventType GetOrPut(HttpAuthenticator authenticator, string itemName)
 		{
-			var eventType = Get(authenticator, name);
+			if (string.IsNullOrEmpty(itemName)) return null;
+	
+			var eventType = Get<EventTypeApi>(authenticator, itemName);
 			if (eventType == null)
 			{
-				_entityType = ApiRouter.Bootstrap.GetEntityTypes(authenticator).First(e => e.Name.Equals("Event"));
-				eventType = (EventType) ApiRouter.Dictionary.Put(authenticator, _entityType.DictionarySystemName, name);
-				Container.AddOrUpdate(name, eventType, (key, type) => type);
+				if (_entityType == null) _entityType = ApiRouter.Bootstrap.GetEntityTypes(authenticator).First(e => e.Name.Equals("Event"));
+				var dictionaryItem = new DictionaryItem{SystemName = _entityType.DictionarySystemName, Name = itemName };
+				eventType = (EventType) ApiRouter.DictionaryItems.Create(authenticator, dictionaryItem);
+				if (eventType == null) return null;
+
+				Container.AddOrUpdate(itemName, eventType, (key, type) => type);
 			}
 			return eventType;
 		}

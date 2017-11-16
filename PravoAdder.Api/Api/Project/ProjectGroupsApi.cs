@@ -5,7 +5,7 @@ using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api
 {
-	public class ProjectGroupsApi : IGetMany<ProjectGroup>
+	public class ProjectGroupsApi : IApi<ProjectGroup>
 	{
 		public List<ProjectGroup> GetMany(HttpAuthenticator httpAuthenticator, string optional = null)
 		{
@@ -17,9 +17,9 @@ namespace PravoAdder.Api
 			throw new System.NotImplementedException();
 		}
 
-		public ProjectGroup Create(HttpAuthenticator httpAuthenticator, object content)
+		public ProjectGroup Create(HttpAuthenticator httpAuthenticator, ProjectGroup projectGroup)
 		{
-			return ApiHelper.GetItem<ProjectGroup>(httpAuthenticator, "ProjectGroups", HttpMethod.Put, content);
+			return ApiHelper.GetItem<ProjectGroup>(httpAuthenticator, "ProjectGroups", HttpMethod.Put, projectGroup);
 		}
 
 		public void Delete(HttpAuthenticator httpAuthenticator, string projectGroupId)

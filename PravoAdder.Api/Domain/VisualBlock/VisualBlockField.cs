@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace PravoAdder.Api.Domain
 {
@@ -24,6 +25,24 @@ namespace PravoAdder.Api.Domain
 				Name = Name,
 				Value = value
 			};
+		}
+
+		public override string ToString() => ProjectField.Name;
+
+		public override bool Equals(object obj)
+		{
+			var field = obj as VisualBlockField;
+			return field != null &&
+				   Width == field.Width &&
+			       ProjectField.Equals(field.ProjectField);
+		}
+
+		public override int GetHashCode()
+		{
+			var hashCode = 267293898;
+			hashCode = hashCode * -1521134295 + Width.GetHashCode();
+			hashCode = hashCode * -1521134295 + EqualityComparer<ProjectField>.Default.GetHashCode(ProjectField);
+			return hashCode;
 		}
 	}
 }

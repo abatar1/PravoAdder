@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
+using PravoAdder.Api.Repositories;
 using PravoAdder.Domain;
-using PravoAdder.Helpers;
+using PravoAdder.Wrappers;
 
 namespace PravoAdder.Readers
 {
 	public class ParticipantCreator : ICreator
 	{
 		private VisualBlock _visualBlock;
-		private List<Participant> _participants;
 		private readonly List<ParticipantType> _participantTypes;
 		private readonly string _currentType;
 
@@ -33,7 +33,7 @@ namespace PravoAdder.Readers
 		{
 			var type = _participantTypes.First(p => p.Name == _currentType);
 
-			var participant = new DetailedParticipant
+			var participant = new Participant
 			{
 				Type = type,
 				ContactDetail = new ContactDetail(),
@@ -74,8 +74,8 @@ namespace PravoAdder.Readers
 					}
 					if (fieldName == "Company Name")
 					{
-						if (_participants == null) _participants = ApiRouter.Participants.GetMany(HttpAuthenticator);
-						var company = _participants.FirstOrDefault(p => p.Name == value) ?? new Participant {Name = value};
+						var newCompany = new Participant {Type = _participantTypes.First(p => p.Name == Company), Organization = value};
+						var company = ParticipantsRepository.GetOrCreate<ParticipantsApi>(HttpAuthenticator, value, newCompany);
 						participant.Company = company;
 					}
 				}

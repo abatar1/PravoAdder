@@ -6,15 +6,13 @@ using System.Globalization;
 using System.Linq;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
-using PravoAdder.Api.Helpers;
+using PravoAdder.Api.Repositories;
 
-namespace PravoAdder.Helpers
+namespace PravoAdder.Wrappers
 {
 	public class FieldBuilder
 	{
-		private static Lazy<IList<Participant>> _participants;	
 		private static readonly ConcurrentDictionary<string, ConcurrentBag<DictionaryItem>> Dictionaries;
-		private static List<CalculationFormula> _formulas;
 
 		static FieldBuilder()
 		{
@@ -80,13 +78,7 @@ namespace PravoAdder.Helpers
 
 		private static CalculationFormulaValue GetCalculationFormulaValueFromData(HttpAuthenticator httpAuthenticator, string data, string specialData)
 		{
-			if (_formulas == null)
-			{
-				_formulas = ApiRouter.CalculationFormulas
-					.GetMany(httpAuthenticator)
-					.ToList();
-			}
-			var calculationFormula = _formulas.GetByName(specialData);
+			var calculationFormula = CalculationRepository.Get<CalculationFormulasApi>(httpAuthenticator, specialData);
 			if (calculationFormula == null) return null;
 			return new CalculationFormulaValue
 			{
@@ -95,30 +87,17 @@ namespace PravoAdder.Helpers
 			};
 		}
 
-		private static Participant GetParticipantFromData(HttpAuthenticator httpAuthenticator, string fieldData)
+		private static Participant GetParticipantFromData(HttpAuthenticator httpAuthenticator, string participantName)
 		{
-			if (_participants == null)
-			{
-				_participants = new Lazy<IList<Participant>>(() => ApiRouter.Participants.GetMany(httpAuthenticator));
-			}
-			var correctFieldData = fieldData.Trim();
-
-			if (_participants.Value.All(p => !p.Name.Equals(correctFieldData)))
-			{
-				// TODO fieldData - это имя участника. Нужно строить от этого имени DetailedParticipant, но нужны еще данные о участнике.
-				//var participant = ApiRouter.Participants.Put(httpAuthenticator, new DetailedParticipant());
-				//if (participant == null) return null;
-				//_participants.Value.Add(participant);
-				throw new NotImplementedException("Не реализовано добавление участника");
-			}
-			return _participants.Value
-				.First(p => p.Name == correctFieldData);
+			// TODO доделать создание
+			return ParticipantsRepository.GetOrCreate<ParticipantsApi>(httpAuthenticator, participantName,
+				new Participant());
 		}
 
 		private static DictionaryItem GetDictionaryFromData(HttpAuthenticator httpAuthenticator, string fieldData, string dictionaryName)
 		{
 			dictionaryName = dictionaryName.Trim();
-			var correctName = FormatDictionaryItemName(fieldData);
+			var correctItemName = FormatDictionaryItemName(fieldData);
 
 			if (!Dictionaries.ContainsKey(dictionaryName))
 			{
@@ -130,7 +109,7 @@ namespace PravoAdder.Helpers
 				}
 				else
 				{
-					dictionaryItems = ApiRouter.Dictionary.GetItems(httpAuthenticator, dictionaryName)
+					dictionaryItems = ApiRouter.DictionaryItems.GetMany(httpAuthenticator, dictionaryName)
 						.Select(d => new DictionaryItem(FormatDictionaryItemName(d.Name), d.Id))
 						.ToList();
 				}
@@ -143,20 +122,21 @@ namespace PravoAdder.Helpers
 			bool InvEqual(string s1, string s2) => s1.Equals(s2, StringComparison.InvariantCultureIgnoreCase);
 			if (dictionaryName == "Currency")
 			{
-				if (itemsBag.All(d => !InvEqual(d.LetterCode, correctName))) return null;
-				return itemsBag.First(d => d.LetterCode == correctName);
+				if (itemsBag.All(d => !InvEqual(d.LetterCode, correctItemName))) return null;
+				return itemsBag.First(d => d.LetterCode == correctItemName);
 			}
 
-			if (itemsBag.All(d => !InvEqual(d.Name, correctName)))
+			if (itemsBag.All(d => !InvEqual(d.Name, correctItemName)))
 			{
-				var dictionaryItem = ApiRouter.Dictionary.Put(httpAuthenticator, dictionaryName, correctName);
+				var dictionaryItem = ApiRouter.DictionaryItems.Create(httpAuthenticator,
+					new DictionaryItem {SystemName = dictionaryName, Name = correctItemName});
 				if (dictionaryItem == null) return null;
 
-				Dictionaries[dictionaryName].Add(new DictionaryItem(correctName, dictionaryItem.Id));
+				Dictionaries[dictionaryName].Add(new DictionaryItem(correctItemName, dictionaryItem.Id));
 			}
 
 			return itemsBag
-				.First(d => d.Name == correctName);
+				.First(d => d.Name == correctItemName);
 		}
 	}
 }

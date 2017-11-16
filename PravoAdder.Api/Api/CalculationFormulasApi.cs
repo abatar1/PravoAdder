@@ -5,7 +5,7 @@ using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api
 {
-	public class CalculationFormulasApi : IGetMany<CalculationFormula>
+	public class CalculationFormulasApi : IApi<CalculationFormula>
 	{
 		public List<CalculationFormula> GetMany(HttpAuthenticator httpAuthenticator, string optional = null)
 		{
@@ -13,6 +13,11 @@ namespace PravoAdder.Api
 		}
 
 		public CalculationFormula Get(HttpAuthenticator authenticator, string parameter)
+		{
+			throw new System.NotImplementedException();
+		}
+
+		public CalculationFormula Create(HttpAuthenticator authenticator, CalculationFormula puttingObject)
 		{
 			throw new System.NotImplementedException();
 		}

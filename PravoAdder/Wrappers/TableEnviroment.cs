@@ -15,19 +15,19 @@ namespace PravoAdder.Wrappers
 			TemplateTableReader tableReader;
 			switch (args.ReaderMode)
 			{
-				case ReaderMode.Excel:
+				case ReadingMode.Excel:
 					tableReader = new ExcelReader();
 					Table = tableReader.Read(args, settings);
 					break;
-				case ReaderMode.XmlMap:
+				case ReadingMode.XmlMap:
 					tableReader = new XmlMappingReader();
 					Table = tableReader.Read(args, settings);
 					break;
-				case ReaderMode.ExcelRule:
+				case ReadingMode.ExcelRule:
 					tableReader = new ExcelRuleReader();
 					Table = tableReader.Read(args, settings);
 					break;
-				case ReaderMode.ExcelReference:
+				case ReadingMode.ExcelReference:
 					tableReader = new ExcelReferenceReader();
 					Table = tableReader.Read(args, settings);
 					break;

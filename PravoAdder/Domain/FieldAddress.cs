@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Fclp;
@@ -47,7 +46,7 @@ namespace PravoAdder.Domain
 				})
 				.SetDefault(string.Empty);
 			
-			var result = parser.Parse(SettingsHelper.GetCommandsFromString(address));
+			var result = parser.Parse(address.GetCommandsFromString());
 			if (result.HasErrors)
 			{
 				IsValue = true;

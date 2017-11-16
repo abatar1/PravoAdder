@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
+using PravoAdder.Api.Repositories;
 using PravoAdder.Domain;
 
 namespace PravoAdder.Readers
@@ -10,14 +11,12 @@ namespace PravoAdder.Readers
 	public class TaskCreator : ICreator
 	{
 	    private IList<DictionaryItem> _taskStates;
-	    private IList<ProjectFolder> _projectFolders;
-	    private readonly Dictionary<string, IList<Project>> _projects;
-	    private IList<Responsible> _responsibles;
+	    private readonly Dictionary<string, IEnumerable<Project>> _projects;
 
 		public TaskCreator(HttpAuthenticator authenticator)
 		{
 			HttpAuthenticator = authenticator;
-            _projects = new Dictionary<string, IList<Project>>();
+            _projects = new Dictionary<string, IEnumerable<Project>>();
 		}
 
 	    private TaskState GetState(string name)
@@ -38,8 +37,8 @@ namespace PravoAdder.Readers
 		        var value = valuePair.Value.Value?.Trim();
 		        if (fieldName == "Case name")
 		        {
-		            if (_projectFolders == null) _projectFolders = ApiRouter.ProjectFolders.GetMany(HttpAuthenticator);
-		            foreach (var folder in _projectFolders)
+			        var projectFolders = ProjectFolderRepository.GetMany<ProjectFoldersApi>(HttpAuthenticator);
+		            foreach (var folder in projectFolders)
 		            {
 		                if (!_projects.ContainsKey(folder.Name))
 		                {
@@ -80,7 +79,7 @@ namespace PravoAdder.Readers
                 else if (fieldName == "Completed")
 		        {
 		            if (_taskStates == null)
-		                _taskStates = ApiRouter.Dictionary.GetDefaultItems(HttpAuthenticator, "Tasks.TaskState");
+		                _taskStates = ApiRouter.DefaultDictionaryItems.GetMany(HttpAuthenticator, "Tasks.TaskState");
 
 		            task.TaskState = GetState(bool.Parse(value) ? "Completed" : "In Progress");
 		        }
@@ -90,8 +89,7 @@ namespace PravoAdder.Readers
 		        }               
                 else if (fieldName == "Responsible")
 		        {
-		            if (_responsibles == null) _responsibles = ApiRouter.Responsibles.GetMany(HttpAuthenticator);
-		            task.ResponseUser = _responsibles.First(r => r.Name == value);
+			        task.ResponseUser = ResponsibleRepository.Get<ResponsiblesApi>(HttpAuthenticator, value);
 		        }
 		    }
 			return task;
