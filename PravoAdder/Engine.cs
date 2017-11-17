@@ -27,7 +27,7 @@ namespace PravoAdder
 			ProcessType.ParticipantEditByKey, ProcessType.CaseRename, ProcessType.ParticipantAttach,
 			ProcessType.ParticipantEdit, ProcessType.ProjectFieldCreate, ProcessType.VisualBlockLineAdd,
 			ProcessType.DictionaryCreate, ProcessType.CaseTypeCreate, ProcessType.EventCreate, ProcessType.CaseUpdateSettings,
-			ProcessType.ExpenseCreate, ProcessType.BillingRuleUpdate
+			ProcessType.ExpenseCreate, ProcessType.BillingRuleUpdate, ProcessType.BillCreate
 		};
 
 		public Engine Initialize(string[] args)

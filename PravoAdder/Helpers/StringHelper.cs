@@ -61,5 +61,10 @@ namespace PravoAdder.Helpers
 
 			return commands.ToArray();
 		}
+
+		public static string[] SplitCamelCase(this string source)
+		{
+			return Regex.Split(source, @"(?<!^)(?=[A-Z])");
+		}
 	}
 }

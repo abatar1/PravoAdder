@@ -7,7 +7,6 @@ using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
-using PravoAdder.Api.Domain.Other;
 using PravoAdder.Api.Repositories;
 using PravoAdder.Domain;
 using PravoAdder.Domain.Attributes;
@@ -265,7 +264,7 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> CreateExpense = message =>
 		{
-			var projectName = Table.GetValue(message.Table.Header, message.Row, "Project Name");
+			var projectName = Table.GetValue(message.Table.Header, message.Row, "Case Name");
 			var project = ProjectRepository.Get<ProjectsApi>(message.Authenticator, projectName);
 
 			if (project == null) return null;
@@ -274,13 +273,19 @@ namespace PravoAdder.Processors
 			{
 				Amount = double.Parse(message.GetValueFromRow("Amount")),
 				Date = DateTime.Parse(message.GetValueFromRow("Date")),
-				Name = message.GetValueFromRow("Note"),
-				Description = message.GetValueFromRow("Note"),
+				Name = message.GetValueFromRow("Expense"),
 				Project = project,
 				Files = new List<string>()
 			};
 
 			message.Item = ApiRouter.Expenses.Create(message.Authenticator, expense);
+			return message;
+		};
+
+		public static Func<EngineMessage, EngineMessage> CreateBill = message =>
+		{
+			var bill = (Bill) message.Creator.Create(message.Table.Header, message.Row);
+			message.Item = bill;
 			return message;
 		};
 

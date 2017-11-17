@@ -110,6 +110,7 @@
     <Compile Include="ProcessConveyor.cs" />
     <Compile Include="Processors\ProjectProcessor.cs" />
     <Compile Include="Processors\SingleProcessors.cs" />
+    <Compile Include="Readers\BillCreator.cs" />
     <Compile Include="Resources\MessageResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -117,7 +118,7 @@
     </Compile>
     <Compile Include="Wrappers\FieldBuilder.cs" />
     <Compile Include="Helpers\AttributeHelper.cs" />
-    <Compile Include="Readers\BillingRulesCreator.cs" />
+    <Compile Include="Readers\BillingRuleCreator.cs" />
     <Compile Include="Readers\Case\ExcelRuleReader.cs" />
     <Compile Include="Readers\Case\ExcelReferenceReader.cs" />
     <Compile Include="Readers\EventCreator.cs" />

@@ -9,14 +9,8 @@ using PravoAdder.Helpers;
 
 namespace PravoAdder.Readers
 {
-	public class ProjectFieldCreator : ICreator
+	public class ProjectFieldCreator : Creator
 	{
-		public ProjectFieldCreator(HttpAuthenticator httpAuthenticator)
-		{
-			HttpAuthenticator = httpAuthenticator;
-		}
-
-		public HttpAuthenticator HttpAuthenticator { get; }
 		private static List<ProjectFieldFormat> _formats;
 
 		private static ProjectFieldFormat GetSimpleFormat(string name)
@@ -31,7 +25,7 @@ namespace PravoAdder.Readers
 				.First(f => f.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
 		}
 
-		public ICreatable Create(Row header, Row row, DatabaseEntityItem item = null)
+		public override ICreatable Create(Row header, Row row, DatabaseEntityItem item = null)
 		{
 			var projectField = new ProjectField
 			{
@@ -83,6 +77,10 @@ namespace PravoAdder.Readers
 			projectField.ProjectFieldFormat = projectFieldFormat;
 
 			return projectField;
+		}
+
+		public ProjectFieldCreator(HttpAuthenticator httpAuthenticator, ApplicationArguments applicationArguments) : base(httpAuthenticator, applicationArguments)
+		{
 		}
 	}
 }

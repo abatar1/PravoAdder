@@ -5,7 +5,6 @@ using System.Text;
 using NLog;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
-using PravoAdder.Api.Helpers;
 using PravoAdder.Api.Repositories;
 using PravoAdder.Domain;
 using PravoAdder.Helpers;
@@ -49,52 +48,35 @@ namespace PravoAdder.Wrappers
 		    }
 		}
 
-	    public List<ProjectGroup> GetProjectGroupItems()
-	    {
-		    var response = ApiRouter.ProjectGroups.GetMany(_httpAuthenticator);
-		    response.Add(ProjectGroup.Empty);
-			return response.ToList();
-	    }
-
 		public ProjectGroup AddProjectGroup(bool needOverwrite, HeaderBlockInfo headerInfo)
         {
 	        if (string.IsNullOrEmpty(headerInfo.ProjectGroup)) return null;		
 
 			if (needOverwrite)
 			{
-				var response = GetProjectGroupItems();
-				var projectGroupResponse = response?.GetByName(headerInfo.ProjectGroup);
+				var projectGroupResponse = ProjectGroupRepository.Get<ProjectGroupsApi>(_httpAuthenticator, headerInfo.ProjectGroup);
 				if (projectGroupResponse != null) return projectGroupResponse;
 			}
 
 	        var projectFolder = TryCreateProjectFolder(_httpAuthenticator, headerInfo);
 
-			var content = new ProjectGroup
+			var newProjectGroup = new ProjectGroup
 			{
                 Name = headerInfo.ProjectGroup,
                 ProjectFolder = projectFolder,
                 Description = headerInfo.Description
             };
 
-	        var projectGroup = ApiRouter.ProjectGroups.Create(_httpAuthenticator, content);
+	        var projectGroup = ApiRouter.ProjectGroups.Create(_httpAuthenticator, newProjectGroup);
 			if (projectGroup == null) Logger.Error($"Failed to add {headerInfo.ProjectGroup} project group");
 	        return projectGroup;			
 		}
 
 	    public static ProjectFolder TryCreateProjectFolder(HttpAuthenticator authenticator, HeaderBlockInfo headerInfo)
 	    {
-			var projectFolder = ApiRouter.ProjectFolders.GetMany(authenticator)
-			    .GetByName(headerInfo.ProjectFolder);
-
-		    if (projectFolder == null)
-		    {
-			    var folderName = headerInfo.ProjectFolder;
-
-			    if (folderName.Length > MaxWordLength)
-				    folderName = folderName.Remove(MaxWordLength);
-			    projectFolder = ApiRouter.ProjectFolders.Create(authenticator, new ProjectFolder {Name = folderName});
-		    }
-		    return projectFolder;
+		    var folderName = headerInfo.ProjectFolder.SliceSpaceIfMore(MaxWordLength);
+		    return ProjectFolderRepository.GetOrCreate<ProjectFoldersApi>(authenticator,
+			    headerInfo.ProjectFolder, new ProjectFolder {Name = folderName});
 	    }
 
 	    public static ProjectType GetProjectType(HttpAuthenticator authenticator, HeaderBlockInfo headerInfo, int count)

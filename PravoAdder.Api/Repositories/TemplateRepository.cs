@@ -14,7 +14,7 @@ namespace PravoAdder.Api.Repositories
 		public static bool IsContainerEmpty;
 		private static readonly object IsContainerEmptyLock = new object();	
 
-		private static void FillContainer<TRouter>(HttpAuthenticator authenticator, string optional = null) where TRouter : IApi<T>
+		private static void FillContainer<TApi>(HttpAuthenticator authenticator, string optional = null) where TApi : IApi<T>
 		{
 			lock (IsContainerEmptyLock)
 			{
@@ -23,9 +23,13 @@ namespace PravoAdder.Api.Repositories
 
 			if (IsContainerEmpty)
 			{
-				Api = (IApi<T>) Activator.CreateInstance(typeof(TRouter));
+				Api = (IApi<T>) Activator.CreateInstance(typeof(TApi));
 
-				var container = Api.GetMany(authenticator, optional).Select(a => new KeyValuePair<string, T>(a.Name?.ToLower() ?? a.DisplayName.ToLower(), a)).ToList();
+				var container = Api.GetMany(authenticator, optional)
+					.Select(x => new KeyValuePair<string, T>(x.Name?.ToLower() ?? x.DisplayName.ToLower(), x))
+					.GroupBy(x => x.Key)
+					.Select(g => g.First())
+					.ToList();
 				if (optional != null)
 				{
 					if (Container == null) Container = new ConcurrentDictionary<string, T>();
@@ -38,29 +42,30 @@ namespace PravoAdder.Api.Repositories
 			}
 		}
 
-		public static List<T> GetMany<TRouter>(HttpAuthenticator authenticator, string optional = null) where TRouter : IApi<T>
+		public static List<T> GetMany<TApi>(HttpAuthenticator authenticator, string optional = null) where TApi : IApi<T>
 		{
-			FillContainer<TRouter>(authenticator, optional);
+			FillContainer<TApi>(authenticator, optional);
 			return Container?.Values.ToList() ?? new List<T>();
 		}
 
-		public static T Get<TRouter>(HttpAuthenticator authenticator, string name) where TRouter : IApi<T>
+		public static T Get<TApi>(HttpAuthenticator authenticator, string name) where TApi : IApi<T>
 		{
 			if (string.IsNullOrEmpty(name)) return null;
+			var formattedName = name.ToLower();
 
-			FillContainer<TRouter>(authenticator);
+			FillContainer<TApi>(authenticator);
 
-			var value = Container.TryGetValue(name.ToLower(), out var result) ? result : null;
+			var value = Container.TryGetValue(formattedName, out var result) ? result : null;
 
 			if (value != null) return value;
 
-			var mKey = Container.Keys.FirstOrDefault(name.Contains) ?? Container.Keys.FirstOrDefault(key => key.Contains(name));
+			var mKey = Container.Keys.FirstOrDefault(formattedName.Contains) ?? Container.Keys.FirstOrDefault(key => key.Contains(formattedName));
 			return mKey != null ? Container[mKey] : null;
 		}
 
-		public static T GetDetailed<TRouter>(HttpAuthenticator authenticator, string name) where TRouter : IApi<T>
+		public static T GetDetailed<TApi>(HttpAuthenticator authenticator, string name) where TApi : IApi<T>
 		{
-			var item = Get<TRouter>(authenticator, name);
+			var item = Get<TApi>(authenticator, name);
 
 			if (item == null) return null;
 			if (item.WasDetailed) return item;
@@ -72,11 +77,11 @@ namespace PravoAdder.Api.Repositories
 			return detailedItem;
 		}
 
-		public static T GetOrCreate<TRouter>(HttpAuthenticator authenticator, string name, T puttingObject) where TRouter : IApi<T>
+		public static T GetOrCreate<TApi>(HttpAuthenticator authenticator, string name, T puttingObject) where TApi : IApi<T>
 		{
 			if (string.IsNullOrEmpty(name)) return null;
 
-			var item = Get<TRouter>(authenticator, name);
+			var item = Get<TApi>(authenticator, name);
 
 			if (item == null)
 			{

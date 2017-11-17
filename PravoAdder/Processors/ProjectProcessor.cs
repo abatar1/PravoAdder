@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
-using PravoAdder.Api.Domain.Other;
 using PravoAdder.Api.Repositories;
 using PravoAdder.Domain;
 

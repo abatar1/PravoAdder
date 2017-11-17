@@ -4,9 +4,17 @@ using PravoAdder.Domain;
 
 namespace PravoAdder.Readers
 {
-	public interface ICreator
+	public abstract class Creator
 	{
-		HttpAuthenticator HttpAuthenticator { get; }
-		ICreatable Create(Row header, Row row, DatabaseEntityItem item = null);
+		protected Creator(HttpAuthenticator httpAuthenticator, ApplicationArguments applicationArguments)
+		{
+			HttpAuthenticator = httpAuthenticator;
+			ApplicationArguments = applicationArguments;
+		}
+
+		protected HttpAuthenticator HttpAuthenticator { get; }
+		protected ApplicationArguments ApplicationArguments { get; }
+
+		public abstract ICreatable Create(Row header, Row row, DatabaseEntityItem item = null);
 	}
 }

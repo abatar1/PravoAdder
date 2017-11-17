@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using Newtonsoft.Json;
 
 namespace PravoAdder.Api.Domain
@@ -16,9 +17,14 @@ namespace PravoAdder.Api.Domain
 		[JsonProperty("INN")]
 		public string Inn { get; set; }
 
+		[DisplayName("Last Name"), Required]
 		public string LastName { get; set; }
 
+		[DisplayName("First Name"), Required]
 		public string FirstName { get; set; }
+
+		[DisplayName("Job Title")]
+		public string JobTitle { get; set; }
 
 		public string MiddleName { get; set; }
 
@@ -51,5 +57,16 @@ namespace PravoAdder.Api.Domain
 		}
 
 		public override string ToString() => FullName;
+
+		public Participant(string firstName, string lastName, ParticipantType type)
+		{
+			FirstName = firstName;
+			LastName = lastName;
+			Type = type;
+		}
+
+		public Participant()
+		{
+		}
 	}
 }

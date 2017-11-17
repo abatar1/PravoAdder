@@ -30,6 +30,7 @@ namespace PravoAdder
 		public static ProjectSettingsApi ProjectSettings;
 		public static ExpensesApi Expenses;
 		public static BillingSettingsApi BillingSettings;
+		public static BillsApi Bills;
 
 		public static int PageSize = 50;
 
@@ -60,6 +61,7 @@ namespace PravoAdder
 			DefaultDictionaryItems = new DefaultDictionaryItemsApi();
 			Expenses = new ExpensesApi();
 			BillingSettings = new BillingSettingsApi();
+			Bills = new BillsApi();
 		}
 	}
 }

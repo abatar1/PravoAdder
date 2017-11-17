@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Dynamic;
 using System.Linq;
 using System.Net.Http;
@@ -125,7 +126,15 @@ namespace PravoAdder.Api.Helpers
 			if (item == null) return default(T);
 			if (!(bool) item.IsSuccess) return default(T);
 
-			return (T) JsonConvert.DeserializeObject(item.Result.ToString(), typeof(T));
+			var value = item.Result.ToString();
+
+			var converter = TypeDescriptor.GetConverter(typeof(T));
+			if (converter.IsValid(value))
+			{
+				return converter.ConvertFromString(value);
+			}
+
+			return (T) JsonConvert.DeserializeObject(value, typeof(T));
 		}
 
 		public static dynamic GetItem(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, object content)

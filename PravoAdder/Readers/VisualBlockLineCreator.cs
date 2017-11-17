@@ -13,13 +13,12 @@ namespace PravoAdder.Readers
 	//
 	// Need "Data Block", "Field Name", "Row", "Width", "Tag", "Required" in Excel table.
 	//
-	public class VisualBlockLineCreator : ICreator
+	public class VisualBlockLineCreator : Creator
 	{
-		public HttpAuthenticator HttpAuthenticator { get; }
 		public VisualBlock VisualBlock { get; set; }
 		public VisualBlockLine ConstructedLine { get; set; }
 
-		public ICreatable Create(Row header, Row row, DatabaseEntityItem item = null)
+		public override ICreatable Create(Row header, Row row, DatabaseEntityItem item = null)
 		{
 			var visualBlockName = Table.GetValue(header, row, "Data Block");
 
@@ -71,13 +70,6 @@ namespace PravoAdder.Readers
 		private static List<ProjectFieldFormat> _formats;
 		private static List<LineType> _lineTypes;
 
-		public VisualBlockLineCreator(HttpAuthenticator httpAuthenticator)
-		{
-			HttpAuthenticator = httpAuthenticator;
-			_formats = ApiRouter.Bootstrap.GetFieldTypes(httpAuthenticator);
-			_lineTypes = ApiRouter.Bootstrap.GetLineTypes(HttpAuthenticator);
-		}
-
 		private static VisualBlockField GetVisualBlockField(HttpAuthenticator autenticator, Row header, Row row)
 		{
 			var fieldName = Table.GetValue(header, row, "Field Name")?.SliceSpaceIfMore(256);
@@ -98,6 +90,12 @@ namespace PravoAdder.Readers
 				Width = int.Parse(Table.GetValue(header, row, "Width")),
 				ProjectField = projectField
 			};
+		}
+
+		public VisualBlockLineCreator(HttpAuthenticator httpAuthenticator, ApplicationArguments applicationArguments) : base(httpAuthenticator, applicationArguments)
+		{
+			_formats = ApiRouter.Bootstrap.GetFieldTypes(httpAuthenticator);
+			_lineTypes = ApiRouter.Bootstrap.GetLineTypes(HttpAuthenticator);
 		}
 	}
 }

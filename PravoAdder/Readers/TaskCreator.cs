@@ -8,16 +8,10 @@ using PravoAdder.Domain;
 
 namespace PravoAdder.Readers
 {
-	public class TaskCreator : ICreator
+	public class TaskCreator : Creator
 	{
 	    private IList<DictionaryItem> _taskStates;
-	    private readonly Dictionary<string, IEnumerable<Project>> _projects;
-
-		public TaskCreator(HttpAuthenticator authenticator)
-		{
-			HttpAuthenticator = authenticator;
-            _projects = new Dictionary<string, IEnumerable<Project>>();
-		}
+		private readonly Dictionary<string, IEnumerable<Project>> _projects;
 
 	    private TaskState GetState(string name)
 	    {
@@ -25,9 +19,7 @@ namespace PravoAdder.Readers
 	        return new TaskState(item?.Name, item?.Id, item?.SysName);
         }
 
-		public HttpAuthenticator HttpAuthenticator { get; }
-
-		public ICreatable Create(Row info, Row row, DatabaseEntityItem item = null)
+		public override ICreatable Create(Row info, Row row, DatabaseEntityItem item = null)
 		{
 			var task = new Task {Id = null, TimeLogs = new List<string> {item?.Id}};
 
@@ -93,6 +85,11 @@ namespace PravoAdder.Readers
 		        }
 		    }
 			return task;
+		}
+
+		public TaskCreator(HttpAuthenticator httpAuthenticator, ApplicationArguments applicationArguments) : base(httpAuthenticator, applicationArguments)
+		{
+			_projects = new Dictionary<string, IEnumerable<Project>>();
 		}
 	}
 }

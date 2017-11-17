@@ -1,5 +1,5 @@
 ﻿using System.Net.Http;
-using PravoAdder.Api.Domain.Other;
+using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
 
 namespace PravoAdder.Api

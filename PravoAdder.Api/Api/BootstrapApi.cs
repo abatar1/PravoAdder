@@ -51,7 +51,14 @@ namespace PravoAdder.Api
 		{
 			var bootstrap = ApiRouter.Bootstrap.Get(httpAuthenticator);
 			IEnumerable<dynamic> participantTypes = bootstrap["CaseMap.Modules.Main"]["CaseMap.Modules.Participants"]["ParticipantTypes"];
-			return participantTypes.Select(o => (ParticipantType)JsonConvert.DeserializeObject<ParticipantType>(o.ToString())).ToList();
+			return participantTypes.Select(o => (ParticipantType) JsonConvert.DeserializeObject<ParticipantType>(o.ToString())).ToList();
+		}
+
+		public List<BillStatus> GetBillsStatus(HttpAuthenticator httpAuthenticator)
+		{
+			var bootstrap = ApiRouter.Bootstrap.Get(httpAuthenticator);
+			IEnumerable<dynamic> participantTypes = bootstrap["CaseMap.Modules.Main"]["Billing"]["BillStatus"];
+			return participantTypes.Select(o => (BillStatus) JsonConvert.DeserializeObject<BillStatus>(o.ToString())).ToList();
 		}
 	}
 }

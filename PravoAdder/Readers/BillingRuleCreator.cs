@@ -2,24 +2,16 @@
 using System.Linq;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
-using PravoAdder.Api.Domain.Other;
 using PravoAdder.Api.Repositories;
 using PravoAdder.Domain;
 
 namespace PravoAdder.Readers
 {
-	public class BillingRulesCreator : ICreator
+	public class BillingRuleCreator : Creator
 	{
 		private List<DictionaryItem> _calculationTypes;
 
-		public BillingRulesCreator(HttpAuthenticator httpAuthenticator)
-		{
-			HttpAuthenticator = httpAuthenticator;
-		}
-
-		public HttpAuthenticator HttpAuthenticator { get; }
-
-		public ICreatable Create(Row header, Row row, DatabaseEntityItem item = null)
+		public override ICreatable Create(Row header, Row row, DatabaseEntityItem item = null)
 		{
 			var eventTypeName = Table.GetValue(header, row, "Activity Type");
 			var eventType = EventTypeRepository.GetOrPut(HttpAuthenticator, eventTypeName);
@@ -50,6 +42,10 @@ namespace PravoAdder.Readers
 			if (billingRules.Count == 0) billingRules.Add(new BillingRule(eventType, calculationType, rate));
 
 			return new BillingRuleWrapper {BillingRules = billingRules};
+		}
+
+		public BillingRuleCreator(HttpAuthenticator httpAuthenticator, ApplicationArguments applicationArguments) : base(httpAuthenticator, applicationArguments)
+		{
 		}
 	}
 }

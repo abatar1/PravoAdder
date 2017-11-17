@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using PravoAdder.Domain;
+using PravoAdder.Helpers;
 using PravoAdder.Readers;
 using PravoAdder.Wrappers;
 
@@ -38,13 +40,12 @@ namespace PravoAdder.Processors
 			var processName = Enum.GetName(typeof(ProcessType), processType);
 			if (processName == null) return new EngineMessage { IsFinal = true };
 
-			ICreator creator = null;
-			if (processName.Contains("Participant")) creator = new ParticipantCreator(authenticator, message.Args.ParticipantType);
-			if (processName.Contains("Task")) creator = new TaskCreator(authenticator);
-			if (processName.Contains("ProjectField")) creator = new ProjectFieldCreator(authenticator);
-			if (processName.Contains("VisualBlockLine")) creator = new VisualBlockLineCreator(authenticator);
-			if (processName.Contains("Event")) creator = new EventCreator(authenticator);
-			if (processName.Contains("BillingRules")) creator = new BillingRulesCreator(authenticator);
+			var subjectType = processName.SplitCamelCase()[0];
+			var creatorType = AppDomain.CurrentDomain.GetAssemblies()
+				.SelectMany(s => s.GetTypes())
+				.Where(p => typeof(Creator).IsAssignableFrom(p))
+				.First(x => x.Name.Equals($"{subjectType}Creator"));
+			var creator = (Creator) Activator.CreateInstance(creatorType, new object[] {authenticator, message.Args });
 
 			return new EngineMessage
 			{

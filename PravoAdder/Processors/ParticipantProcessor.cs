@@ -49,6 +49,7 @@ namespace PravoAdder.Processors
 		public Func<EngineMessage, EngineMessage> Create = message =>
 		{
 			var newParticipant = (Participant) message.GetCreatable();
+			if (newParticipant == null) return null;
 			var existedParticipant =
 				ParticipantsRepository.GetOrCreate<ParticipantsApi>(message.Authenticator, newParticipant.FullName, newParticipant);
 			message.Item = existedParticipant;

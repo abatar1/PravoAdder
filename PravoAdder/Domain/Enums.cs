@@ -43,6 +43,7 @@ namespace PravoAdder.Domain
 		ExpenseCreate,
 		BillingRuleUpdate,
 		NoteCreate,
+		BillCreate,
 		All
 	}
 }

@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using PravoAdder.Api;
 using PravoAdder.Api.Domain;
+using PravoAdder.Api.Repositories;
 using PravoAdder.Domain;
 
 namespace PravoAdder.Processors
@@ -108,7 +110,7 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> ProjectGroup = message =>
 		{
-			var projectGroups = message.ApiEnviroment.GetProjectGroupItems();
+			var projectGroups = ProjectGroupRepository.GetMany<ProjectGroupsApi>(message.Authenticator);
 			return ProcessForEach(projectGroups, message, (msg, item) =>
 			{
 				msg.Item = (ProjectGroup) item;

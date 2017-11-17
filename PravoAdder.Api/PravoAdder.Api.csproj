@@ -72,6 +72,7 @@
   <ItemGroup>
     <Compile Include="ApiRouter.cs" />
     <Compile Include="Api\BillingSettingsApi.cs" />
+    <Compile Include="Api\BillsApi.cs" />
     <Compile Include="Api\BootstrapApi.cs" />
     <Compile Include="Api\CalculationFormulasApi.cs" />
     <Compile Include="Api\CalendarApi.cs" />
@@ -87,8 +88,11 @@
     <Compile Include="Api\Project\ProjectSettingsApi.cs" />
     <Compile Include="Api\TimeLogApi.cs" />
     <Compile Include="Api\VisualBlockApi.cs" />
-    <Compile Include="Domain\BillingRules\BillingRuleWrapper.cs" />
-    <Compile Include="Domain\BillingRules\BillingSettings.cs" />
+    <Compile Include="Domain\Bills\Bill.cs" />
+    <Compile Include="Domain\Bills\BillingRuleWrapper.cs" />
+    <Compile Include="Domain\Bills\BillingSettings.cs" />
+    <Compile Include="Domain\Bills\BillStatus.cs" />
+    <Compile Include="Domain\Bills\BillStatusGroup.cs" />
     <Compile Include="Domain\Other\EntityType.cs" />
     <Compile Include="Domain\Event\Calendar.cs" />
     <Compile Include="Domain\Event\CalendarColor.cs" />
@@ -116,10 +120,11 @@
     <Compile Include="Domain\Other\CalculationFormulaValue.cs" />
     <Compile Include="Domain\DatabaseEntityItem.cs" />
     <Compile Include="Domain\Other\DictionaryItem.cs" />
-    <Compile Include="Domain\BillingRules\BillingRule.cs" />
+    <Compile Include="Domain\Bills\BillingRule.cs" />
     <Compile Include="Domain\Other\Expense.cs" />
     <Compile Include="Domain\Participant\Participant.cs" />
     <Compile Include="Domain\Project\ProjectSettings.cs" />
+    <Compile Include="Domain\RequiredAttribute.cs" />
     <Compile Include="Domain\VisualBlock\LineType.cs" />
     <Compile Include="Domain\Other\Note.cs" />
     <Compile Include="Domain\Participant\ParticipantType.cs" />
@@ -141,7 +146,6 @@
     <Compile Include="Domain\VisualBlock\VisualBlockParticipantLine.cs" />
     <Compile Include="Domain\VisualBlock\VisualBlockWrapper.cs" />
     <Compile Include="Helpers\ApiHelper.cs" />
-    <Compile Include="Helpers\DatabaseEntityItemHelper.cs" />
     <Compile Include="HttpAuthenticator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\BootstrapRepository.cs" />
@@ -152,6 +156,7 @@
     <Compile Include="Repositories\ParticipantsRepository.cs" />
     <Compile Include="Repositories\ProjectFieldRepository.cs" />
     <Compile Include="Repositories\ProjectFolderRepository.cs" />
+    <Compile Include="Repositories\ProjectGroupRepository.cs" />
     <Compile Include="Repositories\ProjectRepository.cs" />
     <Compile Include="Repositories\ProjectTypeRepository.cs" />
     <Compile Include="Repositories\ResponsibleRepository.cs" />

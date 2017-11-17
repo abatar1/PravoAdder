@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace PravoAdder.Api.Domain.Other
+namespace PravoAdder.Api.Domain
 {
 	public class BillingRuleWrapper : ICreatable
 	{

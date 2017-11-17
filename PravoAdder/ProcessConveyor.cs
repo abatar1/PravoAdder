@@ -196,6 +196,9 @@ namespace PravoAdder
 				case ProcessType.BillingRuleUpdate:
 					SetTableProcessor(SingleProcessors.UpdateBillingSettings);
 					break;
+				case ProcessType.BillCreate:
+					SetTableProcessor(SingleProcessors.CreateBill);
+					break;
 				default:
 					throw new ArgumentException("Неизвестный тип конвеера.");
 			}

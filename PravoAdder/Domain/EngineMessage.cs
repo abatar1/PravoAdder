@@ -27,7 +27,7 @@ namespace PravoAdder.Domain
 		public HttpAuthenticator Authenticator { get; set; }
 		public ApiEnviroment ApiEnviroment { get; set; }
 		public CaseBuilder CaseBuilder { get; set; }
-		public ICreator Creator { get; set; }
+		public Creator Creator { get; set; }
 
 		public List<ConveyorItem> Child { get; set; }
 

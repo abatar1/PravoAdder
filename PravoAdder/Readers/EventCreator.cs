@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using PravoAdder.Api;
-using PravoAdder.Api.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Repositories;
 using PravoAdder.Domain;
@@ -9,16 +8,9 @@ using PravoAdder.Helpers;
 
 namespace PravoAdder.Readers
 {
-	public class EventCreator : ICreator
+	public class EventCreator : Creator
 	{
-		public EventCreator(HttpAuthenticator httpAuthenticator)
-		{
-			HttpAuthenticator = httpAuthenticator;
-		}
-
-		public HttpAuthenticator HttpAuthenticator { get; }
-
-		public ICreatable Create(Row header, Row row, DatabaseEntityItem item = null)
+		public override ICreatable Create(Row header, Row row, DatabaseEntityItem item = null)
 		{
 			var eventTypeName = Table.GetValue(header, row, "Activity Type");
 			var eventType = EventTypeRepository.GetOrPut(HttpAuthenticator, eventTypeName);
@@ -45,6 +37,10 @@ namespace PravoAdder.Readers
 				Calendar = calendar,
 				TimeLogs = new List<string> {item?.Id}
 			};
+		}
+
+		public EventCreator(HttpAuthenticator httpAuthenticator, ApplicationArguments applicationArguments) : base(httpAuthenticator, applicationArguments)
+		{
 		}
 	}
 }
