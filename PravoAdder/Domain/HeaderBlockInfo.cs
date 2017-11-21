@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Newtonsoft.Json;
-using PravoAdder.Domain.Attributes;
 
 namespace PravoAdder.Domain
 {
-	[Serializable]
 	public class HeaderBlockInfo
 	{
-		[FieldName("Название папки", "Folder name")]
+		[FieldName("Название папки", "Folder Name")]
 		public string ProjectFolder { get; set; }
 
 		[FieldName("Название проекта")]
 		public string ProjectGroup { get; set; }
 
-		[FieldName("Название дела", "Case name")]
+		[FieldName("Название дела", "Case Name")]
 		public string Name { get; set; }
 
 		[FieldName("Ответственный", "Assignee")]
@@ -23,14 +20,17 @@ namespace PravoAdder.Domain
 		[FieldName("Синхронизация")]
 		public string CasebookNumber { get; set; }
 
-		[FieldName("Тип дела", "Practice area")]
+		[FieldName("Тип дела", "Practice Area")]
 		public string ProjectType { get; set; }
 
 		[FieldName("Описание", "Description")]
 		public string Description { get; set; }
 
-		[FieldName("Архивное дело", "Is archive case")]
+		[FieldName("Архивное дело", "Is Archive Case")]
 		public bool IsArchive { get; set; }
+
+		[FieldName("Клиент", "Client")]
+		public string Client { get; set; }
 
 		[JsonIgnore]
 		public static Dictionary<string, int> Languages = new Dictionary<string, int> {["RU"] = 0, ["ENG"] = 1};

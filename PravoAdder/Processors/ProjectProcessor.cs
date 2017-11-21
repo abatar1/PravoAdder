@@ -80,6 +80,8 @@ namespace PravoAdder.Processors
 			if (message.Item == null) return message;
 
 			var blocksInfo = message.CaseBuilder.Build();
+			if (blocksInfo == null) return null;
+
 			foreach (var repeatBlock in blocksInfo)
 			{
 				foreach (var blockInfo in repeatBlock.VisualBlocks)

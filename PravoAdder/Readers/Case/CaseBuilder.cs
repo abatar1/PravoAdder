@@ -4,7 +4,6 @@ using System.Linq;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Domain;
-using PravoAdder.Domain.Attributes;
 using PravoAdder.Helpers;
 using PravoAdder.Wrappers;
 
@@ -48,6 +47,8 @@ namespace PravoAdder.Readers
 		    if (HeaderBlockInfo.ProjectType == null) return null;
 	   
 		    var projectType = ApiEnviroment.GetProjectType(_httpAuthenticator, HeaderBlockInfo, 0);
+		    if (projectType == null) return null;
+
 			var visualBlocks = GetVisualBlocks(projectType.Id);
 
 		    var result = new Dictionary<int, List<VisualBlock>>();
@@ -131,12 +132,12 @@ namespace PravoAdder.Readers
 		    var headerObject = new HeaderBlockInfo();
 		    foreach (var property in headerObject.GetType().GetProperties())
 		    {
-			    var fieldnameAttibute = (FieldNameAttribute) property
+			    var fieldNameAttibute = (FieldNameAttribute) property
 				    .GetCustomAttributes(typeof(FieldNameAttribute), true)
 				    .FirstOrDefault();
-			    if (fieldnameAttibute == null) continue;
+			    if (fieldNameAttibute == null) continue;
 
-			    var langNames = HeaderBlockInfo.SystemNames.Select(k => k.Value).Zip(fieldnameAttibute.FieldNames,
+			    var langNames = HeaderBlockInfo.SystemNames.Select(k => k.Value).Zip(fieldNameAttibute.FieldNames,
 				    (block, field) => new { Block = block, Field = field });
 			    foreach (var name in langNames)
 			    {

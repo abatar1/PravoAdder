@@ -9,7 +9,6 @@ using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Repositories;
 using PravoAdder.Domain;
-using PravoAdder.Domain.Attributes;
 using PravoAdder.Helpers;
 using PravoAdder.Readers;
 

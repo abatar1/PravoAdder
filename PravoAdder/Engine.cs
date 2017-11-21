@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Fclp;
 using NLog;
 using PravoAdder.Domain;
@@ -21,21 +20,18 @@ namespace PravoAdder
 			
 		}
 
-		public static readonly ProcessType[] TableProcesses =
-		{
-			ProcessType.CaseCreate, ProcessType.CaseSync, ProcessType.ParticipantCreate, ProcessType.HeaderAnalyze, ProcessType.NoteCreate,
-			ProcessType.ParticipantEditByKey, ProcessType.CaseRename, ProcessType.ParticipantAttach,
-			ProcessType.ParticipantEdit, ProcessType.ProjectFieldCreate, ProcessType.VisualBlockLineAdd,
-			ProcessType.DictionaryCreate, ProcessType.CaseTypeCreate, ProcessType.EventCreate, ProcessType.CaseUpdateSettings,
-			ProcessType.ExpenseCreate, ProcessType.BillingRuleUpdate, ProcessType.BillCreate
-		};
-
 		public Engine Initialize(string[] args)
 		{
 			if (args.Length == 0) throw new ArgumentException();
 
 			var parser = new FluentCommandLineParser<ApplicationArguments>();
-		
+
+			parser.Setup(arg => arg.UserName)
+				.As('b', "baseuri")
+				.Required();
+			parser.Setup(arg => arg.UserName)
+				.As('u', "username")
+				.Required();
 			parser.Setup(arg => arg.ProcessType)
 				.As('t', "type")
 				.Required();
@@ -50,8 +46,8 @@ namespace PravoAdder
 				.SetDefault("config.json");
 			parser.Parse(args);
 
-			var processType = parser.Object.ProcessType;
-			if (TableProcesses.Contains(processType))
+			var processType = ProcessTypes.GetByName(parser.Object.ProcessType);
+			if (processType.NeedTable)
 			{
 				parser.Setup(arg => arg.SourceFileName)
 					.As('s', "sourcefile")
@@ -66,20 +62,20 @@ namespace PravoAdder
 					.As('o', "overwrite")
 					.SetDefault(true);
 			}
-			if (processType == ProcessType.ParticipantEditByKey || processType == ProcessType.ParticipantEdit)
+			if (processType.Name == "ParticipantEditByKey" || processType.Name == "ParticipantEdit")
 			{
 				parser.Setup(arg => arg.SearchKey)
 					.As('k', "searchkey")
 					.Required();
 			}
-			if (processType == ProcessType.CaseDeleteByDate || processType == ProcessType.ParticipantDeleteByDate)
+			if (processType.Name == "CaseDeleteByDate" || processType.Name == "ParticipantDeleteByDate")
 			{
 				parser.Setup(arg => arg.Date)
 					.As('k', "date")
 					.Required();
 			}
 
-			if (processType == ProcessType.CaseUnload)
+			if (processType.Name == "CaseUnload")
 			{
 				parser.Setup(arg => arg.ProjectType)
 					.As('k', "projectType")
@@ -89,7 +85,7 @@ namespace PravoAdder
 					.Required();
 			}
 
-			if (processType == ProcessType.ParticipantCreate)
+			if (processType.Name == "ParticipantCreate")
 			{
 				parser.Setup(arg => arg.ParticipantType)
 					.As('k', "participantType")

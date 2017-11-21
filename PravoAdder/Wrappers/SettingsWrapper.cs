@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using PravoAdder.Domain;
-using PravoAdder.Domain.Attributes;
 using PravoAdder.Helpers;
 
 namespace PravoAdder.Wrappers
@@ -12,17 +10,13 @@ namespace PravoAdder.Wrappers
     {
 	    private static ReadingMode _blockReadingMode = ReadingMode.All;
 
-		public Settings LoadSettingsFromConsole(ApplicationArguments applicationArguments, Dictionary<string, dynamic> additionalSettings = null)
+		public Settings LoadSettingsFromConsole(ApplicationArguments applicationArguments)
         {
             Console.WriteLine("Reading config files...");
             var settingsObject = Settings.Read(applicationArguments.ConfigFileName);
 
             foreach (var property in settingsObject.GetType().GetProperties())
             {
-	            var processTypeAttribute = property.LoadAttribute<ProcessTypeAttribute>();
-	            if (!processTypeAttribute.ProcessTypes.Contains(applicationArguments.ProcessType) &&
-	                !processTypeAttribute.ProcessTypes.Contains(ProcessType.All)) continue;
-
 	            var readingTypeAttribute = property.LoadAttribute<ReadingTypeAttribute>();
 	            if (readingTypeAttribute != null &&
 	                !readingTypeAttribute.ReadingTypes.Contains(_blockReadingMode)) continue;
@@ -41,10 +35,6 @@ namespace PravoAdder.Wrappers
 
 				var propertyValue = LoadValue(displayName, property.PropertyType, ',', isRequired);
                 property.SetValue(settingsObject, propertyValue);
-			}
-	        if (additionalSettings != null)
-	        {
-				settingsObject.AdditionalSettings = new Dictionary<string, dynamic>(additionalSettings);
 			}
                
             settingsObject.Save(applicationArguments.ConfigFileName);

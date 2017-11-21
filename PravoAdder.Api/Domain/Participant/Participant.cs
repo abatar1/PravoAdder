@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Newtonsoft.Json;
 
@@ -62,6 +63,16 @@ namespace PravoAdder.Api.Domain
 		{
 			FirstName = firstName;
 			LastName = lastName;
+			Type = type;
+		}
+
+		public Participant(string fullname, char splitSymbol, ParticipantType type)
+		{
+			var splitName = fullname.Split(splitSymbol);
+			if (splitName.Length != 2) throw new ArgumentException();
+
+			FirstName = splitName[0];
+			LastName = splitName[1];
 			Type = type;
 		}
 

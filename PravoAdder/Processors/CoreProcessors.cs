@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using NLog.Config;
 using PravoAdder.Domain;
 using PravoAdder.Helpers;
 using PravoAdder.Readers;
@@ -28,7 +29,7 @@ namespace PravoAdder.Processors
 
 		public Func<EngineMessage, EngineMessage> InitializeApp = message =>
 		{
-			var authenticatorController = new AuthentificatorWrapper(message.Settings, message.Args);
+			var authenticatorController = new AuthentificatorWrapper(message.Args);
 			var authenticator = authenticatorController.Authenticate();
 			if (authenticator == null)
 			{
@@ -44,8 +45,13 @@ namespace PravoAdder.Processors
 			var creatorType = AppDomain.CurrentDomain.GetAssemblies()
 				.SelectMany(s => s.GetTypes())
 				.Where(p => typeof(Creator).IsAssignableFrom(p))
-				.First(x => x.Name.Equals($"{subjectType}Creator"));
-			var creator = (Creator) Activator.CreateInstance(creatorType, new object[] {authenticator, message.Args });
+				.FirstOrDefault(x => x.Name.Equals($"{subjectType}Creator"));
+
+			Creator creator = null;
+			if (creatorType != null)
+			{
+				creator = (Creator)Activator.CreateInstance(creatorType, new object[] { authenticator, message.Args });
+			}			
 
 			return new EngineMessage
 			{

@@ -9,21 +9,19 @@ namespace PravoAdder.Wrappers
     public class AuthentificatorWrapper : HttpAuthenticator
 	{
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        private readonly Settings _settings;
 		private readonly ApplicationArguments _arguments;
 
-        public AuthentificatorWrapper(Settings settings, ApplicationArguments args) : base(settings.BaseUri)
+        public AuthentificatorWrapper(ApplicationArguments args) : base(args.BaseUri)
         {
-            _settings = settings;
 	        _arguments = args;
         }
 
         public HttpAuthenticator Authenticate()
         {
-            Logger.Info($"Login as {_settings.Login} to {_settings.BaseUri}...");
+            Logger.Info($"Login as {_arguments.UserName} to {_arguments.BaseUri}...");
 	        try
 	        {
-		        Authentication(_settings.Login, _arguments.Password);
+		        Authentication(_arguments.UserName, _arguments.Password);
 		        return this;
 	        }
 	        catch (AuthenticationException e)

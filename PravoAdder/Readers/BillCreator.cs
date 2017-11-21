@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Repositories;
@@ -16,13 +17,15 @@ namespace PravoAdder.Readers
 			if (project.Client == null)
 			{
 				var clientName = Table.GetValue(header, row, "Client");
-				if (string.IsNullOrEmpty(clientName)) return null;
-				var names = clientName.Split(' ');
-				if (names.Length != 2) return null;
-
-				var client = new Participant(names[0], names[1],
-					ParticipantType.GetPersonType(HttpAuthenticator));
-				project.Client = ParticipantsRepository.GetOrCreate<ParticipantsApi>(HttpAuthenticator, clientName, client);
+				try
+				{
+					var client = new Participant(clientName, ' ', ParticipantType.GetPersonType(HttpAuthenticator));
+					project.Client = ParticipantsRepository.GetOrCreate<ParticipantsApi>(HttpAuthenticator, clientName, client);
+				}
+				catch (Exception)
+				{
+					return null;
+				}				
 				project = ApiRouter.Projects.Put(HttpAuthenticator, project);
 			}
 

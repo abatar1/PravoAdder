@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PravoAdder.Domain.Attributes
+namespace PravoAdder.Domain
 {
 	public class FieldNameAttribute : Attribute
 	{

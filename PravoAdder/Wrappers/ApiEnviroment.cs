@@ -128,6 +128,10 @@ namespace PravoAdder.Wrappers
 			var projectName = headerInfo.Name;
 	        if (projectName.Length > MaxWordLength) projectName = projectName.Remove(MaxWordLength);
 
+	        var newClient = new Participant(headerInfo.Client, ' ', ParticipantType.GetPersonType(_httpAuthenticator));
+	        var client =
+		        ParticipantsRepository.GetOrCreate<ParticipantsApi>(_httpAuthenticator, headerInfo.Client, newClient);
+
 	        var newProject = new Project
 	        {
 		        CasebookNumber = headerInfo.CasebookNumber,
@@ -136,7 +140,8 @@ namespace PravoAdder.Wrappers
 				Responsible = responsible,
 				ProjectGroup = projectGroup,
 				ProjectFolder = projectFolder,
-				Description = headerInfo.Description
+				Description = headerInfo.Description,
+				Client = client
 			};
 
 	        var project = ApiRouter.Projects.Create(_httpAuthenticator, newProject);

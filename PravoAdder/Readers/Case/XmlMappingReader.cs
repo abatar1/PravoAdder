@@ -21,23 +21,13 @@ namespace PravoAdder.Readers
 
 			var xdoc = XDocument.Load(sourceInfo.Name);
 			var mapping = (JArray) JObject.Parse(File.ReadAllText(mappingInfo.Name)).GetValue("Blocks");
-			_matching = GetMatching(mapping);			
-		
-			var processedInfo = GetFileInfo(settings.IgnoreFilePath, ".csv");
-			var processed = new int[0];
-			if (processedInfo != null)
-			{
-				processed = File
-					.ReadAllLines(processedInfo.Name)
-					.Select(int.Parse)
-					.ToArray();
-			}
+			_matching = GetMatching(mapping);					
 
 			var table = new List<Dictionary<int, FieldAddress>>();
 
 			foreach (var p in xdoc.Elements("Cases").Elements().Select((value, count) => new { Value = value, Count = count + 1}))
 			{
-				if (processedInfo!= null && processed.Contains(p.Count) || p.Count < args.RowNum) continue;
+				if (p.Count < args.RowNum) continue;
 				
 				var project = p.Value;		
 				var header = ReadHeaderFromX(project);

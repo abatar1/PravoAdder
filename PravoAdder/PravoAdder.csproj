@@ -92,16 +92,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Domain\Attributes\IsRequiredAttribute.cs" />
-    <Compile Include="Domain\Enums.cs" />
-    <Compile Include="Domain\Attributes\ProcessTypeAttribute.cs" />
+    <Compile Include="Domain\Table\ReadingMode.cs" />
     <Compile Include="Domain\Attributes\ReadingTypeAttribute.cs" />
     <Compile Include="Domain\HeaderBlockInfo.cs" />
-    <Compile Include="Domain\Row.cs" />
+    <Compile Include="Domain\Conveyor\ProcessType.cs" />
+    <Compile Include="Domain\Conveyor\ProcessTypes.cs" />
+    <Compile Include="Domain\Table\Row.cs" />
     <Compile Include="Domain\ApplicationArguments.cs" />
-    <Compile Include="Domain\XmlAddress.cs" />
-    <Compile Include="Domain\ConveyorItem.cs" />
+    <Compile Include="Domain\Table\XmlAddress.cs" />
+    <Compile Include="Domain\Conveyor\ConveyorItem.cs" />
     <Compile Include="Engine.cs" />
-    <Compile Include="Domain\EngineMessage.cs" />
+    <Compile Include="Domain\Conveyor\EngineMessage.cs" />
     <Compile Include="Helpers\StringHelper.cs" />
     <Compile Include="Processors\ConveyorException.cs" />
     <Compile Include="Processors\CoreProcessors.cs" />
@@ -115,6 +116,11 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>MessageResource.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Resources\ProcessResources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ProcessResources.resx</DependentUpon>
     </Compile>
     <Compile Include="Wrappers\FieldBuilder.cs" />
     <Compile Include="Helpers\AttributeHelper.cs" />
@@ -134,8 +140,8 @@
     </Compile>
     <Compile Include="Wrappers\AuthentificatorWrapper.cs" />
     <Compile Include="Domain\Attributes\FieldNameAttribute.cs" />
-    <Compile Include="Domain\Table.cs" />
-    <Compile Include="Domain\FieldAddress.cs" />
+    <Compile Include="Domain\Table\Table.cs" />
+    <Compile Include="Domain\Table\FieldAddress.cs" />
     <Compile Include="Domain\Attributes\IgnoreAttribute.cs" />
     <Compile Include="Helpers\CollectionHelper.cs" />
     <Compile Include="Helpers\JsonHelper.cs" />
@@ -184,6 +190,10 @@
     <EmbeddedResource Include="Resources\MessageResource.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>MessageResource.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\ProcessResources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ProcessResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\TableResource.resx">
       <Generator>ResXFileCodeGenerator</Generator>

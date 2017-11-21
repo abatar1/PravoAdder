@@ -91,16 +91,16 @@ namespace PravoAdder
 
 			switch (processType)
 			{
-				case ProcessType.CaseCreate:
+				case "CaseCreate":
 					SetTableProcessor(SingleProcessors.Project.TryCreate, SingleProcessors.Project.AddInformation);
 					break;					
-				case ProcessType.CaseUpdate:
+				case "CaseUpdate":
 					SetTableProcessor(SingleProcessors.Project.Update);
 					break;				
-				case ProcessType.CaseSync:
+				case "CaseSync":
 					SetTableProcessor(SingleProcessors.Project.TryCreate, SingleProcessors.Project.Synchronize);
 					break;					
-				case ProcessType.CaseDelete:					
+				case "CaseDelete":					
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
 					conveyor.Add(SingleProcessors.Project.Delete, 2);
 					conveyor.Add(SingleProcessors.Core.ProcessCount, 2);
@@ -111,92 +111,92 @@ namespace PravoAdder
 					conveyor.Add(SingleProcessors.Core.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.Folder);
 					break;					
-				case ProcessType.CaseDeleteByDate:					
+				case "CaseDeleteByDate":					
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
 					conveyor.Add(SingleProcessors.Project.Delete, 2);
 					conveyor.Add(SingleProcessors.Core.ProcessCount, 2);
 					conveyor.Add(ForEachProcessors.ProjectByDate, 1);
 					conveyor.Add(ForEachProcessors.ProjectGroup);
 					break;					
-				case ProcessType.TaskCreate:
+				case "TaskCreate":
 					SetTableProcessor(SingleProcessors.CreateTask);
 					break;					
-				case ProcessType.ParticipantCreate:
+				case "ParticipantCreate":
 					SetTableProcessor(SingleProcessors.Participant.Create);
 					break;					
-				case ProcessType.ParticipantDelete:
+				case "ParticipantDelete":
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
 					conveyor.Add(SingleProcessors.Participant.Delete, 1);
 					conveyor.Add(SingleProcessors.Core.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.Participant);
 					break;		
-				case ProcessType.ParticipantDeleteByDate:
+				case "ParticipantDeleteByDate":
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
 					conveyor.Add(SingleProcessors.Participant.Delete, 1);
 					conveyor.Add(SingleProcessors.Core.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.ParticipantByDate);
 					break;
-				case ProcessType.ParticipantDistinct:					
+				case "ParticipantDistinct":					
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
 					conveyor.Add(SingleProcessors.Participant.Distinct);
 					break;			
-				case ProcessType.HeaderAnalyze:
+				case "HeaderAnalyze":
 					conveyor.AddRange(GroupedProcessors.LoadWithTable);
 					conveyor.Add(SingleProcessors.AnalyzeHeader);
 					break;
-				case ProcessType.NoteCreate:
+				case "NoteCreate":
 					SetTableProcessor(SingleProcessors.Project.AddNote);
 					break;
-				case ProcessType.ParticipantEditByKey:
+				case "ParticipantEditByKey":
 					SetTableProcessor(SingleProcessors.Participant.EditById);
 					break;
-				case ProcessType.CaseRename:
+				case "CaseRename":
 					SetTableProcessor(SingleProcessors.Project.Rename);
 					break;
-				case ProcessType.ParticipantAttach:
+				case "ParticipantAttach":
 					SetTableProcessor(SingleProcessors.Project.AttachParticipant);
 					break;
-				case ProcessType.ParticipantEdit:
+				case "ParticipantEdit":
 					SetTableProcessor(SingleProcessors.Participant.Edit);
 					break;
-				case ProcessType.ProjectFieldCreate:
+				case "ProjectFieldCreate":
 					SetTableProcessor(ProjectProcessor.CreateProjectField);
 					break;
-				case ProcessType.VisualBlockLineAdd:
+				case "VisualBlockLineAdd":
 					SetTableProcessor(SingleProcessors.AddVisualBlockLine);
 					break;
-				case ProcessType.CaseUnload:
+				case "CaseUnload":
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
 					conveyor.Add(SingleProcessors.CreateExcelRow, 2);
 					conveyor.Add(SingleProcessors.Core.ProcessCount, 2);
 					conveyor.Add(ForEachProcessors.ProjectByType, 1);
 					conveyor.Add(ForEachProcessors.ProjectGroup);
 					break;
-				case ProcessType.DictionaryCreate:
+				case "DictionaryCreate":
 					SetTableProcessor(SingleProcessors.CreateDictionary);
 					break;
-				case ProcessType.CaseTypeCreate:
+				case "CaseTypeCreate":
 					SetTableProcessor(SingleProcessors.Project.CreateType);
 					break;
-				case ProcessType.EventCreate:
+				case "EventCreate":
 					SetTableProcessor(SingleProcessors.CreateTimeLog, SingleProcessors.CreateEvent);
 					break;
-				case ProcessType.EventDelete:
+				case "EventDelete":
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
 					conveyor.Add(SingleProcessors.DeleteEvent, 1);
 					conveyor.Add(SingleProcessors.Core.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.Event);
 					break;
-				case ProcessType.CaseUpdateSettings:
+				case "CaseUpdateSettings":
 					SetTableProcessor(SingleProcessors.Project.UpdateSettings);
 					break;
-				case ProcessType.ExpenseCreate:
+				case "ExpenseCreate":
 					SetTableProcessor(SingleProcessors.CreateExpense);
 					break;
-				case ProcessType.BillingRuleUpdate:
+				case "BillingRuleUpdate":
 					SetTableProcessor(SingleProcessors.UpdateBillingSettings);
 					break;
-				case ProcessType.BillCreate:
+				case "BillCreate":
 					SetTableProcessor(SingleProcessors.CreateBill);
 					break;
 				default:
