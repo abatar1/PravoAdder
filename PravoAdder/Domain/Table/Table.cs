@@ -20,11 +20,22 @@ namespace PravoAdder.Domain
 	    public List<Row> TableContent { get; }
 	    public string Name { get; set; }
 
+	    public long Size => TableContent.Count;
+
 	    public static string GetValue(Row header, Row tableRow, string name)
 	    {
 			var index = header.Content.FirstOrDefault(h => h.Value.FieldName == name).Key;
 		    return tableRow[index].Value?.Trim();
 		}
+
+	    public static string GetValue(Row header, Row tableRow, FieldAddress fieldAddress)
+	    {
+		    var index = header.Content.First(h => h.Value.FieldName == fieldAddress.FieldName &&
+		                                                   h.Value.BlockName == fieldAddress.BlockName).Key;
+		    return tableRow[index].Value?.Trim();
+	    }
+
+	   
 
 		public bool IsComplexRepeat(FieldAddress fieldAddress)
         {
@@ -98,7 +109,7 @@ namespace PravoAdder.Domain
             return resultList;
         }
 
-        public int TryGetIndex(FieldAddress fieldAddress)
+		public int TryGetIndex(FieldAddress fieldAddress)
         {
             _infoRowContentSti.TryGetValue(fieldAddress, out List<int> result);
             if (result != null && result.Count == 1) return result.First();
@@ -108,6 +119,6 @@ namespace PravoAdder.Domain
         public bool Contains(FieldAddress fieldAddress)
         {
             return _infoRowContentSti.ContainsKey(fieldAddress);
-        }
+        }	    
     }
 }

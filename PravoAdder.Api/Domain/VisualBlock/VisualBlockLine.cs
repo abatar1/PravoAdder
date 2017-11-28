@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 
 namespace PravoAdder.Api.Domain
@@ -7,6 +8,7 @@ namespace PravoAdder.Api.Domain
 	{		
 		public string BlockLineId { get; set; }
 		public List<VisualBlockField> Fields { get; set; }
+		public List<VisualBlockField> Values { get; set; }
 		public LineType LineType { get; set; }
 		public int Order { get; set; }
 
@@ -25,6 +27,17 @@ namespace PravoAdder.Api.Domain
 		{
 			BlockLineId = id;
 			Order = order;
+			Fields = new List<VisualBlockField>();
+		}
+
+		public static explicit operator VisualBlockParticipantLine(VisualBlockLine other)
+		{
+			return new VisualBlockParticipantLine
+			{
+				Values = other.Fields.Select(x => (VisualBlockParticipantField) x).ToList(),
+				BlockLineId = other.BlockLineId,
+				Order = other.Order
+			};
 		}
 	}
 }

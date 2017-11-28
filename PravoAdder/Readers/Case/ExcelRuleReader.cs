@@ -17,7 +17,7 @@ namespace PravoAdder.Readers
 
 		public override Table Read(ApplicationArguments args, Settings settings)
 		{
-			var reader = new ExcelReader();
+			var reader = new ExcelReader(args.SourceFileName);
 			var table = reader.Read(args, settings);
 
 			var keyIndex = GetIndexByName(table.Header.Content, "Номер дела");

@@ -6,6 +6,7 @@
 		public string UserName { get; set; }
 		public string ConfigFileName { get; set; }
 		public string SourceFileName { get; set; }
+		public string SecondFileName { get; set; }
 		public string ProcessType { get; set; }
 		public string Password { get; set; }
 		public ReadingMode ReaderMode { get; set; }

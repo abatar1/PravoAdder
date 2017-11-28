@@ -16,7 +16,7 @@ namespace PravoAdder.Wrappers
 			switch (args.ReaderMode)
 			{
 				case ReadingMode.Excel:
-					tableReader = new ExcelReader();
+					tableReader = new ExcelReader(args.SourceFileName);
 					Table = tableReader.Read(args, settings);
 					break;
 				case ReadingMode.XmlMap:
@@ -29,6 +29,10 @@ namespace PravoAdder.Wrappers
 					break;
 				case ReadingMode.ExcelReference:
 					tableReader = new ExcelReferenceReader();
+					Table = tableReader.Read(args, settings);
+					break;
+				case ReadingMode.ExcelSplit:
+					tableReader = new ExcelSplitTables();
 					Table = tableReader.Read(args, settings);
 					break;
 				default:

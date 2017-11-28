@@ -8,6 +8,13 @@ namespace PravoAdder.Readers
 {
     public class ExcelReader : TemplateTableReader
     {
+	    private readonly string _filename;
+
+	    public ExcelReader(string filename)
+	    {
+		    _filename = filename;
+	    }
+
 	    protected override FileInfo GetFileInfo(string name, params string[] stub)
 	    {
 			var extentions = new[] {".xlsx", ".xlsb", ".xlsm"};
@@ -16,7 +23,7 @@ namespace PravoAdder.Readers
 
 	    public override Table Read(ApplicationArguments args, Settings settings)
         {
-            var info = GetFileInfo(args.SourceFileName);
+            var info = GetFileInfo(_filename);
 
             using (var xlPackage = new ExcelPackage(info))
             {

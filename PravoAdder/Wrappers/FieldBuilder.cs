@@ -79,6 +79,7 @@ namespace PravoAdder.Wrappers
 		private static CalculationFormulaValue GetCalculationFormulaValueFromData(HttpAuthenticator httpAuthenticator, string data, string specialData)
 		{
 			var calculationFormula = CalculationRepository.Get<CalculationFormulasApi>(httpAuthenticator, specialData);
+			
 			if (calculationFormula == null) return null;
 			return new CalculationFormulaValue
 			{

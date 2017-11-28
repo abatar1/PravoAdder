@@ -66,5 +66,16 @@ namespace PravoAdder.Helpers
 		{
 			return Regex.Split(source, @"(?<!^)(?=[A-Z])");
 		}
+
+		public static string After(this string value, string a)
+		{
+			var posA = value.LastIndexOf(a, StringComparison.Ordinal);
+			if (posA == -1)
+			{
+				return string.Empty;
+			}
+			var adjustedPosA = posA + a.Length;
+			return adjustedPosA >= value.Length ? string.Empty : value.Substring(adjustedPosA);
+		}
 	}
 }

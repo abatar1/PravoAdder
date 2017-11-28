@@ -5,9 +5,8 @@ using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Domain;
 using PravoAdder.Helpers;
-using PravoAdder.Wrappers;
 
-namespace PravoAdder.Readers
+namespace PravoAdder.Wrappers
 {
     public class CaseBuilder
     {
@@ -42,26 +41,36 @@ namespace PravoAdder.Readers
 		    return visualBlocks;
 	    }   
 
-	    public IEnumerable<VisualBlockWrapper> Build()
+	    public IEnumerable<VisualBlockWrapper> Build(ProjectType projectType)
 	    {
-		    if (HeaderBlockInfo.ProjectType == null) return null;
-	   
-		    var projectType = ApiEnviroment.GetProjectType(_httpAuthenticator, HeaderBlockInfo, 0);
-		    if (projectType == null) return null;
+		    if (HeaderBlockInfo.ProjectType == null && projectType == null) return null;
+
+		    if (projectType == null)
+		    {
+				projectType = ApiEnviroment.GetProjectType(_httpAuthenticator, HeaderBlockInfo, 0);
+			    if (projectType == null) return null;
+			}		   		    
 
 			var visualBlocks = GetVisualBlocks(projectType.Id);
 
 		    var result = new Dictionary<int, List<VisualBlock>>();
 		    foreach (var block in visualBlocks)
 		    {
-			    var correctBlockName = block.Name.Split('-')[0].Trim();
-				var blockNumbers = block.IsRepeatable
+			    var clonedBlock = block.CloneJson();
+
+			    var correctBlockName = clonedBlock.Name.Split('-')[0].Trim();
+			    if (correctBlockName == "Исполнительное производство")
+			    {
+				    var a = 0;
+			    }
+
+				var blockNumbers = clonedBlock.IsRepeatable
 				    ? Table.GetRepeatBlockNumber(correctBlockName)
 				    : new List<int> {0};
 			    foreach (var blockNumber in blockNumbers)
 			    {
 				    var newLines = new List<VisualBlockLine>();
-				    foreach (var line in block.Lines)
+				    foreach (var line in clonedBlock.Lines)
 				    {
 					    var clonedLine = line.CloneJson();
 
@@ -116,15 +125,15 @@ namespace PravoAdder.Readers
 							}
 					    }
 					    newLines.AddRange(simpleRepeatsLines);
-					    newLines.AddRange(complexMultilines.Select(d => d.Value.CloneJson()));
+					    newLines.AddRange(complexMultilines.Select(d => d.Value));
 				    }
-				    block.Lines = new List<VisualBlockLine>(newLines);
+				    clonedBlock.Lines = new List<VisualBlockLine>(newLines);
 				    if (!result.ContainsKey(blockNumber)) result.Add(blockNumber, new List<VisualBlock>());
-				    result[blockNumber].Add(block);
+				    result[blockNumber].Add(clonedBlock);
 			    }			  
 		    }
 		    return result
-				.Select(x => new VisualBlockWrapper {VisualBlocks = x.Value, Order = x.Key});
+				.Select(x => new VisualBlockWrapper {VisualBlocks = x.Value.Where(y => y.Lines.Count > 0).ToList(), Order = x.Key});
 	    }
 
 	    public HeaderBlockInfo ReadHeaderBlock(Row excelRow)
@@ -142,13 +151,14 @@ namespace PravoAdder.Readers
 			    foreach (var name in langNames)
 			    {
 				    var index = Table.TryGetIndex(new FieldAddress(name.Block, name.Field));
+
+					if (!excelRow.Content.ContainsKey(index)) continue;
 				    if (index == 0) continue;
 
 				    property.SetValue(headerObject, excelRow[index].ToString().Trim());
 				    break;
 			    }
 		    }
-		    if (string.IsNullOrEmpty(headerObject.Name) || string.IsNullOrEmpty(headerObject.ProjectType)) return null;
 		    HeaderBlockInfo = headerObject;
 		    return headerObject;
 	    }

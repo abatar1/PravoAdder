@@ -9,7 +9,7 @@ namespace PravoAdder.Domain
     public class FieldAddress : IEquatable<FieldAddress>
     {
 		public FieldAddress(string address)
-		{
+		{ 			
 			var parser = new FluentCommandLineParser();
 
 			parser.Setup<string>('b')
@@ -21,7 +21,6 @@ namespace PravoAdder.Domain
 			parser.Setup<int>('r')
 				.Callback(repeatFieldnumber =>
 				{
-					if (repeatFieldnumber != -1) IsRepeatField = true;
 					RepeatFieldNumber = repeatFieldnumber;
 				})
 				.SetDefault(-1);
@@ -45,11 +44,11 @@ namespace PravoAdder.Domain
 					if (!string.IsNullOrEmpty(key)) IsKey = true;
 				})
 				.SetDefault(string.Empty);
-			
-			var result = parser.Parse(address.GetCommandsFromString());
+
+			var formatAddress = address.Replace('=', ' ').Replace('\"', ' ').Trim();
+			var result = parser.Parse(formatAddress.GetCommandsFromString());
 			if (result.HasErrors)
 			{
-				IsValue = true;
 				Value = address;
 			}
 		}		
@@ -61,6 +60,10 @@ namespace PravoAdder.Domain
 			IsRepeatBlock = repeatBlock;
 			RepeatBlockNumber = repeatBlockNumber;
 		}
+
+	    public FieldAddress()
+	    {
+	    }
 
 		public string BlockName { get; private set; }
 
@@ -91,11 +94,11 @@ namespace PravoAdder.Domain
 			}
 		}
 
-		public bool IsValue { get; }
-		public string Value { get; }
+	    public bool IsValue => Value != null;
+	    public string Value { get; set; }
 
-		public bool IsRepeatField { get; private set; }
-		public int RepeatFieldNumber { get; private set; } = -1;
+		public bool IsRepeatField => RepeatFieldNumber != -1;
+	    public int RepeatFieldNumber { get; set; } = -1;
 
 		public bool IsRepeatBlock { get; private set; }
 		public int RepeatBlockNumber { get; private set; }

@@ -9,7 +9,6 @@ namespace PravoAdder.Api.Domain
 		public int Width { get; set; }
 		public string Tag { get; set; }
 		public bool IsRequired { get; set; }
-
 		[JsonIgnore]
 		public int ColumnNumber { get; set; }
 
@@ -43,6 +42,15 @@ namespace PravoAdder.Api.Domain
 			hashCode = hashCode * -1521134295 + Width.GetHashCode();
 			hashCode = hashCode * -1521134295 + EqualityComparer<ProjectField>.Default.GetHashCode(ProjectField);
 			return hashCode;
+		}
+
+		public static explicit operator VisualBlockParticipantField(VisualBlockField other)
+		{
+			return new VisualBlockParticipantField
+			{
+				Value = other.Value,
+				VisualBlockProjectFieldId = other.Id
+			};
 		}
 	}
 }

@@ -87,7 +87,7 @@ namespace PravoAdder
 			var conveyor = new ProcessConveyor(_args);
 			var processType = _args.ProcessType;
 
-			Console.Title = $@"Pravo.{Enum.GetName(typeof(ProcessType), processType)}";
+			Console.Title = $@"Pravo.{ProcessTypes.GetByName(processType).Name}";
 
 			switch (processType)
 			{
@@ -95,7 +95,7 @@ namespace PravoAdder
 					SetTableProcessor(SingleProcessors.Project.TryCreate, SingleProcessors.Project.AddInformation);
 					break;					
 				case "CaseUpdate":
-					SetTableProcessor(SingleProcessors.Project.Update);
+					SetTableProcessor(SingleProcessors.Project.Update, SingleProcessors.Project.UpdateInformation);
 					break;				
 				case "CaseSync":
 					SetTableProcessor(SingleProcessors.Project.TryCreate, SingleProcessors.Project.Synchronize);

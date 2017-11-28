@@ -26,7 +26,7 @@ namespace PravoAdder
 
 			var parser = new FluentCommandLineParser<ApplicationArguments>();
 
-			parser.Setup(arg => arg.UserName)
+			parser.Setup(arg => arg.BaseUri)
 				.As('b', "baseuri")
 				.Required();
 			parser.Setup(arg => arg.UserName)
@@ -61,6 +61,9 @@ namespace PravoAdder
 				parser.Setup(arg => arg.IsOverwrite)
 					.As('o', "overwrite")
 					.SetDefault(true);
+				parser.Setup(arg => arg.SecondFileName)
+					.As('z', "secondsourcefile")
+					.SetDefault(string.Empty);
 			}
 			if (processType.Name == "ParticipantEditByKey" || processType.Name == "ParticipantEdit")
 			{

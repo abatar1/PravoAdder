@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Repositories;
@@ -11,13 +13,16 @@ namespace PravoAdder.Processors
 	{
 		public Func<EngineMessage, EngineMessage> Update = message =>
 		{
-			throw new NotImplementedException();
+			var headerBlock = message.CaseBuilder.ReadHeaderBlock(message.Row);
+			var project = ProjectRepository.Get<ProjectsApi>(message.Authenticator, headerBlock.Name);
+
+			return new EngineMessage { HeaderBlock = headerBlock, Item = project };
 		};
 
 		public Func<EngineMessage, EngineMessage> TryCreate = message =>
 		{
 			var headerBlock = message.CaseBuilder.ReadHeaderBlock(message.Row);
-			if (headerBlock == null) return null;
+			if (string.IsNullOrEmpty(headerBlock.Name) || string.IsNullOrEmpty(headerBlock.ProjectType)) return null;
 
 			var projectGroup = message.ApiEnviroment.AddProjectGroup(message.Args.IsOverwrite, headerBlock);
 			var project = message.ApiEnviroment.AddProject(message.Args.IsOverwrite, headerBlock,
@@ -79,17 +84,64 @@ namespace PravoAdder.Processors
 		{
 			if (message.Item == null) return message;
 
-			var blocksInfo = message.CaseBuilder.Build();
+			var blocksInfo = message.CaseBuilder.Build(((Project) message.Item).ProjectType);
 			if (blocksInfo == null) return null;
+
+			var projectId = message.Item.Id;			
 
 			foreach (var repeatBlock in blocksInfo)
 			{
 				foreach (var blockInfo in repeatBlock.VisualBlocks)
 				{
-					message.ApiEnviroment.AddInformation(blockInfo, message.Row, message.Item.Id, repeatBlock.Order);
+					var projectVisualBlock = ApiRouter.ProjectCustomValues.GetAllVisualBlocks(message.Authenticator, projectId)
+						.Blocks.First(x => x.Name.Equals(blockInfo.NameInConstructor));
+					message.ApiEnviroment.AddInformation(blockInfo, message.Row, projectId, repeatBlock.Order);
 				}
 			}
 			return message;
+		};
+
+		public Func<EngineMessage, EngineMessage> UpdateInformation = message =>
+		{
+			if (message.Item == null) return message;
+
+			var projectType = ((Project) message.Item).ProjectType;
+			var blocksInfo = message.CaseBuilder.Build(projectType);
+			if (blocksInfo == null) return null;
+
+			var projectId = message.Item.Id;
+
+			var successFlag = false;
+			foreach (var repeatBlock in blocksInfo)
+			{
+				foreach (var blockInfo in repeatBlock.VisualBlocks)
+				{
+					var blockName = blockInfo.Name;
+					if (blockInfo.Name.Contains("-"))
+					{
+						blockName = blockInfo.Name.Remove(blockInfo.Name.IndexOf("-", StringComparison.Ordinal)).Trim();
+					}
+
+					var projectVisualBlocks = ApiRouter.ProjectCustomValues.GetAllVisualBlocks(message.Authenticator, projectId)
+						.Blocks.Where(x => x.Name.Contains(blockName)).ToList();
+
+					if (projectVisualBlocks.Count > 0)
+					{
+						foreach (var projectVisualBlock in projectVisualBlocks)
+						{
+							if (message.ApiEnviroment.UpdateInformation(blockInfo, message.Row, message.Item.Id, repeatBlock.Order,
+								projectVisualBlock))
+								successFlag = true;
+						}
+					}
+					else
+					{
+						if (message.ApiEnviroment.AddInformation(blockInfo, message.Row, message.Item.Id, repeatBlock.Order))
+							successFlag = true;
+					}					
+				}
+			}
+			return !successFlag ? null : message;
 		};
 
 		public static Func<EngineMessage, EngineMessage> CreateProjectField = message =>

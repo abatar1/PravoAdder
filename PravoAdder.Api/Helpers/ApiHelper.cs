@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Text;
 using Newtonsoft.Json;
+using PravoAdder.Api.Domain;
 
 namespace PravoAdder.Api.Helpers
 {
@@ -132,7 +133,7 @@ namespace PravoAdder.Api.Helpers
 			if (converter.IsValid(value))
 			{
 				return converter.ConvertFromString(value);
-			}
+			}			
 
 			return (T) JsonConvert.DeserializeObject(value, typeof(T));
 		}
@@ -153,5 +154,5 @@ namespace PravoAdder.Api.Helpers
 		{
 			return pairs.ToDictionary(pair => pair.Item1, pair => pair.Item2);
 		}
-	}
+	}	
 }

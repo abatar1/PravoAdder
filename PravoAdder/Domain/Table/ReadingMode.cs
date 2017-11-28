@@ -6,6 +6,7 @@
 		Excel,
 		XmlMap,
 		ExcelRule,
-		ExcelReference
+		ExcelReference,
+		ExcelSplit
 	}
 }

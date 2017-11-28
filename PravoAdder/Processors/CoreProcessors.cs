@@ -38,7 +38,7 @@ namespace PravoAdder.Processors
 			}
 
 			var processType = message.Args.ProcessType;
-			var processName = Enum.GetName(typeof(ProcessType), processType);
+			var processName = ProcessTypes.GetByName(processType).Name;
 			if (processName == null) return new EngineMessage { IsFinal = true };
 
 			var subjectType = processName.SplitCamelCase()[0];

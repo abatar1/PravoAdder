@@ -142,6 +142,7 @@
     <Compile Include="Domain\VisualBlock\VisualBlock.cs" />
     <Compile Include="Domain\VisualBlock\VisualBlockField.cs" />
     <Compile Include="Domain\VisualBlock\VisualBlockLine.cs" />
+    <Compile Include="Domain\VisualBlock\VisualBlockParticipant.cs" />
     <Compile Include="Domain\VisualBlock\VisualBlockParticipantField.cs" />
     <Compile Include="Domain\VisualBlock\VisualBlockParticipantLine.cs" />
     <Compile Include="Domain\VisualBlock\VisualBlockWrapper.cs" />

@@ -15,8 +15,8 @@ namespace PravoAdder.Processors
 		private static Participant EditParticipant(Participant participant, HttpAuthenticator authenticator, Row header, Row row, string searchKey)
 		{
 			if (participant.VisualBlockValueLines == null) participant.VisualBlockValueLines = new List<VisualBlockParticipantLine>();
-		
-			var blockLines = ParticipantsRepository.Get<ParticipantsApi>(authenticator, participant.Id).VisualBlock.Lines;			
+
+			var blockLines = ParticipantsRepository.Get<ParticipantsApi>(authenticator, participant.Id).VisualBlock.Lines;
 
 			var fieldValue = Table.GetValue(header, row, searchKey)?.Trim();
 			if (string.IsNullOrEmpty(fieldValue)) return null;

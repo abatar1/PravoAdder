@@ -149,112 +149,103 @@ namespace PravoAdder.Wrappers
 			return project;
 		}
 
-        public void AddInformation(VisualBlock visualBlock, Row excelRow, string projectId, int order)
-        {		
-			var contentLines = new List<VisualBlockLine>();
-	        if (visualBlock.Lines == null || !visualBlock.Lines.Any()) return;
+	    private VisualBlockParticipant CreateVisualBlockRequest(VisualBlock visualBlock, Row excelRow, string projectId, int order, VisualBlock projectVisualBlock = null)
+	    {
+			var contentLines = new List<VisualBlockParticipantLine>();
+		    if (visualBlock.Lines == null || !visualBlock.Lines.Any()) return null;
 
-            var messageBuilder = new StringBuilder();	        
-			var calculationIds = new List<string>();
-			foreach (var line in visualBlock.Lines)
-            {
-                var contentFields = new List<VisualBlockField>();
-                foreach (var fieldInfo in line.Fields)
-                {
-                    if (!excelRow.ContainsKey(fieldInfo.ColumnNumber))
-                    {
-                        messageBuilder.AppendLine($"Excel row doesn't contain \"{fieldInfo.ColumnNumber}\" key.");
-                        continue;
-                    }
-                    var fieldData = excelRow[fieldInfo.ColumnNumber].Value;
+		    var messageBuilder = new StringBuilder();
+		    
+		    foreach (var line in visualBlock.Lines)
+		    {
+			    var contentFields = new List<VisualBlockParticipantField>();
+			    foreach (var fieldInfo in line.Fields)
+			    {
+				    if (!excelRow.ContainsKey(fieldInfo.ColumnNumber))
+				    {
+					    messageBuilder.AppendLine($"Excel row doesn't contain \"{fieldInfo.ColumnNumber}\" key for \"{fieldInfo.ProjectField.PlaceholderText}\".");
+					    continue;
+				    }
+				    var calculationFormula = fieldInfo.ProjectField.CalculationFormulas?[0];
+				    if (calculationFormula != null)
+				    {
+					    var calcResult = ApiRouter.CalculationFormulas.GetInputData(_httpAuthenticator, calculationFormula.Id, visualBlock.Id,
+						    line.BlockLineId, projectVisualBlock?.Id, projectId);
+					    var newFieldInfo =
+						    fieldInfo.CloneWithValue(
+							    new CalculationFormulaValue { CalculationFormulaId = calculationFormula.Id, Result = calcResult });
+					    contentFields.Add((VisualBlockParticipantField)newFieldInfo);
+					    continue;
+				    }
+				    var fieldData = excelRow[fieldInfo.ColumnNumber].Value;
 
-                    if (string.IsNullOrEmpty(fieldData)) continue;
+				    if (string.IsNullOrEmpty(fieldData)) continue;
 
-                    try
-                    {
-                        var value = FieldBuilder.CreateFieldValueFromData(_httpAuthenticator, fieldInfo, fieldData);
-	                    if (value is CalculationFormulaValue)
-	                    {
-							calculationIds.Add(((CalculationFormulaValue) value).CalculationFormulaId);
-						}
+				    try
+				    {
+					    var value = FieldBuilder.CreateFieldValueFromData(_httpAuthenticator, fieldInfo, fieldData);
 
-						var newFieldInfo = fieldInfo.CloneWithValue(value);
-                        contentFields.Add(newFieldInfo);
-                    }
-                    catch (Exception e)
-                    {
-	                    messageBuilder.AppendLine(
-		                    $"Error while reading value from table! Message: {e.Message} Id: {projectId} Data: {fieldData}");
-                    }
-                }
-                if (!contentFields.Any()) continue;
+					    var newFieldInfo = fieldInfo.CloneWithValue(value);
+					    contentFields.Add((VisualBlockParticipantField)newFieldInfo);
+				    }
+				    catch (Exception e)
+				    {
+					    messageBuilder.AppendLine(
+						    $"Error while reading value from table! Message: {e.Message} Id: {projectId} Data: {fieldData}");
+				    }
+			    }
+			    if (!contentFields.Any()) continue;
 
-                var newLine = line.CloneJson();
-				newLine.Fields = new List<VisualBlockField>(contentFields);
-                contentLines.Add(newLine);
-            }
+			    var newLine = (VisualBlockParticipantLine) line.CloneJson();
+			    newLine.Values = new List<VisualBlockParticipantField>(contentFields);
+			    newLine.Id = projectVisualBlock?.Lines.FirstOrDefault(x => x.BlockLineId.Equals(line.BlockLineId))?.Id;
+			    contentLines.Add(newLine);
+		    }
 
-            if (contentLines.All(c => !c.Fields.Any())) return;
+		    if (contentLines.All(c => !c.Values.Any())) return null;
 
-            var contentBlock = new VisualBlock
-            {
-                VisualBlockId = visualBlock.Id,
-                ProjectId = projectId,
-                Lines = contentLines,
-                FrontOrder = order,
-				Order = order
+		    return new VisualBlockParticipant
+		    {
+			    VisualBlockId = visualBlock.Id,
+			    ProjectId = projectId,
+			    Lines = new List<VisualBlockParticipantLine>(contentLines),
+			    FrontOrder = order,
+			    Order = order,
+				Message = messageBuilder.ToString().Trim(),
+				Id = projectVisualBlock?.Id
 			};
+		}
 
-	        var visualBlockResponse = ApiRouter.ProjectCustomValues.Create(_httpAuthenticator, contentBlock);
+        public bool AddInformation(VisualBlock visualBlock, Row excelRow, string projectId, int order)
+        {
+	        var contentBlock = CreateVisualBlockRequest(visualBlock, excelRow, projectId, order);
+	        if (contentBlock == null) return false;
 
-			//if (calculationIds.Count > 0)
-			//{
-			//	bool IsCorrectFormula(BlockFieldInfo field, string calculationId) => field.Type == "CalculationFormula" &&
-			//																		 ((dynamic)field.Value)
-			//																		 .CalculationFormulaId == calculationId;
-			//	var lines = new List<BlockLineInfo>();
-			//	foreach (var calculationId in calculationIds)
-			//	{
-			//		var formulaLine =
-			//			contentLines.First(line => line.Fields.Any(field => IsCorrectFormula(field, calculationId)));
-			//		formulaLine.Id = visualBlockResponse.Lines.First(line => line.BlockLineId == formulaLine.BlockLineId).Id;
-
-			//		var formulaField =
-			//			formulaLine.Fields.First(field => IsCorrectFormula(field, calculationId));
-			//		formulaField.Value = new
-			//		{
-			//			((dynamic)formulaField.Value).CalculationFormulaId,
-			//			Result = ApiRouter.CalculationFormulas.GetInputData(_httpAuthenticator, projectId, calculationId,
-			//				blockInfo.Id, formulaLine.BlockLineId)
-			//		};
-
-			//		var existedLine = lines.FirstOrDefault(line => line.BlockLineId == formulaLine.BlockLineId);
-			//		if (existedLine == null)
-			//		{
-			//			formulaLine.Fields = new List<BlockFieldInfo> { formulaField };
-			//			lines.Add(formulaLine);
-			//		}
-			//		else
-			//		{
-			//			lines.First(line => line.BlockLineId == formulaLine.BlockLineId).Fields.Add(formulaField);
-			//		}
-			//	}
-			//	var updateContentBlock = new
-			//	{
-			//		visualBlockResponse.Id,
-			//		VisualBlockId = blockInfo.Id,
-			//		ProjectId = projectId,
-			//		Lines = lines,
-			//		FrontOrder = order,
-			//		Order = order
-			//	};
-			//	var isSuccessUpdateResponse = ApiRouter.ProjectCustomValues.Update(_httpAuthenticator, updateContentBlock);
-			//}
+			var visualBlockResponse = ApiRouter.ProjectCustomValues.Create(_httpAuthenticator, contentBlock);
+			
 			if (visualBlockResponse == null)
 			{
 				Logger.Error(
-					$"{DateTime.Now} | Failed to create information block {visualBlock.Name}. {messageBuilder.ToString().Trim()} | Id : {projectId}");
+					$"{DateTime.Now} | Failed to create information block {visualBlock.Name}. {contentBlock.Message} | Id : {projectId}");
+				return false;
 			}
+	        return true;
 		}
-    }
+
+	    public bool UpdateInformation(VisualBlock visualBlock, Row excelRow, string projectId, int order, VisualBlock projectVisualBlock = null)
+	    {
+			var contentBlock = CreateVisualBlockRequest(visualBlock, excelRow, projectId, order, projectVisualBlock);
+		    if (contentBlock == null) return false;
+
+		    var visualBlockResponse = ApiRouter.ProjectCustomValues.Update(_httpAuthenticator, contentBlock);
+
+		    if (!visualBlockResponse.Result)
+		    {
+			    Logger.Error(
+				    $"{DateTime.Now} | Failed to update information block {visualBlock.Name}. {contentBlock.Message} | Id : {projectId}");
+			    return false;
+			}
+		    return true;
+		}
+	}
 }

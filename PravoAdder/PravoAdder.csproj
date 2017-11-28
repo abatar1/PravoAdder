@@ -103,6 +103,7 @@
     <Compile Include="Domain\Conveyor\ConveyorItem.cs" />
     <Compile Include="Engine.cs" />
     <Compile Include="Domain\Conveyor\EngineMessage.cs" />
+    <Compile Include="Helpers\RowHelper.cs" />
     <Compile Include="Helpers\StringHelper.cs" />
     <Compile Include="Processors\ConveyorException.cs" />
     <Compile Include="Processors\CoreProcessors.cs" />
@@ -112,6 +113,7 @@
     <Compile Include="Processors\ProjectProcessor.cs" />
     <Compile Include="Processors\SingleProcessors.cs" />
     <Compile Include="Readers\BillCreator.cs" />
+    <Compile Include="Readers\Case\ExcelSplitTable.cs" />
     <Compile Include="Resources\MessageResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -148,7 +150,7 @@
     <Compile Include="Processors\GroupedProcessors.cs" />
     <Compile Include="Wrappers\Counter.cs" />
     <Compile Include="Wrappers\SettingsWrapper.cs" />
-    <Compile Include="Readers\Case\CaseBuilder.cs" />
+    <Compile Include="Wrappers\CaseBuilder.cs" />
     <Compile Include="Readers\Case\ExcelReader.cs" />
     <Compile Include="Wrappers\ApiEnviroment.cs" />
     <Compile Include="Domain\Settings.cs" />

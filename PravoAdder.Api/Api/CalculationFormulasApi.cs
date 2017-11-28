@@ -22,11 +22,12 @@ namespace PravoAdder.Api
 			throw new System.NotImplementedException();
 		}
 
-		public int GetInputData(HttpAuthenticator httpAuthenticator, string projectId, string calculationId, string visualBlockId, string blockLineId)
+		public double GetInputData(HttpAuthenticator httpAuthenticator, string calculationId, string visualBlockId,
+			string blockLineId, string projectVisualBlockId, string entityId)
 		{
-			var parameters = ApiHelper.CreateParameters(("ProjectId", projectId), ("CalculationFormulaId", calculationId),
-				("VisualBlockId", visualBlockId), ("BlockLineId", blockLineId));
-			return (int) ApiHelper.GetItem(httpAuthenticator, "Calculation/GetInputData", HttpMethod.Get, parameters).Result.Result;
+			var parameters = ApiHelper.CreateParameters(("CalculationFormulaId", calculationId),
+				("VisualBlockId", visualBlockId), ("BlockLineId", blockLineId), ("ProjectVisualBlockId", projectVisualBlockId), ("EntityId", entityId));
+			return (double) ApiHelper.GetItem(httpAuthenticator, "Calculation/GetInputData", HttpMethod.Get, parameters).Result.Result;
 		}
 	}
 }

@@ -11,6 +11,11 @@ namespace PravoAdder.Domain
 			Content = content;
 		}
 
+		public Row(IEnumerable<KeyValuePair<int, FieldAddress>> content)
+		{
+			Content = content.ToDictionary(key => key.Key, value => value.Value);
+		}
+
 		public Row(Dictionary<int, FieldAddress> content, KeyValuePair<string, string> participant)
 		{
 			Content = content;
@@ -37,6 +42,11 @@ namespace PravoAdder.Domain
 		public bool ContainsKey(int key)
 		{
 			return Content.ContainsKey(key);
+		}
+
+		public void Add(FieldAddress address)
+		{
+			Content.Add(Content.Keys.Max() + 1, address);
 		}
 	}
 }
