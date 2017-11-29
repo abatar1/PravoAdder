@@ -178,9 +178,9 @@ namespace PravoAdder.Readers
 					{
 						if (x.ContainsKey(projectFtIndex))
 						{
-							return !x[projectFtIndex].Value.Equals(projectName);
+							return !x[projectFtIndex].Value.Contains(projectName);
 						}
-						return false;
+						return true;
 					})
 					.Count();
 				if (j != firstContent.Count)
@@ -201,13 +201,13 @@ namespace PravoAdder.Readers
 					}
 
 					var addressC = new FieldAddress(blockName, "Контакты СПИ");
-					newRow.Add(GetIndex(newHeader, addressC), GetContactField(firstTable, addressC, i));
+					newRow.Add(GetIndex(newHeader, addressC), GetContactField(firstTable, addressC, j));
 
 					// Adding repeating rows
-					var repeat1 = GetRepeatingRows(firstTable, new FieldAddress(blockName, "Деятельность в рамках ИП"), i, newHeader)
+					var repeat1 = GetRepeatingRows(firstTable, new FieldAddress(blockName, "Деятельность в рамках ИП"), j, newHeader)
 						.ToDictionary(x => x.Key, x => x.Value);
 
-					var repeat2 = GetRepeatingRows(firstTable, new FieldAddress(blockName, "Дата действия"), i, newHeader)
+					var repeat2 = GetRepeatingRows(firstTable, new FieldAddress(blockName, "Дата действия"), j, newHeader)
 						.ToDictionary(x => x.Key, x => x.Value);
 
 					newRow = newRow.ConcatFromDictionary(repeat1);

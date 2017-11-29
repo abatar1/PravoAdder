@@ -55,7 +55,7 @@ namespace PravoAdder.Wrappers
 
 		    var result = new Dictionary<int, List<VisualBlock>>();
 		    foreach (var block in visualBlocks)
-		    {
+		    {					
 			    var clonedBlock = block.CloneJson();
 			    var correctBlockName = clonedBlock.Name.Split('-')[0].Trim();
 
@@ -73,10 +73,8 @@ namespace PravoAdder.Wrappers
 					    var complexMultilines = new Dictionary<int, VisualBlockLine>();
 
 					    foreach (var field in clonedLine.Fields)
-					    {
-						    var clonedField = field.CloneJson();
-
-						    var fieldAddress = new FieldAddress(correctBlockName, clonedField.ProjectField.Name);
+					    {						   
+						    var fieldAddress = new FieldAddress(correctBlockName, field.ProjectField.Name);
 						    var fieldCount = clonedLine.Fields.Count;
 
 						    if (clonedLine.IsRepeated && fieldCount > 1)
@@ -88,8 +86,9 @@ namespace PravoAdder.Wrappers
 								    {
 									    complexMultilines.Add(key, new VisualBlockLine(clonedLine.Id, key - 1));
 								    }
-								    clonedField.ColumnNumber = complexIndexes[key];
-								    complexMultilines[key].Fields.Add(clonedField);
+								    var multiField = field.CloneJson();
+								    multiField.ColumnNumber = complexIndexes[key];
+								    complexMultilines[key].Fields.Add(multiField);
 							    }
 							    continue;
 						    }
@@ -101,12 +100,13 @@ namespace PravoAdder.Wrappers
 							    simpleRepeatsLines = indexes
 								    .Select(i =>
 								    {
-									    clonedField.ColumnNumber = i;
+									    var multiField = field.CloneJson();
+									    multiField.ColumnNumber = i;
 									    return new VisualBlockLine
 									    {
 										    BlockLineId = clonedLine.Id,
 										    Order = 0,
-										    Fields = new List<VisualBlockField> {clonedField}
+										    Fields = new List<VisualBlockField> { multiField }
 									    };
 								    })
 								    .ToList();
@@ -114,7 +114,8 @@ namespace PravoAdder.Wrappers
 						    }
 						    if (clonedLine.IsSimple)
 						    {
-							    if (simpleRepeatsLines.Count == 0) simpleRepeatsLines.Add(new VisualBlockLine(clonedLine.Id, 0));
+							    var clonedField = field.CloneJson();
+								if (simpleRepeatsLines.Count == 0) simpleRepeatsLines.Add(new VisualBlockLine(clonedLine.Id, 0));
 							    clonedField.ColumnNumber = indexes.First();
 								simpleRepeatsLines[0].Fields.Add(clonedField);
 							}

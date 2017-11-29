@@ -31,7 +31,7 @@ namespace PravoAdder.Wrappers
 				case "TextArea":
 					if (fieldData == "True") return "Да";
 					if (fieldData == "False") return "Нет";
-					return fieldData;
+					return fieldData.Replace(';', ' ');
 				case "CalculationFormula":
 					return GetCalculationFormulaValueFromData(httpAuthenticator, fieldData, fieldInfo.ProjectField.ProjectFieldFormat.Dictionary.SystemName);
 				case "Dictionary":
