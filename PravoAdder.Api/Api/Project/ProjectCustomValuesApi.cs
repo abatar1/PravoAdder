@@ -22,5 +22,11 @@ namespace PravoAdder.Api
 			var parameter = ApiHelper.CreateParameters(("ProjectId", projectId));
 			return ApiHelper.GetItem<VisualBlockWrapper>(httpAuthenticator, "ProjectCustomValues/GetAllVisualBlocks", HttpMethod.Get, parameter);
 		}
+
+		public VisualBlockWrapper Delete(HttpAuthenticator httpAuthenticator, string projectVisualBlockId)
+		{
+			var parameter = ApiHelper.CreateParameters(("ProjectVisualBlockId", projectVisualBlockId));
+			return ApiHelper.GetItem<VisualBlockWrapper>(httpAuthenticator, "ProjectCustomValues/Delete", HttpMethod.Delete, parameter);
+		}
 	}
 }
