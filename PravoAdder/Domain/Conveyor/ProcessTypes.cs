@@ -5,7 +5,7 @@ using System.Reflection;
 namespace PravoAdder.Domain
 {
 	//
-	// Naming rule {Entity}{Action}
+	// Naming rule {Entity}{Action}{Many %if processing many sources%}
 	//
 	public class ProcessTypes
 	{
@@ -31,14 +31,16 @@ namespace PravoAdder.Domain
 		public static ProcessType TaskCreate { get; } = new ProcessType("TaskCreate", true);
 		public static ProcessType ProjectFieldCreate { get; } = new ProcessType("ProjectFieldCreate", true);
 		public static ProcessType VisualBlockLineAdd { get; } = new ProcessType("VisualBlockLineAdd", true);
-		public static ProcessType DictionaryCreate { get; } = new ProcessType("DictionaryCreate", true);
-		public static ProcessType ExpenseCreate { get; } = new ProcessType("ExpenseCreate", false);
+		public static ProcessType DictionaryCreate { get; } = new ProcessType("DictionaryCreate", true);		
 		public static ProcessType BillingRuleUpdate { get; } = new ProcessType("BillingRuleUpdate", false);
 		public static ProcessType NoteCreate { get; } = new ProcessType("NoteCreate", false);
 		public static ProcessType BillCreate { get; } = new ProcessType("BillCreate", false);
 
 		public static ProcessType EventCreate { get; } = new ProcessType("EventCreate", true);
 		public static ProcessType EventDelete { get; } = new ProcessType("EventDelete", false);
+
+		public static ProcessType ExpenseCreate { get; } = new ProcessType("ExpenseCreate", false);
+		public static ProcessType ExpenseCreateMany { get; } = new ProcessType("ExpenseCreateMany", true);
 
 		private static readonly IEnumerable<PropertyInfo> Properties;
 

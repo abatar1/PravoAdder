@@ -60,7 +60,7 @@ namespace PravoAdder
 						var parentIndex = startIndex + Conveyor
 							                  .Skip(startIndex)
 							                  .ToList()
-							                  .FindIndex(iter => iter.Depth != conveyorIter.Depth);
+							                  .FindIndex(iter => conveyorIter.Depth - iter.Depth == 1);
 						if (Conveyor[parentIndex].Message.Child == null)
 						{
 							Conveyor[parentIndex].Message.Child = new List<ConveyorItem>();
@@ -142,7 +142,7 @@ namespace PravoAdder
 					break;			
 				case "HeaderAnalyze":
 					conveyor.AddRange(GroupedProcessors.LoadWithTable);
-					conveyor.Add(SingleProcessors.AnalyzeHeader);
+					conveyor.Add(SingleProcessors.Format.AnalyzeHeader);
 					break;
 				case "NoteCreate":
 					SetTableProcessor(SingleProcessors.Project.AddNote);
@@ -160,7 +160,7 @@ namespace PravoAdder
 					SetTableProcessor(SingleProcessors.Participant.Edit);
 					break;
 				case "ProjectFieldCreate":
-					SetTableProcessor(ProjectProcessor.CreateProjectField);
+					SetTableProcessor(SingleProcessors.Project.CreateProjectField);
 					break;
 				case "VisualBlockLineAdd":
 					SetTableProcessor(SingleProcessors.AddVisualBlockLine);
@@ -197,7 +197,17 @@ namespace PravoAdder
 					SetTableProcessor(SingleProcessors.UpdateBillingSettings);
 					break;
 				case "BillCreate":
-					SetTableProcessor(SingleProcessors.CreateBill);
+					SetTableProcessor(SingleProcessors.Project.SetClient, SingleProcessors.CreateBill);
+					break;
+				case "ExpenseCreateMany":
+					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
+					conveyor.Add(SingleProcessors.Format.Expenses, 1);
+					conveyor.Add(SingleProcessors.Core.LoadTable, 1);					
+					conveyor.Add(SingleProcessors.Project.SetClient, 2);
+					conveyor.Add(SingleProcessors.CreateExpense, 2);		
+					conveyor.Add(SingleProcessors.Core.ProcessCount, 2);
+					conveyor.Add(ForEachProcessors.Row, 1);				
+					conveyor.Add(ForEachProcessors.File);
 					break;
 				default:
 					throw new ArgumentException("Неизвестный тип конвеера.");

@@ -71,7 +71,7 @@ namespace PravoAdder.Readers
 	
 		public override Table Read(ApplicationArguments args, Settings settings)
 		{
-			var mainTableInfo = new TableInfo(settings, args.SourceFileName);
+			var mainTableInfo = new TableInfo(settings, args.SourceName);
 			var table = new List<Row>();
 			var referenceTableInfos = new Dictionary<string, TableInfo>();
 

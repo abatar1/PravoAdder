@@ -9,27 +9,30 @@ using PravoAdder.Wrappers;
 namespace PravoAdder.Domain
 {
 	public class EngineMessage : IDisposable
-	{
-		public ApplicationArguments Args { get; set; }
-		public Settings Settings { get; set; }
-		public Table Table { get; set; }		
-		public Row Row { get; set; }
+	{			
+		// Settings
 		public int Count { get; set; }
 		public int Total { get; set; }
 		public bool IsUpdate { get; set; }
 		public bool IsFinal { get; set; }
-		public DatabaseEntityItem Item { get; set; }
-		public DatabaseEntityItem ConstructedItem { get; set; }
-		public HeaderBlockInfo HeaderBlock { get; set; }
-		public Counter Counter { get; set; }
-		public ParallelOptions ParallelOptions { get; set; }	
-
+		public ParallelOptions ParallelOptions { get; set; }
+		public ApplicationArguments Args { get; set; }
+		public Settings Settings { get; set; }	
+		
+		// Wrappers
+		public Counter Counter { get; set; }	
 		public HttpAuthenticator Authenticator { get; set; }
 		public ApiEnviroment ApiEnviroment { get; set; }
 		public CaseBuilder CaseBuilder { get; set; }
 		public Creator Creator { get; set; }
 
+		// Data
 		public List<ConveyorItem> Child { get; set; }
+		public Table Table { get; set; }
+		public HeaderBlockInfo HeaderBlock { get; set; }
+		public Row Row { get; set; }
+		public DatabaseEntityItem Item { get; set; }
+		public DatabaseEntityItem ConstructedItem { get; set; }
 
 		public void Concat(EngineMessage other)
 		{

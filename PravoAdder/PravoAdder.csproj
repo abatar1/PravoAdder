@@ -108,6 +108,7 @@
     <Compile Include="Processors\ConveyorException.cs" />
     <Compile Include="Processors\CoreProcessors.cs" />
     <Compile Include="Processors\ForEachProcessors.cs" />
+    <Compile Include="Processors\FormatProcessors.cs" />
     <Compile Include="Processors\ParticipantProcessor.cs" />
     <Compile Include="ProcessConveyor.cs" />
     <Compile Include="Processors\ProjectProcessor.cs" />

@@ -57,12 +57,7 @@ namespace PravoAdder.Wrappers
 		    foreach (var block in visualBlocks)
 		    {
 			    var clonedBlock = block.CloneJson();
-
 			    var correctBlockName = clonedBlock.Name.Split('-')[0].Trim();
-			    if (correctBlockName == "Исполнительное производство")
-			    {
-				    var a = 0;
-			    }
 
 				var blockNumbers = clonedBlock.IsRepeatable
 				    ? Table.GetRepeatBlockNumber(correctBlockName)

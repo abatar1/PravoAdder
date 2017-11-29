@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using NLog.Config;
+using NLog;
 using PravoAdder.Domain;
 using PravoAdder.Helpers;
 using PravoAdder.Readers;
@@ -11,6 +11,8 @@ namespace PravoAdder.Processors
 {
 	public class CoreProcessors
 	{
+		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
 		public Func<EngineMessage, EngineMessage> LoadSettings = message =>
 		{
 			var settingsController = new SettingsWrapper();
@@ -23,8 +25,9 @@ namespace PravoAdder.Processors
 
 		public Func<EngineMessage, EngineMessage> LoadTable = message =>
 		{
-			TableEnviroment.Initialize(message.Args, message.Settings);
-			return new EngineMessage { Table = TableEnviroment.Table, Settings = message.Settings };
+			Logger.Info($"Reading {message.Args.SourceName} file.");
+			message.Table = TableEnviroment.Create(message.Args.SourceName, message.Args, message.Settings);
+			return message;
 		};
 
 		public Func<EngineMessage, EngineMessage> InitializeApp = message =>
@@ -50,7 +53,7 @@ namespace PravoAdder.Processors
 			Creator creator = null;
 			if (creatorType != null)
 			{
-				creator = (Creator)Activator.CreateInstance(creatorType, new object[] { authenticator, message.Args });
+				creator = (Creator) Activator.CreateInstance(creatorType, new object[] { authenticator, message.Args });
 			}			
 
 			return new EngineMessage

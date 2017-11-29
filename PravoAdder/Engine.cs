@@ -49,7 +49,7 @@ namespace PravoAdder
 			var processType = ProcessTypes.GetByName(parser.Object.ProcessType);
 			if (processType.NeedTable)
 			{
-				parser.Setup(arg => arg.SourceFileName)
+				parser.Setup(arg => arg.SourceName)
 					.As('s', "sourcefile")
 					.Required();
 				parser.Setup(arg => arg.ReaderMode)
@@ -61,7 +61,7 @@ namespace PravoAdder
 				parser.Setup(arg => arg.IsOverwrite)
 					.As('o', "overwrite")
 					.SetDefault(true);
-				parser.Setup(arg => arg.SecondFileName)
+				parser.Setup(arg => arg.SecondSourceName)
 					.As('z', "secondsourcefile")
 					.SetDefault(string.Empty);
 			}

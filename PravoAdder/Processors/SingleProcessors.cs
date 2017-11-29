@@ -19,6 +19,7 @@ namespace PravoAdder.Processors
 		public static ParticipantProcessor Participant;
 		public static ProjectProcessor Project;
 		public static CoreProcessors Core;
+		public static FormatProcessors Format;
 
 		private static List<ActivityTag> _activityTags;
 
@@ -27,6 +28,7 @@ namespace PravoAdder.Processors
 			Participant = new ParticipantProcessor();
 			Project = new ProjectProcessor();
 			Core = new CoreProcessors();
+			Format = new FormatProcessors();
 		}	
 
 		public static Func<EngineMessage, EngineMessage> DeleteFolder = message =>
@@ -209,70 +211,22 @@ namespace PravoAdder.Processors
 			excelPackage.Save();
 			message.Item = project;
 			return message;
-		};
-
-		public static Func<EngineMessage, EngineMessage> AnalyzeHeader = message =>
-		{
-			var types = ApiRouter.ProjectTypes.GetMany(message.Authenticator);
-			var blockTypes = new Dictionary<string, List<(string, List<string>)>>();
-			var errorKeys = new List<int>();
-			foreach (var cell in message.Table.Header)
-			{
-				if (cell.Value.IsSystem)
-				{
-					var systemHeaderName = typeof(HeaderBlockInfo).GetProperties()
-						.Select(p => p.LoadAttribute<FieldNameAttribute>().FieldNames)
-						.FirstOrDefault(p => p.Contains(cell.Value.FieldName));
-					if (systemHeaderName != null) continue;
-				}
-
-				var wasAchieved = false;
-				foreach (var type in types)
-				{
-					if (!blockTypes.ContainsKey(type.Name))
-					{
-						var blocks = (from block in ApiRouter.ProjectTypes.GetVisualBlocks(message.Authenticator, type.Id)
-							let fields = block.Lines.SelectMany(line => line.Fields.Select(field => field.ProjectField.Name)).ToList()
-							select (block.Name, fields)).ToList();
-						blockTypes.Add(type.Name, blocks);
-					}
-					var blockName = blockTypes[type.Name]
-						.FirstOrDefault(block => block.Item1 == cell.Value.BlockName && block.Item2.Contains(cell.Value.FieldName)).Item1;
-					if (blockName != null)
-					{
-						wasAchieved = true;
-						break;
-					}			
-				}
-				if (!wasAchieved)
-				{
-					errorKeys.Add(cell.Key);			
-				}
-			}
-			using (var xlPackage = new ExcelPackage(new FileInfo(message.Args.SourceFileName + ".xlsx")))
-			{
-				var worksheet = xlPackage.Workbook.Worksheets.First();
-				foreach (var key in errorKeys)
-				{
-					worksheet.Cells[message.Settings.InformationRowPosition, key].Style.Fill.BackgroundColor.SetColor(Color.Red);
-				}			
-				xlPackage.Save();
-			}
-			return message;
-		};
+		};		
 
 		public static Func<EngineMessage, EngineMessage> CreateExpense = message =>
 		{
 			var projectName = Table.GetValue(message.Table.Header, message.Row, "Case Name");
 			var project = ProjectRepository.Get<ProjectsApi>(message.Authenticator, projectName);
-
 			if (project == null) return null;
+
+			var name = message.GetValueFromRow("Expense");
+			if (string.IsNullOrEmpty(name)) return null;
 
 			var expense = new Expense
 			{
 				Amount = double.Parse(message.GetValueFromRow("Amount")),
 				Date = DateTime.Parse(message.GetValueFromRow("Date")),
-				Name = message.GetValueFromRow("Expense"),
+				Name = name,
 				Project = project,
 				Files = new List<string>()
 			};
@@ -283,7 +237,7 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> CreateBill = message =>
 		{
-			var bill = (Bill) message.Creator.Create(message.Table.Header, message.Row);
+			var bill = (Bill) message.Creator.Create(message.Table.Header, message.Row, message.Item);
 			message.Item = bill;
 			return message;
 		};

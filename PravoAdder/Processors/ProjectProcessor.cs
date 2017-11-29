@@ -144,13 +144,39 @@ namespace PravoAdder.Processors
 			return !successFlag ? null : message;
 		};
 
-		public static Func<EngineMessage, EngineMessage> CreateProjectField = message =>
+		public Func<EngineMessage, EngineMessage> CreateProjectField = message =>
 		{
 			var projectField = (ProjectField) message.GetCreatable();
 			if (projectField == null) return null;
 
 			var result = ApiRouter.ProjectFields.Create(message.Authenticator, projectField);
 			message.Item = result;
+			return message;
+		};
+
+		public Func<EngineMessage, EngineMessage> SetClient = message =>
+		{
+			var project = ProjectRepository.GetDetailed<ProjectsApi>(message.Authenticator, message.GetValueFromRow("Case Name"));
+			if (project == null) return null;
+
+			if (project.Client == null)
+			{
+				var clientName = message.GetValueFromRow("Client");
+				if (string.IsNullOrEmpty(clientName)) return null;
+
+				try
+				{
+					var client = new Participant(clientName, ' ', ParticipantType.GetPersonType(message.Authenticator));
+					project.Client = ParticipantsRepository.GetOrCreate<ParticipantsApi>(message.Authenticator, clientName, client);
+				}
+				catch (Exception)
+				{
+					return null;
+				}
+				project = ApiRouter.Projects.Put(message.Authenticator, project);
+			}
+			message.Item = project;
+
 			return message;
 		};
 

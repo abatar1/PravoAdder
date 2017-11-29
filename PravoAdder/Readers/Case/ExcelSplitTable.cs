@@ -148,10 +148,10 @@ namespace PravoAdder.Readers
 
 		public override Table Read(ApplicationArguments arg, Settings settings)
 		{
-			if (string.IsNullOrEmpty(arg.SecondFileName) || string.IsNullOrEmpty(arg.SourceFileName)) return null;
+			if (string.IsNullOrEmpty(arg.SecondSourceName) || string.IsNullOrEmpty(arg.SourceName)) return null;
 			
-			var firstTable = new ExcelReader(arg.SourceFileName).Read(arg, settings);
-			var secondTable = new ExcelReader(arg.SecondFileName).Read(arg, settings);
+			var firstTable = new ExcelReader(arg.SourceName).Read(arg, settings);
+			var secondTable = new ExcelReader(arg.SecondSourceName).Read(arg, settings);
 
 			var firstContent = firstTable.TableContent;
 			var secondContent = secondTable.TableContent;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using PravoAdder.Api;
@@ -21,18 +22,35 @@ namespace PravoAdder.Processors
 				for (var i = 0; i < message.Child.Count; i++)
 				{
 					var childConveyer = message.Child[i];
+					if (childConveyer.Message.Table == null)
+					{
+						childConveyer.Message.Table = message.Table;
+					}
+					
 					var itemizedMessage = messageProcessor(childConveyer.Message, item);
-					itemizedMessage.Count = (int)index;
+					itemizedMessage.Count = (int) index;
 					itemizedMessage.Total = items.Count;
+
 					var newMessage = childConveyer.Processor.Invoke(itemizedMessage);
 					if (i < message.Child.Count - 1)
 					{
 						message.Child[i + 1].Message.Item = newMessage?.Item;
+						message.Child[i + 1].Message.Table = newMessage?.Table;
 					}
 				}
 			});
 			return new EngineMessage();
 		}
+
+		public static Func<EngineMessage, EngineMessage> File = message =>
+		{			
+			var allfiles = Directory.GetFiles(message.Args.SourceName, "*.*", SearchOption.AllDirectories);
+			return ProcessForEach(allfiles, message, (msg, filename) =>
+			{
+				msg.Args.SourceName =  (string) filename;
+				return msg;
+			});
+		};
 
 		public static Func<EngineMessage, EngineMessage> Row = message =>
 		{

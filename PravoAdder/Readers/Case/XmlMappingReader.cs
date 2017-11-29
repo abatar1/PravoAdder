@@ -15,7 +15,7 @@ namespace PravoAdder.Readers
 
 		public override Table Read(ApplicationArguments args, Settings settings)
 		{
-			var sourceInfo = GetFileInfo(args.SourceFileName, ".xml");			
+			var sourceInfo = GetFileInfo(args.SourceName, ".xml");			
 			var mappingInfo = GetFileInfo(settings.XmlMappingPath, ".json");
 			if (sourceInfo == null || mappingInfo == null) throw new FileNotFoundException();
 

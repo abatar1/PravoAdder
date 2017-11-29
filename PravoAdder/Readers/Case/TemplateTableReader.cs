@@ -19,6 +19,7 @@ namespace PravoAdder.Readers
 
 	    protected virtual FileInfo GetFileInfo(string name, params string[] extentions)
 	    {
+			if (Path.HasExtension(name)) return new FileInfo(name);
 		    return extentions
 				.Select(extention => new FileInfo(name + extention))
 				.FirstOrDefault(info => info.Exists);
