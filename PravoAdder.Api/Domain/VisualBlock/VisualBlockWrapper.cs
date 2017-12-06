@@ -7,6 +7,7 @@ namespace PravoAdder.Api.Domain
 		public VisualBlock VisualBlock { get; set; }
 		public List<VisualBlock> VisualBlocks { get; set; }
 		public List<VisualBlock> Blocks { get; set; }
+		public List<VisualBlock> MetadataOfBlocks { get; set; }
 		public int Order { get; set; }
 	}
 }

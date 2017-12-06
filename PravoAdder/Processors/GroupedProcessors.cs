@@ -18,5 +18,16 @@ namespace PravoAdder.Processors
 			SingleProcessors.Core.LoadSettings,
 			SingleProcessors.Core.InitializeApp
 		};
+
+		public static List<Func<EngineMessage, EngineMessage>> LoadWithFormattedTable(Func<EngineMessage, EngineMessage> formatter)
+		{
+			return new List<Func<EngineMessage, EngineMessage>>
+			{
+				SingleProcessors.Core.LoadSettings,
+				formatter,
+				SingleProcessors.Core.LoadTable,
+				SingleProcessors.Core.InitializeApp
+			};
+		}
 	}
 }

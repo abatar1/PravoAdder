@@ -31,6 +31,10 @@ namespace PravoAdder
 		public static ExpensesApi Expenses;
 		public static BillingSettingsApi BillingSettings;
 		public static BillsApi Bills;
+		public static DocumentsApi Documents;
+		public static VirtualCatalogApi VirtualCatalog;
+		public static DocumentFoldersApi DocumentFolders;
+		public static UploadApi Upload;
 
 		public static int PageSize = 50;
 
@@ -62,6 +66,10 @@ namespace PravoAdder
 			Expenses = new ExpensesApi();
 			BillingSettings = new BillingSettingsApi();
 			Bills = new BillsApi();
+			Documents = new DocumentsApi();
+			VirtualCatalog = new VirtualCatalogApi();
+			DocumentFolders = new DocumentFoldersApi();
+			Upload = new UploadApi();
 		}
 	}
 }

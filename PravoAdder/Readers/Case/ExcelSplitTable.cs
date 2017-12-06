@@ -169,6 +169,7 @@ namespace PravoAdder.Readers
 				var newRow = new Dictionary<int, FieldAddress>();
 				
 				var projectName = TryAddSimpleFieldToRow(secondTable, i, newRow, projectAddress, newHeader);
+
 				if (string.IsNullOrEmpty(projectName)) continue;
 
 				var projectFtIndex = GetIndex(firstTable.Header, projectAddress);

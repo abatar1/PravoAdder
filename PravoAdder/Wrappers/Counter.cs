@@ -24,5 +24,13 @@ namespace PravoAdder.Wrappers
 			Logger.Info(
 				$"{DateTime.Now} | Progress: {current + 1 + rowOffset}/{total + rowOffset} ({_count}) | Name: {itemName.SliceSpaceIfMore(sliceNum)} | Id: {item.Id}");
 		}
+
+		public void Message(string message)
+		{
+			_count += 1;
+
+			Logger.Info(
+				$"{DateTime.Now} | Message: {message}");
+		}
 	}
 }

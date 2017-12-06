@@ -32,6 +32,9 @@ namespace PravoAdder.Domain
 		[FieldName("Клиент", "Client")]
 		public string Client { get; set; }
 
+		[FieldName("Файлы", "Files")]
+		public string FilesPath { get; set; }
+
 		[JsonIgnore]
 		public static Dictionary<string, int> Languages = new Dictionary<string, int> {["RU"] = 0, ["ENG"] = 1};
 

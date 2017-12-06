@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
+using Fclp.Internals.Extensions;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Repositories;
@@ -13,22 +14,20 @@ namespace PravoAdder.Processors
 	{
 		public Func<EngineMessage, EngineMessage> Update = message =>
 		{
-			var headerBlock = message.CaseBuilder.ReadHeaderBlock(message.Row);
-			var project = ProjectRepository.Get<ProjectsApi>(message.Authenticator, headerBlock.Name);
-
-			return new EngineMessage { HeaderBlock = headerBlock, Item = project };
+			message.Item = ProjectRepository.Get<ProjectsApi>(message.Authenticator, message.HeaderBlock.Name);
+			return message;
 		};
 
 		public Func<EngineMessage, EngineMessage> TryCreate = message =>
 		{
-			var headerBlock = message.CaseBuilder.ReadHeaderBlock(message.Row);
+			var headerBlock = message.HeaderBlock;
 			if (string.IsNullOrEmpty(headerBlock.Name) || string.IsNullOrEmpty(headerBlock.ProjectType)) return null;
 
 			var projectGroup = message.ApiEnviroment.AddProjectGroup(message.Args.IsOverwrite, headerBlock);
-			var project = message.ApiEnviroment.AddProject(message.Args.IsOverwrite, headerBlock,
+			message.Item = message.ApiEnviroment.AddProject(message.Args.IsOverwrite, headerBlock,
 				projectGroup?.Id, message.Count, message.IsUpdate);
 
-			return new EngineMessage { HeaderBlock = headerBlock, Item = project };
+			return message;
 		};
 
 		public Func<EngineMessage, EngineMessage> Delete = message =>
@@ -127,17 +126,23 @@ namespace PravoAdder.Processors
 
 					if (projectVisualBlocks.Count > 0)
 					{
-						foreach (var projectVisualBlock in projectVisualBlocks)
+						projectVisualBlocks
+							.Skip(1)
+							.ForEach(x => ApiRouter.ProjectCustomValues.Delete(message.Authenticator, x.Id));
+
+						var processingBlock = projectVisualBlocks.First();
+						if (message.ApiEnviroment.UpdateInformation(blockInfo, message.Row, message.Item.Id, repeatBlock.Order,
+							processingBlock))
 						{
-							if (message.ApiEnviroment.UpdateInformation(blockInfo, message.Row, message.Item.Id, repeatBlock.Order,
-								projectVisualBlock))
-								successFlag = true;
-						}
+							successFlag = true;
+						}							
 					}
 					else
 					{
 						if (message.ApiEnviroment.AddInformation(blockInfo, message.Row, message.Item.Id, repeatBlock.Order))
+						{
 							successFlag = true;
+						}
 					}					
 				}
 			}
@@ -239,6 +244,69 @@ namespace PravoAdder.Processors
 			ApiRouter.ProjectSettings.Save(message.Authenticator, projectSettings);
 
 			message.Item = project;
+			return message;
+		};
+
+		private static List<DictionaryItem> _documentTypes;
+
+		private static void ProcessFiles(EngineMessage message, IReadOnlyCollection<DocumentFolder> existingFolders, DirectoryInfo directoryInfo, string parentId)
+		{
+			var bulks = new List<Bulk>();
+			foreach (var subFile in directoryInfo.GetFiles())
+			{				
+				if (_documentTypes == null)
+					_documentTypes = ApiRouter.DefaultDictionaryItems.GetMany(message.Authenticator, "CaseMap.Modules.Documents.DAL.Data.DocumentType");
+
+				var file = ApiRouter.Upload.Upload(message.Authenticator, subFile).Result;
+				if (file == null) continue;
+				var documentType = _documentTypes.FirstOrDefault(x => x.Name == "Draft");
+
+				var bulk = new Bulk
+				{
+					DocumentFolderId = parentId,
+					DocumentType = documentType,
+					File = file,
+					ReceivedDate = DateTime.Today,
+					DocumentContentType = new {file.Name}
+				};
+				message.Counter.ProcessCount(message.Count, message.Total, message.Args.RowNum, file);
+
+				bulks.Add(bulk);
+			}
+
+			if (bulks.Count > 0)
+			{
+				ApiRouter.Documents.Create(message.Authenticator, bulks);
+				message.Counter.Message($"{bulks.Count} files succesfuly uploaded from {directoryInfo.Name}");
+			}			
+
+			foreach (var subDirectory in directoryInfo.GetDirectories())
+			{
+				var folderName = subDirectory.Name;
+				var folder = existingFolders.FirstOrDefault(f => f.Name.Equals(folderName));
+				if (folder == null)
+				{
+					folder = ApiRouter.DocumentFolders.Create(message.Authenticator,
+						new DocumentFolder
+						{
+							ParentId = parentId,
+							Name = folderName,
+							SysName = "Folder"
+						});
+				}				
+				existingFolders = ApiRouter.VirtualCatalog.GetMany(message.Authenticator, folder.Id);
+				ProcessFiles(message, existingFolders, subDirectory, folder.Id);
+			}
+		}
+
+		public Func<EngineMessage, EngineMessage> Files = message =>
+		{
+			var project = ProjectRepository.GetDetailed<ProjectsApi>(message.Authenticator, message.HeaderBlock.Name);
+			var directoryInfo = new DirectoryInfo(message.HeaderBlock.FilesPath);
+			var existingFolders = ApiRouter.VirtualCatalog.GetMany(message.Authenticator, project.DocumentFolderId);
+
+			ProcessFiles(message, existingFolders, directoryInfo, project.DocumentFolderId);
+
 			return message;
 		};
 	}

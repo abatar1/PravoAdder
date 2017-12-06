@@ -209,6 +209,12 @@ namespace PravoAdder
 					conveyor.Add(ForEachProcessors.Row, 1);				
 					conveyor.Add(ForEachProcessors.File);
 					break;
+				case "DocumentUpload":
+					conveyor.AddRange(GroupedProcessors.LoadWithFormattedTable(SingleProcessors.Format.Case));
+					conveyor.Add(SingleProcessors.Project.Files, 1);
+					conveyor.Add(SingleProcessors.Core.ProcessCount, 1);
+					conveyor.Add(ForEachProcessors.Row);
+					break;
 				default:
 					throw new ArgumentException("Неизвестный тип конвеера.");
 			}

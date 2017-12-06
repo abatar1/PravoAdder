@@ -11,7 +11,7 @@ namespace PravoAdder.Wrappers
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 		private readonly ApplicationArguments _arguments;
 
-        public AuthentificatorWrapper(ApplicationArguments args) : base(args.BaseUri)
+        public AuthentificatorWrapper(ApplicationArguments args, TimeSpan timeSpan) : base(args.BaseUri, timeSpan)
         {
 	        _arguments = args;
         }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using PravoAdder.Api;
@@ -146,7 +147,15 @@ namespace PravoAdder.Wrappers
 				    (block, field) => new { Block = block, Field = field });
 			    foreach (var name in langNames)
 			    {
-				    var index = Table.TryGetIndex(new FieldAddress(name.Block, name.Field));
+				    int index;
+				    try
+				    {
+					    index = Table.TryGetIndex(new FieldAddress(name.Block, name.Field));
+					}
+				    catch (Exception)
+				    {
+					    continue;
+				    }				    
 
 					if (!excelRow.Content.ContainsKey(index)) continue;
 				    if (index == 0) continue;

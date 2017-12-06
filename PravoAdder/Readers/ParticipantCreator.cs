@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using PravoAdder.Api;
@@ -122,7 +121,7 @@ namespace PravoAdder.Readers
 					{
 						BlockLineId = line.Id,
 						Order = 0,
-						Values = new List<VisualBlockParticipantField> { newField }
+						Values = new List<VisualBlockParticipantField> {newField}
 					};
 					participant.VisualBlockValueLines.Add(newLine);
 				}

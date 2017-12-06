@@ -36,6 +36,7 @@ namespace PravoAdder.Processors
 					{
 						message.Child[i + 1].Message.Item = newMessage?.Item;
 						message.Child[i + 1].Message.Table = newMessage?.Table;
+						message.Child[i + 1].Message.HeaderBlock = newMessage?.HeaderBlock;
 					}
 				}
 			});
@@ -53,11 +54,13 @@ namespace PravoAdder.Processors
 		};
 
 		public static Func<EngineMessage, EngineMessage> Row = message =>
-		{
+		{			
 			var rows = message.Table.TableContent.ToList();
 			return ProcessForEach(rows, message, (msg, item) =>
 			{
-				msg.Row = (Row) item;
+				var row = (Row) item;
+				msg.Row = row;
+				msg.HeaderBlock = msg.CaseBuilder.ReadHeaderBlock(row);
 				return msg;
 			});
 		};

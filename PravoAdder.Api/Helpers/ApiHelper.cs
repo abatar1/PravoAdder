@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Net;
 using System.Text;
 using Newtonsoft.Json;
-using PravoAdder.Api.Domain;
 
 namespace PravoAdder.Api.Helpers
 {
@@ -26,7 +26,7 @@ namespace PravoAdder.Api.Helpers
 			catch (Exception)
 			{
 				return null;
-			}		
+			}
 		}
 
 		public static async Task<bool> TrySendAsync(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, object content)
@@ -71,13 +71,13 @@ namespace PravoAdder.Api.Helpers
 				request = new HttpRequestMessage(method, $"{requestUri}{parametersString}");
 			}
 			else
-			{			
+			{
 				request = new HttpRequestMessage(method, requestUri);
 				if (content != null)
 				{
-					var serializedContent = JsonConvert.SerializeObject(content);
+					var serializedContent = JsonConvert.SerializeObject(content, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
 					request.Content = new StringContent(serializedContent, Encoding.UTF8, "application/json");
-				}				
+				}
 			}
 
 			request.Headers.Add("Cookie", cookie.ToString());
@@ -108,11 +108,11 @@ namespace PravoAdder.Api.Helpers
 				if (responseMessage == null) throw new HttpRequestException();
 
 				var newItems = new List<object>(responseMessage.Result)
-					.Select(r => (T)JsonConvert.DeserializeObject(r.ToString(), typeof(T)));
+					.Select(r => (T) JsonConvert.DeserializeObject(r.ToString(), typeof(T)));
 				resultContainer.AddRange(newItems);
 
 				count += 1;
-				if (!(bool)responseMessage.NextPageExists) break;
+				if (!(bool) responseMessage.NextPageExists) break;
 
 			} while (true);
 
@@ -125,7 +125,7 @@ namespace PravoAdder.Api.Helpers
 			var item = GetItem(httpAuthenticator, path, httpMethod, content);
 
 			if (item == null) return default(T);
-			if (!(bool) item.IsSuccess) return default(T);
+			if (!(bool)item.IsSuccess) return default(T);
 
 			var value = item.Result.ToString();
 
@@ -133,9 +133,9 @@ namespace PravoAdder.Api.Helpers
 			if (converter.IsValid(value))
 			{
 				return converter.ConvertFromString(value);
-			}			
+			}
 
-			return (T) JsonConvert.DeserializeObject(value, typeof(T));
+			return (T)JsonConvert.DeserializeObject(value, typeof(T));
 		}
 
 		public static dynamic GetItem(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, object content)
@@ -154,5 +154,21 @@ namespace PravoAdder.Api.Helpers
 		{
 			return pairs.ToDictionary(pair => pair.Item1, pair => pair.Item2);
 		}
-	}	
+
+		public static async Task<T> SendFileAsync<T>(HttpAuthenticator httpAuthenticator, string path, HttpMethod httpMethod, FileInfo file)
+		{
+			var byteContent = File.ReadAllBytes(file.FullName);
+			var bytesContent = new ByteArrayContent(byteContent);
+
+			using (var formData = new MultipartFormDataContent())
+			{
+				formData.Add(bytesContent, file.Name, file.Name);
+				var response = await httpAuthenticator.Client.PostAsync($"api/{path}", formData);
+				if (!response.IsSuccessStatusCode) return default(T);
+
+				var responseResult = ReadFromResponce(response).Result.ToString();
+				return (T) JsonConvert.DeserializeObject(responseResult, typeof(T));
+			}
+		}
+	}
 }

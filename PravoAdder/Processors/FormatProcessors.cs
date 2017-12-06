@@ -62,9 +62,9 @@ namespace PravoAdder.Processors
 			return message;
 		};
 
-		public Func<EngineMessage, EngineMessage> Expenses = message =>
+		private static void ProcessHeader(EngineMessage message, Func<string, string> cellProcessor)
 		{
-			using (var xlPackage = new ExcelPackage(new FileInfo(message.Args.SourceName)))
+			using (var xlPackage = new ExcelPackage(new FileInfo(message.Args.SourceName + ".xlsx")))
 			{
 				var worksheet = xlPackage.Workbook.Worksheets.First();
 				var totalColumns = worksheet.Dimension.End.Column;
@@ -72,36 +72,60 @@ namespace PravoAdder.Processors
 				for (var columnNum = 1; columnNum <= totalColumns; columnNum++)
 				{
 					var cellValue = worksheet.Cells[message.Settings.InformationRowPosition, columnNum].Text;
-					var newValue = cellValue;
-
-					switch (cellValue)
-					{
-						case "Date":
-							newValue = new FieldAddress("temp", cellValue).ToString();
-							break;
-						case "Case":
-							newValue = new FieldAddress("System", "Case Name").ToString();
-							break;
-						case "Total":
-							newValue = new FieldAddress("temp", "Amount").ToString();
-							break;
-						case "Description":
-							newValue = new FieldAddress("temp", "Expense").ToString();
-							break;
-						case "Client":
-							newValue = new FieldAddress("temp", cellValue).ToString();
-							break;
-						default:
-							continue;
-					}
+					var processedValue = cellProcessor(cellValue);
+					if (processedValue == null) continue;
 
 					worksheet.Cells[message.Settings.InformationRowPosition, columnNum].Style.Fill.PatternType = ExcelFillStyle.Solid;
-					worksheet.Cells[message.Settings.InformationRowPosition, columnNum].Style.Fill.BackgroundColor.SetColor(Color.Yellow);
-					worksheet.Cells[message.Settings.InformationRowPosition, columnNum].Value = newValue;
+					worksheet.Cells[message.Settings.InformationRowPosition, columnNum].Style.Fill.BackgroundColor
+						.SetColor(Color.Yellow);
+					worksheet.Cells[message.Settings.InformationRowPosition, columnNum].Value = processedValue;
 				}
-
 				xlPackage.Save();
-			}
+			}			
+		}
+
+		public Func<EngineMessage, EngineMessage> Expenses = message =>
+		{
+			ProcessHeader(message, cellValue =>
+			{
+				switch (cellValue)
+				{
+					case "Date":
+						return new FieldAddress("temp", cellValue).ToString();
+					case "Case":
+						return new FieldAddress("Summary", "Case Name").ToString();
+					case "Total":
+						return new FieldAddress("temp", "Amount").ToString();
+					case "Description":
+						return new FieldAddress("temp", "Expense").ToString();
+					case "Client":
+						return new FieldAddress("temp", cellValue).ToString();
+					default:
+						return null;
+				}
+			});
+
+			return message;
+		};
+
+		public Func<EngineMessage, EngineMessage> Case = message =>
+		{
+			ProcessHeader(message, cellValue =>
+			{
+				switch (cellValue)
+				{
+					case "Case Name":
+						return new FieldAddress("Summary", "Case Name").ToString();
+					case "CaseId":
+						return new FieldAddress("Summary", "Files").ToString();
+					case "Atty-Div":
+						return new FieldAddress("Summary", "Assignee").ToString();
+					case "Liability":
+						return new FieldAddress("Summary", "Practice Area").ToString();					
+					default:
+						return null;
+				}
+			});
 
 			return message;
 		};

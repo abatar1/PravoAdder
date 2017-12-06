@@ -8,7 +8,7 @@ namespace PravoAdder.Api.Domain
 	{		
 		public string BlockLineId { get; set; }
 		public List<VisualBlockField> Fields { get; set; }
-		public List<VisualBlockField> Values { get; set; }
+		public List<VisualBlockParticipantField> Values { get; set; }
 		public LineType LineType { get; set; }
 		public int Order { get; set; }
 

@@ -13,5 +13,6 @@ namespace PravoAdder.Api.Domain
 		public string CasebookNumber { get; set; }
 		public string Description { get; set; }
 		public Participant Client { get; set; }
+		public string DocumentFolderId { get; set; }
 	}
 }

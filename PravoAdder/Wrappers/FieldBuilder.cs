@@ -90,7 +90,7 @@ namespace PravoAdder.Wrappers
 
 		private static Participant GetParticipantFromData(HttpAuthenticator httpAuthenticator, string participantName)
 		{
-			// TODO доделать создание
+			// TODO доделать создание участника, сейчас передается заглушка new Participant()
 			return ParticipantsRepository.GetOrCreate<ParticipantsApi>(httpAuthenticator, participantName,
 				new Participant());
 		}

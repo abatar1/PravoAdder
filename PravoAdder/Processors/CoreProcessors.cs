@@ -32,7 +32,7 @@ namespace PravoAdder.Processors
 
 		public Func<EngineMessage, EngineMessage> InitializeApp = message =>
 		{
-			var authenticatorController = new AuthentificatorWrapper(message.Args);
+			var authenticatorController = new AuthentificatorWrapper(message.Args, TimeSpan.FromMinutes(10));
 			var authenticator = authenticatorController.Authenticate();
 			if (authenticator == null)
 			{

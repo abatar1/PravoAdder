@@ -158,6 +158,7 @@ namespace PravoAdder.Wrappers
 		    
 		    foreach (var line in visualBlock.Lines)
 		    {
+			    object value;
 			    var contentFields = new List<VisualBlockParticipantField>();
 			    foreach (var fieldInfo in line.Fields)
 			    {
@@ -174,7 +175,8 @@ namespace PravoAdder.Wrappers
 					    var newFieldInfo =
 						    fieldInfo.CloneWithValue(
 							    new CalculationFormulaValue { CalculationFormulaId = calculationFormula.Id, Result = calcResult });
-					    contentFields.Add((VisualBlockParticipantField)newFieldInfo);
+
+					    contentFields.Add((VisualBlockParticipantField) newFieldInfo);
 					    continue;
 				    }
 				    var fieldData = excelRow[fieldInfo.ColumnNumber].Value;
@@ -183,7 +185,7 @@ namespace PravoAdder.Wrappers
 
 				    try
 				    {
-					    var value = FieldBuilder.CreateFieldValueFromData(_httpAuthenticator, fieldInfo, fieldData);
+					    value = FieldBuilder.CreateFieldValueFromData(_httpAuthenticator, fieldInfo, fieldData);
 
 					    var newFieldInfo = fieldInfo.CloneWithValue(value);
 					    contentFields.Add((VisualBlockParticipantField)newFieldInfo);
@@ -198,8 +200,10 @@ namespace PravoAdder.Wrappers
 
 			    var newLine = (VisualBlockParticipantLine) line.CloneJson();
 			    newLine.Values = new List<VisualBlockParticipantField>(contentFields);
+
 			    newLine.Id = projectVisualBlock?.Lines.FirstOrDefault(x => x.BlockLineId.Equals(line.BlockLineId))?.Id;
-			    contentLines.Add(newLine);
+
+				contentLines.Add(newLine);
 		    }
 
 		    if (contentLines.All(c => !c.Values.Any())) return null;
