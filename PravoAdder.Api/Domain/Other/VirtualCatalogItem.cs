@@ -1,6 +1,6 @@
 ﻿namespace PravoAdder.Api.Domain
 {
-	public class DocumentFolder : DatabaseEntityItem
+	public class VirtualCatalogItem : DatabaseEntityItem
 	{
 		public Responsible Author { get; set; }
 		public string ParentId { get; set; }

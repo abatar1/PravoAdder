@@ -18,7 +18,7 @@ namespace PravoAdder.Api
 			return ApiHelper.GetItem<ProjectType>(httpAuthenticator, "ProjectTypes/GetProjectType", HttpMethod.Get, parameters);
 		}
 
-		public List<VisualBlock> GetVisualBlocks(HttpAuthenticator httpAuthenticator, string projectTypeId)
+		public List<VisualBlockModel> GetVisualBlocks(HttpAuthenticator httpAuthenticator, string projectTypeId)
 		{
 			var parameters = ApiHelper.CreateParameters(("projectTypeId", projectTypeId));
 			return ApiHelper.GetItem<VisualBlockWrapper>(httpAuthenticator, "ProjectTypes/GetProjectType", HttpMethod.Get,

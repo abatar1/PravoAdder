@@ -19,7 +19,7 @@ namespace PravoAdder.Wrappers
 			Dictionaries = new ConcurrentDictionary<string, ConcurrentBag<DictionaryItem>>();
 		}
 
-		public static object CreateFieldValueFromData(HttpAuthenticator httpAuthenticator, VisualBlockField fieldInfo, string fieldData)
+		public static object CreateFieldValueFromData(HttpAuthenticator httpAuthenticator, VisualBlockFieldModel fieldInfo, string fieldData)
 		{
 			if (string.IsNullOrEmpty(fieldData)) return null;
 			switch (fieldInfo.ProjectField.ProjectFieldFormat.SysName)

@@ -7,10 +7,10 @@ namespace PravoAdder.Api
 {
 	public class VirtualCatalogApi
 	{
-		public List<DocumentFolder> GetMany(HttpAuthenticator httpAuthenticator, string folderId)
+		public List<VirtualCatalogItem> GetContext(HttpAuthenticator httpAuthenticator, string folderId)
 		{
 			var parameters = ApiHelper.CreateParameters(("FolderId", folderId));
-			return ApiHelper.GetItems<DocumentFolder>(httpAuthenticator, "VirtualCatalog/GetContent", HttpMethod.Post,
+			return ApiHelper.GetItems<VirtualCatalogItem>(httpAuthenticator, "VirtualCatalog/GetContent", HttpMethod.Post,
 				parameters);
 		}
 	}

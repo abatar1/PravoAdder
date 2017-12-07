@@ -65,7 +65,7 @@ namespace PravoAdder
 					.As('z', "secondsourcefile")
 					.SetDefault(string.Empty);
 			}
-			if (processType.Name == "ParticipantEditByKey" || processType.Name == "ParticipantEdit")
+			if (processType.Name == "ParticipantEditByKey" || processType.Name == "ParticipantEdit" || processType.Name == "DocumentToMultiline")
 			{
 				parser.Setup(arg => arg.SearchKey)
 					.As('k', "searchkey")

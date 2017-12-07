@@ -33,6 +33,9 @@ namespace PravoAdder.Domain
 		public static ProcessType ExpenseCreate { get; } = new ProcessType("ExpenseCreate", false);
 		public static ProcessType ExpenseCreateMany { get; } = new ProcessType("ExpenseCreateMany", true);
 
+		public static ProcessType DocumentUpload { get; } = new ProcessType("DocumentUpload", true);
+		public static ProcessType DocumentToMultiline { get; } = new ProcessType("DocumentToMultiline", false);
+
 		public static ProcessType HeaderAnalyze { get; } = new ProcessType("HeaderAnalyze", true);
 		public static ProcessType TaskCreate { get; } = new ProcessType("TaskCreate", true);
 		public static ProcessType ProjectFieldCreate { get; } = new ProcessType("ProjectFieldCreate", true);
@@ -40,8 +43,7 @@ namespace PravoAdder.Domain
 		public static ProcessType DictionaryCreate { get; } = new ProcessType("DictionaryCreate", true);
 		public static ProcessType BillingRuleUpdate { get; } = new ProcessType("BillingRuleUpdate", false);
 		public static ProcessType NoteCreate { get; } = new ProcessType("NoteCreate", false);
-		public static ProcessType BillCreate { get; } = new ProcessType("BillCreate", false);
-		public static ProcessType DocumentUpload { get; } = new ProcessType("DocumentUpload", true);
+		public static ProcessType BillCreate { get; } = new ProcessType("BillCreate", false);		
 
 		private static readonly IEnumerable<PropertyInfo> Properties;
 

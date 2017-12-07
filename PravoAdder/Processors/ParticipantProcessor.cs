@@ -14,7 +14,7 @@ namespace PravoAdder.Processors
 	{
 		private static Participant EditParticipant(Participant participant, HttpAuthenticator authenticator, Row header, Row row, string searchKey)
 		{
-			if (participant.VisualBlockValueLines == null) participant.VisualBlockValueLines = new List<VisualBlockParticipantLine>();
+			if (participant.VisualBlockValueLines == null) participant.VisualBlockValueLines = new List<VisualBlockLine>();
 
 			var blockLines = ParticipantsRepository.Get<ParticipantsApi>(authenticator, participant.Id).VisualBlock.Lines;
 
@@ -29,13 +29,13 @@ namespace PravoAdder.Processors
 			}));
 			if (editingLine == null) return null;
 
-			var addingLine = new VisualBlockParticipantLine
+			var addingLine = new VisualBlockLine
 			{
 				BlockLineId = editingLine.Id,
 				Values = editingLine.Fields
 					.Select(f =>
 					{
-						var newField = new VisualBlockParticipantField { VisualBlockProjectFieldId = f.Id };
+						var newField = new VisualBlockField { VisualBlockProjectFieldId = f.Id };
 						if (f.ProjectField.Name.Contains(searchKey)) newField.Value = fieldValue;
 						return newField;
 					})

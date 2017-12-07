@@ -11,7 +11,7 @@ namespace PravoAdder.Wrappers
 {
     public class CaseBuilder
     {
-	    private readonly IDictionary<string, List<VisualBlock>> _visualBlocks;
+	    private readonly IDictionary<string, List<VisualBlockModel>> _visualBlocks;
 		private readonly object _visualBlocksLocker = new object();
 	    private readonly HttpAuthenticator _httpAuthenticator;
 
@@ -23,13 +23,13 @@ namespace PravoAdder.Wrappers
         {
 	        Settings = settings;
 	        Table = excelTable;
-			_visualBlocks = new ConcurrentDictionary<string, List<VisualBlock>>();
+			_visualBlocks = new ConcurrentDictionary<string, List<VisualBlockModel>>();
 	        _httpAuthenticator = httpAuthenticator;
         }
 
-	    private IEnumerable<VisualBlock> GetVisualBlocks(string projectTypeId)
+	    private IEnumerable<VisualBlockModel> GetVisualBlocks(string projectTypeId)
 	    {
-			List<VisualBlock> visualBlocks;
+			List<VisualBlockModel> visualBlocks;
 		    lock (_visualBlocksLocker)
 		    {
 			    if (!_visualBlocks.ContainsKey(projectTypeId))
@@ -54,7 +54,7 @@ namespace PravoAdder.Wrappers
 
 			var visualBlocks = GetVisualBlocks(projectType.Id);
 
-		    var result = new Dictionary<int, List<VisualBlock>>();
+		    var result = new Dictionary<int, List<VisualBlockModel>>();
 		    foreach (var block in visualBlocks)
 		    {					
 			    var clonedBlock = block.CloneJson();
@@ -65,13 +65,13 @@ namespace PravoAdder.Wrappers
 				    : new List<int> {0};
 			    foreach (var blockNumber in blockNumbers)
 			    {
-				    var newLines = new List<VisualBlockLine>();
+				    var newLines = new List<VisualBlockLineModel>();
 				    foreach (var line in clonedBlock.Lines)
 				    {
 					    var clonedLine = line.CloneJson();
 
-					    var simpleRepeatsLines = new List<VisualBlockLine>();
-					    var complexMultilines = new Dictionary<int, VisualBlockLine>();
+					    var simpleRepeatsLines = new List<VisualBlockLineModel>();
+					    var complexMultilines = new Dictionary<int, VisualBlockLineModel>();
 
 					    foreach (var field in clonedLine.Fields)
 					    {						   
@@ -85,7 +85,7 @@ namespace PravoAdder.Wrappers
 							    {
 								    if (!complexMultilines.ContainsKey(key))
 								    {
-									    complexMultilines.Add(key, new VisualBlockLine(clonedLine.Id, key - 1));
+									    complexMultilines.Add(key, new VisualBlockLineModel(clonedLine.Id, key - 1));
 								    }
 								    var multiField = field.CloneJson();
 								    multiField.ColumnNumber = complexIndexes[key];
@@ -103,11 +103,11 @@ namespace PravoAdder.Wrappers
 								    {
 									    var multiField = field.CloneJson();
 									    multiField.ColumnNumber = i;
-									    return new VisualBlockLine
+									    return new VisualBlockLineModel
 									    {
 										    BlockLineId = clonedLine.Id,
 										    Order = 0,
-										    Fields = new List<VisualBlockField> { multiField }
+										    Fields = new List<VisualBlockFieldModel> { multiField }
 									    };
 								    })
 								    .ToList();
@@ -116,7 +116,7 @@ namespace PravoAdder.Wrappers
 						    if (clonedLine.IsSimple)
 						    {
 							    var clonedField = field.CloneJson();
-								if (simpleRepeatsLines.Count == 0) simpleRepeatsLines.Add(new VisualBlockLine(clonedLine.Id, 0));
+								if (simpleRepeatsLines.Count == 0) simpleRepeatsLines.Add(new VisualBlockLineModel(clonedLine.Id, 0));
 							    clonedField.ColumnNumber = indexes.First();
 								simpleRepeatsLines[0].Fields.Add(clonedField);
 							}
@@ -124,8 +124,8 @@ namespace PravoAdder.Wrappers
 					    newLines.AddRange(simpleRepeatsLines);
 					    newLines.AddRange(complexMultilines.Select(d => d.Value));
 				    }
-				    clonedBlock.Lines = new List<VisualBlockLine>(newLines);
-				    if (!result.ContainsKey(blockNumber)) result.Add(blockNumber, new List<VisualBlock>());
+				    clonedBlock.Lines = new List<VisualBlockLineModel>(newLines);
+				    if (!result.ContainsKey(blockNumber)) result.Add(blockNumber, new List<VisualBlockModel>());
 				    result[blockNumber].Add(clonedBlock);
 			    }			  
 		    }

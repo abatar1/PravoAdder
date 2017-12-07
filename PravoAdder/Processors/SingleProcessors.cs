@@ -56,7 +56,7 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> AddVisualBlockLine = message =>
 		{
-			var line = (VisualBlockLine) message.GetCreatable();
+			var line = (VisualBlockLineModel) message.GetCreatable();
 			if (line == null) return null;
 
 			var sumWidth = line.Fields.Sum(f => f?.Width);
@@ -65,12 +65,12 @@ namespace PravoAdder.Processors
 			var creator = (VisualBlockLineCreator) message.Creator;
 			if (sumWidth < 12)
 			{
-				creator.ConstructedLine = line;
+				creator.ConstructedLineModel = line;
 				return message;
 			}
 			if (sumWidth == 12)
 			{
-				creator.ConstructedLine = null;
+				creator.ConstructedLineModel = null;
 
 				if (creator.VisualBlock.Lines.Any(l => l.Fields.SequenceEqual(line.Fields)))
 				{
@@ -84,7 +84,7 @@ namespace PravoAdder.Processors
 			}
 			if (sumWidth > 12)
 			{
-				creator.ConstructedLine = null;
+				creator.ConstructedLineModel = null;
 			}
 			return null;
 		};

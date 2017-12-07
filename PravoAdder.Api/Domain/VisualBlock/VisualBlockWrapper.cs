@@ -4,10 +4,10 @@ namespace PravoAdder.Api.Domain
 {
 	public class VisualBlockWrapper
 	{
-		public VisualBlock VisualBlock { get; set; }
-		public List<VisualBlock> VisualBlocks { get; set; }
-		public List<VisualBlock> Blocks { get; set; }
-		public List<VisualBlock> MetadataOfBlocks { get; set; }
+		public VisualBlockModel VisualBlock { get; set; }
+		public List<VisualBlockModel> VisualBlocks { get; set; }
+		public List<VisualBlockModel> Blocks { get; set; }
+		public List<VisualBlockModel> MetadataOfBlocks { get; set; }
 		public int Order { get; set; }
 	}
 }

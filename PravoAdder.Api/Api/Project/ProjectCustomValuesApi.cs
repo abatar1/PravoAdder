@@ -7,12 +7,12 @@ namespace PravoAdder.Api
 {
 	public class ProjectCustomValuesApi
 	{
-		public VisualBlock Create(HttpAuthenticator httpAuthenticator, VisualBlockParticipant content)
+		public VisualBlockModel Create(HttpAuthenticator httpAuthenticator, VisualBlock content)
 		{
-			return ApiHelper.GetItem<VisualBlock>(httpAuthenticator, "ProjectCustomValues/Create", HttpMethod.Post, content);
+			return ApiHelper.GetItem<VisualBlockModel>(httpAuthenticator, "ProjectCustomValues/Create", HttpMethod.Post, content);
 		}
 
-		public async Task<bool> Update(HttpAuthenticator httpAuthenticator, VisualBlockParticipant content)
+		public async Task<bool> Update(HttpAuthenticator httpAuthenticator, VisualBlock content)
 		{
 			return await ApiHelper.TrySendAsync(httpAuthenticator, "ProjectCustomValues/Update", HttpMethod.Put, content);
 		}

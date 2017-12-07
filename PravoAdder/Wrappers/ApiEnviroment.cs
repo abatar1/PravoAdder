@@ -149,9 +149,9 @@ namespace PravoAdder.Wrappers
 			return project;
 		}
 
-	    private VisualBlockParticipant CreateVisualBlockRequest(VisualBlock visualBlock, Row excelRow, string projectId, int order, VisualBlock projectVisualBlock = null)
+	    private VisualBlock CreateVisualBlockRequest(VisualBlockModel visualBlock, Row excelRow, string projectId, int order, VisualBlockModel projectVisualBlock = null)
 	    {
-			var contentLines = new List<VisualBlockParticipantLine>();
+			var contentLines = new List<VisualBlockLine>();
 		    if (visualBlock.Lines == null || !visualBlock.Lines.Any()) return null;
 
 		    var messageBuilder = new StringBuilder();
@@ -159,7 +159,7 @@ namespace PravoAdder.Wrappers
 		    foreach (var line in visualBlock.Lines)
 		    {
 			    object value;
-			    var contentFields = new List<VisualBlockParticipantField>();
+			    var contentFields = new List<VisualBlockField>();
 			    foreach (var fieldInfo in line.Fields)
 			    {
 				    if (!excelRow.ContainsKey(fieldInfo.ColumnNumber))
@@ -176,7 +176,7 @@ namespace PravoAdder.Wrappers
 						    fieldInfo.CloneWithValue(
 							    new CalculationFormulaValue { CalculationFormulaId = calculationFormula.Id, Result = calcResult });
 
-					    contentFields.Add((VisualBlockParticipantField) newFieldInfo);
+					    contentFields.Add((VisualBlockField) newFieldInfo);
 					    continue;
 				    }
 				    var fieldData = excelRow[fieldInfo.ColumnNumber].Value;
@@ -188,7 +188,7 @@ namespace PravoAdder.Wrappers
 					    value = FieldBuilder.CreateFieldValueFromData(_httpAuthenticator, fieldInfo, fieldData);
 
 					    var newFieldInfo = fieldInfo.CloneWithValue(value);
-					    contentFields.Add((VisualBlockParticipantField)newFieldInfo);
+					    contentFields.Add((VisualBlockField)newFieldInfo);
 				    }
 				    catch (Exception e)
 				    {
@@ -198,8 +198,8 @@ namespace PravoAdder.Wrappers
 			    }
 			    if (!contentFields.Any()) continue;
 
-			    var newLine = (VisualBlockParticipantLine) line.CloneJson();
-			    newLine.Values = new List<VisualBlockParticipantField>(contentFields);
+			    var newLine = (VisualBlockLine) line.CloneJson();
+			    newLine.Values = new List<VisualBlockField>(contentFields);
 
 			    newLine.Id = projectVisualBlock?.Lines.FirstOrDefault(x => x.BlockLineId.Equals(line.BlockLineId))?.Id;
 
@@ -208,11 +208,11 @@ namespace PravoAdder.Wrappers
 
 		    if (contentLines.All(c => !c.Values.Any())) return null;
 
-		    return new VisualBlockParticipant
+		    return new VisualBlock
 		    {
 			    VisualBlockId = visualBlock.Id,
 			    ProjectId = projectId,
-			    Lines = new List<VisualBlockParticipantLine>(contentLines),
+			    Lines = new List<VisualBlockLine>(contentLines),
 			    FrontOrder = order,
 			    Order = order,
 				Message = messageBuilder.ToString().Trim(),
@@ -220,7 +220,7 @@ namespace PravoAdder.Wrappers
 			};
 		}
 
-        public bool AddInformation(VisualBlock visualBlock, Row excelRow, string projectId, int order)
+        public bool AddInformation(VisualBlockModel visualBlock, Row excelRow, string projectId, int order)
         {
 	        var contentBlock = CreateVisualBlockRequest(visualBlock, excelRow, projectId, order);
 	        if (contentBlock == null) return false;
@@ -236,7 +236,7 @@ namespace PravoAdder.Wrappers
 	        return true;
 		}
 
-	    public bool UpdateInformation(VisualBlock visualBlock, Row excelRow, string projectId, int order, VisualBlock projectVisualBlock = null)
+	    public bool UpdateInformation(VisualBlockModel visualBlock, Row excelRow, string projectId, int order, VisualBlockModel projectVisualBlock = null)
 	    {
 			var contentBlock = CreateVisualBlockRequest(visualBlock, excelRow, projectId, order, projectVisualBlock);
 		    if (contentBlock == null) return false;

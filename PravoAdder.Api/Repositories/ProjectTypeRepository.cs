@@ -17,7 +17,7 @@ namespace PravoAdder.Api.Repositories
 				{
 					Name = typeName,
 					Abbreviation = abbreviation,
-					VisualBlocks = new List<VisualBlock>()
+					VisualBlocks = new List<VisualBlockModel>()
 				};
 				projectType = ApiRouter.ProjectTypes.Create(authenticator, content);
 				Container.AddOrUpdate(typeName, projectType, (key, type) => type);

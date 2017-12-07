@@ -98,7 +98,7 @@
     <Compile Include="Domain\Bills\BillStatus.cs" />
     <Compile Include="Domain\Bills\BillStatusGroup.cs" />
     <Compile Include="Domain\Other\Bulk.cs" />
-    <Compile Include="Domain\Other\DocumentFolder.cs" />
+    <Compile Include="Domain\Other\VirtualCatalogItem.cs" />
     <Compile Include="Domain\Other\EntityType.cs" />
     <Compile Include="Domain\Event\Calendar.cs" />
     <Compile Include="Domain\Event\CalendarColor.cs" />
@@ -146,12 +146,12 @@
     <Compile Include="Domain\Task\Task.cs" />
     <Compile Include="Domain\Task\TaskName.cs" />
     <Compile Include="Domain\Task\TaskState.cs" />
+    <Compile Include="Domain\VisualBlock\VisualBlockModel.cs" />
+    <Compile Include="Domain\VisualBlock\VisualBlockFieldModel.cs" />
+    <Compile Include="Domain\VisualBlock\VisualBlockLineModel.cs" />
     <Compile Include="Domain\VisualBlock\VisualBlock.cs" />
     <Compile Include="Domain\VisualBlock\VisualBlockField.cs" />
     <Compile Include="Domain\VisualBlock\VisualBlockLine.cs" />
-    <Compile Include="Domain\VisualBlock\VisualBlockParticipant.cs" />
-    <Compile Include="Domain\VisualBlock\VisualBlockParticipantField.cs" />
-    <Compile Include="Domain\VisualBlock\VisualBlockParticipantLine.cs" />
     <Compile Include="Domain\VisualBlock\VisualBlockWrapper.cs" />
     <Compile Include="Helpers\ApiHelper.cs" />
     <Compile Include="HttpAuthenticator.cs" />

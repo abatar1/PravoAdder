@@ -7,6 +7,7 @@ using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Repositories;
 using PravoAdder.Domain;
+using PravoAdder.Wrappers;
 
 namespace PravoAdder.Processors
 {
@@ -198,7 +199,7 @@ namespace PravoAdder.Processors
 			var block = VisualBlockRepository.Get<VisualBlockApi>(message.Authenticator, blockName);
 			if (block == null) return null;
 
-			if (processingType.VisualBlocks == null) processingType.VisualBlocks = new List<VisualBlock>();
+			if (processingType.VisualBlocks == null) processingType.VisualBlocks = new List<VisualBlockModel>();
 			if (processingType.VisualBlocks.Contains(block)) return null;
 
 			processingType.VisualBlocks.Add(block);
@@ -249,14 +250,11 @@ namespace PravoAdder.Processors
 
 		private static List<DictionaryItem> _documentTypes;
 
-		private static void ProcessFiles(EngineMessage message, IReadOnlyCollection<DocumentFolder> existingFolders, DirectoryInfo directoryInfo, string parentId)
+		private static void ProcessLocalFiles(EngineMessage message, IReadOnlyCollection<VirtualCatalogItem> context, DirectoryInfo directoryInfo, string parentId)
 		{
 			var bulks = new List<Bulk>();
 			foreach (var subFile in directoryInfo.GetFiles())
-			{				
-				if (_documentTypes == null)
-					_documentTypes = ApiRouter.DefaultDictionaryItems.GetMany(message.Authenticator, "CaseMap.Modules.Documents.DAL.Data.DocumentType");
-
+			{							
 				var file = ApiRouter.Upload.Upload(message.Authenticator, subFile).Result;
 				if (file == null) continue;
 				var documentType = _documentTypes.FirstOrDefault(x => x.Name == "Draft");
@@ -283,29 +281,111 @@ namespace PravoAdder.Processors
 			foreach (var subDirectory in directoryInfo.GetDirectories())
 			{
 				var folderName = subDirectory.Name;
-				var folder = existingFolders.FirstOrDefault(f => f.Name.Equals(folderName));
+				var folder = context.FirstOrDefault(f => f.Name.Equals(folderName));
 				if (folder == null)
 				{
 					folder = ApiRouter.DocumentFolders.Create(message.Authenticator,
-						new DocumentFolder
+						new VirtualCatalogItem
 						{
 							ParentId = parentId,
 							Name = folderName,
 							SysName = "Folder"
 						});
 				}				
-				existingFolders = ApiRouter.VirtualCatalog.GetMany(message.Authenticator, folder.Id);
-				ProcessFiles(message, existingFolders, subDirectory, folder.Id);
+				context = ApiRouter.VirtualCatalog.GetContext(message.Authenticator, folder.Id);
+				ProcessLocalFiles(message, context, subDirectory, folder.Id);
 			}
 		}
 
+		private static void ProcessRemoteFiles(RemoteFilesProcessModel processModel)
+		{
+			foreach (var catalogItem in processModel.Context)
+			{
+				if (!catalogItem.Name.Equals(processModel.SearchingKey, StringComparison.InvariantCultureIgnoreCase)) continue;
+
+				var subContext = ApiRouter.VirtualCatalog.GetContext(processModel.Message.Authenticator, catalogItem.Id);
+
+				foreach (var file in subContext.Where(x => x.SysName == "Document"))
+				{
+					var blockLine = processModel.SearchingBlockMetadata.Lines
+						.First(line => line.Fields.Any(field => field.IsTypeOf("Document")));
+					var newLine = new VisualBlockLine
+					{
+						Order = processModel.Multilines.Count,
+						BlockLineId = blockLine.Id,
+						Values = new List<VisualBlockField>
+						{
+							new VisualBlockField
+							{
+								VisualBlockProjectFieldId = blockLine.Fields.First(field => field.IsTypeOf("Document")).Id,
+								Value = new
+								{
+									file.Id,
+									file.Name
+								}
+							}
+						}
+					};
+					processModel.Multilines.Add(newLine);
+				}
+
+				foreach (var subFolder in subContext.Where(x => x.SysName == "Folder"))
+				{
+					processModel.Context = ApiRouter.VirtualCatalog.GetContext(processModel.Message.Authenticator, subFolder.Id);
+					ProcessRemoteFiles(processModel);
+				}
+			}
+		}
+
+		public Func<EngineMessage, EngineMessage> DocumentsToMultilines = message =>
+		{
+			if (_documentTypes == null)
+				_documentTypes = ApiRouter.DefaultDictionaryItems.GetMany(message.Authenticator, "CaseMap.Modules.Documents.DAL.Data.DocumentType");
+			
+			var searchingFolder = message.Args.SearchKey;
+
+			var project = ProjectRepository.GetDetailed<ProjectsApi>(message.Authenticator, message.Item.Name);
+			if (!project.Name.Equals("Mary-MVA-2014-145")) return null;
+
+			var searchingBlockMetadata = ApiRouter.ProjectCustomValues.GetAllVisualBlocks(message.Authenticator, project.Id)
+				.MetadataOfBlocks.FirstOrDefault(x => x.Name.Equals(searchingFolder, StringComparison.InvariantCultureIgnoreCase));
+			if (searchingBlockMetadata == null) return null;
+			
+			var context = ApiRouter.VirtualCatalog.GetContext(message.Authenticator, project.DocumentFolderId);
+			var multilines = new List<VisualBlockLine>();
+
+			var processModel = new RemoteFilesProcessModel
+			{
+				Context = context,
+				Message = message,
+				Multilines = multilines,
+				SearchingKey = searchingFolder
+			};
+			ProcessRemoteFiles(processModel);
+
+			var block = new VisualBlock
+			{
+				VisualBlockId = processModel.SearchingBlockMetadata.Id,
+				Order = 0,
+				FrontOrder = 0,
+				Lines = processModel.Multilines.ToList(),
+				ProjectId = project.Id
+			};
+			ApiRouter.ProjectCustomValues.Create(message.Authenticator, block);
+
+			return message;
+		};
+
 		public Func<EngineMessage, EngineMessage> Files = message =>
 		{
+			if (_documentTypes == null)
+				_documentTypes = ApiRouter.DefaultDictionaryItems.GetMany(message.Authenticator, "CaseMap.Modules.Documents.DAL.Data.DocumentType");
+
 			var project = ProjectRepository.GetDetailed<ProjectsApi>(message.Authenticator, message.HeaderBlock.Name);
 			var directoryInfo = new DirectoryInfo(message.HeaderBlock.FilesPath);
-			var existingFolders = ApiRouter.VirtualCatalog.GetMany(message.Authenticator, project.DocumentFolderId);
+			var existingFolders = ApiRouter.VirtualCatalog.GetContext(message.Authenticator, project.DocumentFolderId);
 
-			ProcessFiles(message, existingFolders, directoryInfo, project.DocumentFolderId);
+			ProcessLocalFiles(message, existingFolders, directoryInfo, project.DocumentFolderId);
 
 			return message;
 		};

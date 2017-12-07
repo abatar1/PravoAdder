@@ -12,7 +12,7 @@ namespace PravoAdder.Readers
 {
 	public class ParticipantCreator : Creator
 	{
-		private VisualBlock _visualBlock;
+		private VisualBlockModel _visualBlock;
 		private readonly string _currentType;
 
 		public ParticipantCreator(HttpAuthenticator httpAuthenticator, ApplicationArguments applicationArguments) : base(httpAuthenticator, applicationArguments)
@@ -28,7 +28,7 @@ namespace PravoAdder.Readers
 			{
 				Type = type,
 				ContactDetail = new ContactDetail(),
-				VisualBlockValueLines = new List<VisualBlockParticipantLine>()
+				VisualBlockValueLines = new List<VisualBlockLine>()
 			};
 
 			var contactProperties = typeof(ContactDetail).GetProperties();
@@ -97,7 +97,7 @@ namespace PravoAdder.Readers
 				var field = line.Fields.FirstOrDefault(f => f.ProjectField.Name == fieldName);
 				if (field == null) continue;
 
-				var newField = new VisualBlockParticipantField
+				var newField = new VisualBlockField
 				{
 					Value = FieldBuilder.CreateFieldValueFromData(HttpAuthenticator, field, value),
 					VisualBlockProjectFieldId = field.Id
@@ -108,7 +108,7 @@ namespace PravoAdder.Readers
 				{
 					if (participant.VisualBlockValueLines[lineIndex].Values.Count == 0)
 					{
-						participant.VisualBlockValueLines[lineIndex].Values = new List<VisualBlockParticipantField> { newField };
+						participant.VisualBlockValueLines[lineIndex].Values = new List<VisualBlockField> { newField };
 					}
 					else
 					{
@@ -117,11 +117,11 @@ namespace PravoAdder.Readers
 				}
 				else
 				{
-					var newLine = new VisualBlockParticipantLine
+					var newLine = new VisualBlockLine
 					{
 						BlockLineId = line.Id,
 						Order = 0,
-						Values = new List<VisualBlockParticipantField> {newField}
+						Values = new List<VisualBlockField> {newField}
 					};
 					participant.VisualBlockValueLines.Add(newLine);
 				}

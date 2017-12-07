@@ -35,8 +35,8 @@ namespace PravoAdder.Api.Domain
 
 		public string IncludeInProjectId { get; set; }
 
-		public List<VisualBlockParticipantLine> VisualBlockValueLines { get; set; }
-		public VisualBlock VisualBlock { get; set; }
+		public List<VisualBlockLine> VisualBlockValueLines { get; set; }
+		public VisualBlockModel VisualBlock { get; set; }
 
 		[JsonIgnore]
 		public string FullName

@@ -92,6 +92,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Domain\Attributes\IsRequiredAttribute.cs" />
+    <Compile Include="Domain\Conveyor\RemoteFilesProcessModel.cs" />
     <Compile Include="Domain\Table\ReadingMode.cs" />
     <Compile Include="Domain\Attributes\ReadingTypeAttribute.cs" />
     <Compile Include="Domain\HeaderBlockInfo.cs" />

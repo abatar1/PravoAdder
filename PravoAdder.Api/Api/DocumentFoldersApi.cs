@@ -6,9 +6,9 @@ namespace PravoAdder.Api
 {
 	public class DocumentFoldersApi
 	{
-		public DocumentFolder Create(HttpAuthenticator authenticator, DocumentFolder documentFolder)
+		public VirtualCatalogItem Create(HttpAuthenticator authenticator, VirtualCatalogItem documentFolder)
 		{
-			return ApiHelper.GetItem<DocumentFolder>(authenticator, "DocumentFolders/CreateDocumentFolder", HttpMethod.Post,
+			return ApiHelper.GetItem<VirtualCatalogItem>(authenticator, "DocumentFolders/CreateDocumentFolder", HttpMethod.Post,
 				documentFolder);
 		}
 	}

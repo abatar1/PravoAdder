@@ -2,7 +2,7 @@
 
 namespace PravoAdder.Api.Repositories
 {
-	public class VisualBlockRepository : TemplateRepository<VisualBlock>
+	public class VisualBlockRepository : TemplateRepository<VisualBlockModel>
 	{
 	}
 }

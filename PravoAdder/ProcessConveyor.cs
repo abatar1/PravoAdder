@@ -215,6 +215,12 @@ namespace PravoAdder
 					conveyor.Add(SingleProcessors.Core.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.Row);
 					break;
+				case "DocumentToMultiline":
+					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
+					conveyor.Add(SingleProcessors.Project.DocumentsToMultilines, 1);
+					conveyor.Add(SingleProcessors.Core.ProcessCount, 1);
+					conveyor.Add(ForEachProcessors.Project);
+					break;
 				default:
 					throw new ArgumentException("Неизвестный тип конвеера.");
 			}

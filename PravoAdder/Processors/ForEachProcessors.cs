@@ -67,7 +67,7 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> Project = message =>
 		{
-			var projects = ApiRouter.Projects.GetMany(message.Authenticator, message.Item.Id);
+			var projects = ProjectRepository.GetMany<ProjectsApi>(message.Authenticator);
 			return ProcessForEach(projects, message, (msg, item) =>
 			{
 				msg.Item = (Project) item;
