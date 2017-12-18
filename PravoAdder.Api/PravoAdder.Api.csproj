@@ -71,8 +71,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiRouter.cs" />
-    <Compile Include="Api\BillingSettingsApi.cs" />
-    <Compile Include="Api\BillsApi.cs" />
+    <Compile Include="Api\Bills\BilledTimesApi.cs" />
+    <Compile Include="Api\Bills\BillingSettingsApi.cs" />
+    <Compile Include="Api\Bills\BillsApi.cs" />
     <Compile Include="Api\BootstrapApi.cs" />
     <Compile Include="Api\DocumentsApi.cs" />
     <Compile Include="Api\CalculationFormulasApi.cs" />
@@ -93,10 +94,13 @@
     <Compile Include="Api\VirtualCatalogApi.cs" />
     <Compile Include="Api\VisualBlockApi.cs" />
     <Compile Include="Domain\Bills\Bill.cs" />
+    <Compile Include="Domain\Bills\BilledTimes.cs" />
     <Compile Include="Domain\Bills\BillingRuleWrapper.cs" />
     <Compile Include="Domain\Bills\BillingSettings.cs" />
     <Compile Include="Domain\Bills\BillStatus.cs" />
     <Compile Include="Domain\Bills\BillStatusGroup.cs" />
+    <Compile Include="Domain\Bills\RateCalculationType.cs" />
+    <Compile Include="Domain\Event\Timing.cs" />
     <Compile Include="Domain\Other\Bulk.cs" />
     <Compile Include="Domain\Other\VirtualCatalogItem.cs" />
     <Compile Include="Domain\Other\EntityType.cs" />
@@ -121,7 +125,7 @@
     <Compile Include="Api\ResponsiblesApi.cs" />
     <Compile Include="Api\TaskApi.cs" />
     <Compile Include="Domain\ICreatable.cs" />
-    <Compile Include="Domain\Other\ContactDetail.cs" />
+    <Compile Include="Domain\Participant\ContactDetail.cs" />
     <Compile Include="Domain\Other\CalculationFormula.cs" />
     <Compile Include="Domain\Other\CalculationFormulaValue.cs" />
     <Compile Include="Domain\DatabaseEntityItem.cs" />

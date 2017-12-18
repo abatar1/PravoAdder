@@ -3,7 +3,7 @@ using PravoAdder.Api.Domain;
 
 namespace PravoAdder.Api.Repositories
 {
-	public class EventTypeRepository : TemplateRepository<EventType>
+	public class EventTypeRepository : TemplateRepository<EventType, EventTypeApi>
 	{
 		private static EntityType _entityType;
 
@@ -11,7 +11,7 @@ namespace PravoAdder.Api.Repositories
 		{
 			if (string.IsNullOrEmpty(itemName)) return null;
 	
-			var eventType = Get<EventTypeApi>(authenticator, itemName);
+			var eventType = Get(authenticator, itemName);
 			if (eventType == null)
 			{
 				if (_entityType == null) _entityType = ApiRouter.Bootstrap.GetEntityTypes(authenticator).First(e => e.Name.Equals("Event"));

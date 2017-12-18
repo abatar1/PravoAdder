@@ -4,8 +4,10 @@
 	{
 		private static void Main(string[] args)
 		{
-			var engine = new Engine();
-			engine.Initialize(args).Run();
+			using (var engine = new GuiEngine("instance_enviroment.json"))
+			{
+				engine.StartGui();
+			}
 		}
 	}
 }

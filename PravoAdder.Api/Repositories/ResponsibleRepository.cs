@@ -2,7 +2,7 @@
 
 namespace PravoAdder.Api.Repositories
 {
-	public class ResponsibleRepository : TemplateRepository<Responsible>
+	public class ResponsibleRepository : TemplateRepository<Responsible, ResponsiblesApi>
 	{	
 	}
 }

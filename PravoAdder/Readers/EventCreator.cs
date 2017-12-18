@@ -12,34 +12,49 @@ namespace PravoAdder.Readers
 	{
 		public override ICreatable Create(Row header, Row row, DatabaseEntityItem item = null)
 		{
-			var eventTypeName = Table.GetValue(header, row, "Activity Type");
-			var eventType = EventTypeRepository.GetOrPut(HttpAuthenticator, eventTypeName);
-			if (eventType == null) return null;
-
 			var projectName = Table.GetValue(header, row, "Case Name");
-			var project = ProjectRepository.GetDetailed<ProjectsApi>(HttpAuthenticator, projectName);			
+			var project = ProjectRepository.GetDetailed(HttpAuthenticator, projectName);			
 			if (project == null) return null;			
 
-			var calendar = CalendarRepository.Get<CalendarApi>(HttpAuthenticator, "Firm");
+			var calendar = CalendarRepository.Get(HttpAuthenticator, "Firm");
 
-			var endDate = Table.GetValue(header, row, "Log Date").FormatDate();
-			var logTimer = int.Parse(Table.GetValue(header, row, "Timer"));
-			var startDate = endDate.Subtract(new TimeSpan(0, logTimer, 0));
-			return new Event
+			var newEvent = new Event
 			{
-				Name = Table.GetValue(header, row, "Event Name"),		
-				EventType = eventType,
-				Description = Table.GetValue(header, row, "Description"),
-				StartDate = startDate,
-				EndDate = endDate,
+				Name = Table.GetValue(header, row, "Event Name").SliceSpaceIfMore(100),
+				Description = Table.GetValue(header, row, "Event Description").SliceSpaceIfMore(100),
 				Project = project,
 				AllDay = false,
 				Calendar = calendar,
-				TimeLogs = new List<string> {item?.Id}
+				TimeLogs = new List<string> { item?.Id }
 			};
+
+			try
+			{
+				var eventTypeName = Table.GetValue(header, row, "Event Type");
+				newEvent.EventType = EventTypeRepository.GetOrPut(HttpAuthenticator, eventTypeName);
+			}
+			catch (Exception)
+			{
+				// ignored
+			}
+
+			var endDateValue = Table.GetValue(header, row, "Log Date");
+			if (endDateValue == null)
+			{
+				newEvent.EndDate = DateTime.Today;
+				newEvent.StartDate = DateTime.Today;
+			}
+			else
+			{
+				newEvent.EndDate = DateTime.Parse(endDateValue);
+				var logTimer = int.Parse(Table.GetValue(header, row, "Timer"));
+				newEvent.StartDate = newEvent.EndDate.Subtract(new TimeSpan(0, logTimer, 0));
+			}
+
+			return newEvent;
 		}
 
-		public EventCreator(HttpAuthenticator httpAuthenticator, ApplicationArguments applicationArguments) : base(httpAuthenticator, applicationArguments)
+		public EventCreator(HttpAuthenticator httpAuthenticator, Settings settings) : base(httpAuthenticator, settings)
 		{
 		}
 	}

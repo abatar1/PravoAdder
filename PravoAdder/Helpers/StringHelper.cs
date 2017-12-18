@@ -15,6 +15,11 @@ namespace PravoAdder.Helpers
 			return $"{item.Remove(lastSpacePosition)}";
 		}
 
+		public static string SmartRemove(this string item, int startIndex)
+		{
+			return item.Length < startIndex ? item : item.Remove(startIndex);
+		}
+
 		public static DateTime FormatDate(this string item)
 		{
 			var rawDate = item.Replace("UTC", "").Trim();

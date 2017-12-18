@@ -160,7 +160,14 @@ namespace PravoAdder.Wrappers
 					if (!excelRow.Content.ContainsKey(index)) continue;
 				    if (index == 0) continue;
 
-				    property.SetValue(headerObject, excelRow[index].ToString().Trim());
+				    object value = excelRow[index].ToString().Trim();
+
+					if (property.PropertyType == typeof(bool))
+					{
+						value = bool.Parse(value.ToString());
+					}
+
+				    property.SetValue(headerObject, value);
 				    break;
 			    }
 		    }

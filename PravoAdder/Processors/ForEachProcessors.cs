@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Repositories;
 using PravoAdder.Domain;
@@ -26,17 +25,25 @@ namespace PravoAdder.Processors
 					{
 						childConveyer.Message.Table = message.Table;
 					}
-					
+
+					if (childConveyer.Message.Row == null)
+					{
+						childConveyer.Message.Row = message.Row;
+					}
+
 					var itemizedMessage = messageProcessor(childConveyer.Message, item);
 					itemizedMessage.Count = (int) index;
 					itemizedMessage.Total = items.Count;
 
 					var newMessage = childConveyer.Processor.Invoke(itemizedMessage);
+
+					if (newMessage == null || newMessage.IsContinue) break;
+
 					if (i < message.Child.Count - 1)
 					{
-						message.Child[i + 1].Message.Item = newMessage?.Item;
-						message.Child[i + 1].Message.Table = newMessage?.Table;
-						message.Child[i + 1].Message.HeaderBlock = newMessage?.HeaderBlock;
+						message.Child[i + 1].Message.Item = newMessage.Item;
+						message.Child[i + 1].Message.Table = newMessage.Table;
+						message.Child[i + 1].Message.HeaderBlock = newMessage.HeaderBlock;
 					}
 				}
 			});
@@ -45,10 +52,10 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> File = message =>
 		{			
-			var allfiles = Directory.GetFiles(message.Args.SourceName, "*.*", SearchOption.AllDirectories);
+			var allfiles = Directory.GetFiles(message.Settings.SourceName, "*.*", SearchOption.AllDirectories);
 			return ProcessForEach(allfiles, message, (msg, filename) =>
 			{
-				msg.Args.SourceName =  (string) filename;
+				msg.Settings.SourceName =  (string) filename;
 				return msg;
 			});
 		};
@@ -63,11 +70,11 @@ namespace PravoAdder.Processors
 				msg.HeaderBlock = msg.CaseBuilder.ReadHeaderBlock(row);
 				return msg;
 			});
-		};
+		};	
 
 		public static Func<EngineMessage, EngineMessage> Project = message =>
 		{
-			var projects = ProjectRepository.GetMany<ProjectsApi>(message.Authenticator);
+			var projects = ProjectRepository.GetMany(message.Authenticator).ToList();
 			return ProcessForEach(projects, message, (msg, item) =>
 			{
 				msg.Item = (Project) item;
@@ -87,8 +94,8 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> ProjectByDate = message =>
 		{
-			var projects = ApiRouter.Projects.GetMany(message.Authenticator, message.Item.Id)
-				.Where(p => p.CreationDate == DateTime.Parse(message.Args.Date))
+			var projects = ProjectRepository.GetMany(message.Authenticator)
+				.Where(p => p.CreationDate == message.Settings.Date)
 				.ToList();
 			return ProcessForEach(projects, message, (msg, item) =>
 			{
@@ -100,7 +107,7 @@ namespace PravoAdder.Processors
 		public static Func<EngineMessage, EngineMessage> ProjectByType = message =>
 		{
 			var type = ApiRouter.ProjectTypes.GetMany(message.Authenticator)
-				.FirstOrDefault(t => t.Name.Equals(message.Args.ProjectType.Replace('_', ' ')));
+				.FirstOrDefault(t => t.Name.Equals(message.Settings.ProjectType.Replace('_', ' ')));
 			if (type == null)
 			{
 				message.IsFinal = true;
@@ -131,7 +138,7 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> ProjectGroup = message =>
 		{
-			var projectGroups = ProjectGroupRepository.GetMany<ProjectGroupsApi>(message.Authenticator);
+			var projectGroups = ProjectGroupRepository.GetMany(message.Authenticator).ToList();
 			return ProcessForEach(projectGroups, message, (msg, item) =>
 			{
 				msg.Item = (ProjectGroup) item;
@@ -151,7 +158,7 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> ParticipantByDate = message =>
 		{
-			var neededDatetime = DateTime.Parse(message.Args.Date).ToString("d");
+			var neededDatetime = message.Settings.Date.ToString("d");
 			var participants = ApiRouter.Participants.GetMany(message.Authenticator)
 				.Select(p => ApiRouter.Participants.Get(message.Authenticator, p.Id))
 				.Where(p => DateTime.Parse(p.CreationDate).ToString("d") == neededDatetime)

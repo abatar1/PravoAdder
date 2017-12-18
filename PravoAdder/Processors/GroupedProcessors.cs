@@ -6,16 +6,14 @@ namespace PravoAdder.Processors
 {
 	public static class GroupedProcessors
 	{
-		public static List<Func<EngineMessage, EngineMessage>> LoadWithTable = new List<Func<EngineMessage, EngineMessage>>()
+		public static List<Func<EngineMessage, EngineMessage>> LoadWithTable = new List<Func<EngineMessage, EngineMessage>>
 		{
-			SingleProcessors.Core.LoadSettings,
 			SingleProcessors.Core.LoadTable,
 			SingleProcessors.Core.InitializeApp
 		};
 
-		public static List<Func<EngineMessage, EngineMessage>> LoadWithoutTable = new List<Func<EngineMessage, EngineMessage>>()
+		public static List<Func<EngineMessage, EngineMessage>> LoadWithoutTable = new List<Func<EngineMessage, EngineMessage>>
 		{
-			SingleProcessors.Core.LoadSettings,
 			SingleProcessors.Core.InitializeApp
 		};
 
@@ -23,7 +21,6 @@ namespace PravoAdder.Processors
 		{
 			return new List<Func<EngineMessage, EngineMessage>>
 			{
-				SingleProcessors.Core.LoadSettings,
 				formatter,
 				SingleProcessors.Core.LoadTable,
 				SingleProcessors.Core.InitializeApp

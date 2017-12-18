@@ -6,14 +6,14 @@ namespace PravoAdder.Readers
 {
 	public abstract class Creator
 	{
-		protected Creator(HttpAuthenticator httpAuthenticator, ApplicationArguments applicationArguments)
+		protected Creator(HttpAuthenticator httpAuthenticator, Settings settings)
 		{
 			HttpAuthenticator = httpAuthenticator;
-			ApplicationArguments = applicationArguments;
+			Settings = settings;
 		}
 
 		protected HttpAuthenticator HttpAuthenticator { get; }
-		protected ApplicationArguments ApplicationArguments { get; }
+		protected Settings Settings { get; }
 
 		public abstract ICreatable Create(Row header, Row row, DatabaseEntityItem item = null);
 	}

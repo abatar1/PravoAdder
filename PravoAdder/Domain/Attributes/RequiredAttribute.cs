@@ -2,9 +2,9 @@
 
 namespace PravoAdder.Domain
 {
-	public class IsRequiredAttribute : Attribute
+	public class RequiredAttribute : Attribute
 	{
-		public IsRequiredAttribute(bool isRequired)
+		public RequiredAttribute(bool isRequired = true)
 		{
 			IsRequiredValue = isRequired;
 		}

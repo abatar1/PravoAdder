@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Domain;
@@ -15,12 +16,23 @@ namespace PravoAdder.Readers
 			if (!hasUnbilled) return null;
 
 			var bill = ApiRouter.Bills.Create(HttpAuthenticator, item.Id);
-			var billStatus = BillStatus.GetStatus(HttpAuthenticator, Table.GetValue(header, row, "Status"));
+			string statusName;
+			try
+			{
+				statusName = Table.GetValue(header, row, "Bill Status");
+			}
+			catch (Exception)
+			{
+				statusName = "Draft";
+			}
+			var billStatus = BillStatus.GetStatus(HttpAuthenticator, statusName);
+			if (billStatus == null) return null;
+
 			ApiRouter.Bills.UpdateStatus(HttpAuthenticator, new BillStatusGroup { BillIds = new List<string> { bill.Id }, BillStatusSysName = billStatus.SysName });
 			return bill;
 		}
 
-		public BillCreator(HttpAuthenticator httpAuthenticator, ApplicationArguments applicationArguments) : base(httpAuthenticator, applicationArguments)
+		public BillCreator(HttpAuthenticator httpAuthenticator, Settings settings) : base(httpAuthenticator, settings)
 		{
 		}
 	}

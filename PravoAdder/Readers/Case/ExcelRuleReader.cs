@@ -15,10 +15,9 @@ namespace PravoAdder.Readers
 			return base.GetFileInfo(name, extentions);
 		}
 
-		public override Table Read(ApplicationArguments args, Settings settings)
+		public override Table Read(Settings settings)
 		{
-			var reader = new ExcelReader(args.SourceName);
-			var table = reader.Read(args, settings);
+			var table = new ExcelReader(settings.SourceName).Read(settings);
 
 			var keyIndex = GetIndexByName(table.Header.Content, "Номер дела");
 			var responseIndex = GetIndexByName(table.Header.Content, "Ответственный");

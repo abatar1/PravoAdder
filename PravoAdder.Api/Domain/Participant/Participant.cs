@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using Newtonsoft.Json;
 
@@ -14,6 +13,7 @@ namespace PravoAdder.Api.Domain
 		public ContactDetail ContactDetail { get; set; }
 
 		public string TypeName { get; set; }
+		public string TypeId { get; set; }
 
 		[JsonProperty("INN")]
 		public string Inn { get; set; }
@@ -39,7 +39,7 @@ namespace PravoAdder.Api.Domain
 		public VisualBlockModel VisualBlock { get; set; }
 
 		[JsonIgnore]
-		public string FullName
+		public override string DisplayName
 		{
 			get
 			{
@@ -55,9 +55,9 @@ namespace PravoAdder.Api.Domain
 				}			
 				return string.Empty;
 			}
-		}
+		}		
 
-		public override string ToString() => FullName;
+		public override string ToString() => DisplayName;
 
 		public Participant(string firstName, string lastName, ParticipantType type)
 		{
@@ -66,14 +66,28 @@ namespace PravoAdder.Api.Domain
 			Type = type;
 		}
 
-		public Participant(string fullname, char splitSymbol, ParticipantType type)
+		public Participant(HttpAuthenticator authenticator, string fullname, char splitSymbol)
 		{
 			var splitName = fullname.Split(splitSymbol);
-			if (splitName.Length != 2) throw new ArgumentException();
 
-			FirstName = splitName[0];
-			LastName = splitName[1];
-			Type = type;
+			if (splitName.Length == 2)
+			{
+				FirstName = splitName[0];
+				LastName = splitName[1];
+				Type = ParticipantType.GetPersonType(authenticator);
+			}
+			else if (splitName.Length == 3)
+			{
+				FirstName = splitName[0];
+				MiddleName = splitName[1];
+				LastName = splitName[2];
+				Type = ParticipantType.GetPersonType(authenticator);
+			}
+			else
+			{
+				Organization = fullname;
+				Type = ParticipantType.GetCompanyType(authenticator);
+			}
 		}
 
 		public Participant()

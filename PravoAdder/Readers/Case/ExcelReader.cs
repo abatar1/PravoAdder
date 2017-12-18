@@ -21,7 +21,7 @@ namespace PravoAdder.Readers
 		    return base.GetFileInfo(name, extentions);
 	    }
 
-	    public override Table Read(ApplicationArguments args, Settings settings)
+	    public override Table Read(Settings settings)
         {
             var info = GetFileInfo(_filename);
 
@@ -37,7 +37,7 @@ namespace PravoAdder.Readers
 					.Where(c => c.Value != null)
 					.ToArray();
                 var colorColumnsPositions = infoRow
-                    .Where(c => settings.AllowedColors.Contains(c.Style.Fill.BackgroundColor.Rgb))
+                    .Where(c => settings.AllowedColor == c.Style.Fill.BackgroundColor.Rgb)
                     .Select(c => c.Start.Column)
                     .ToArray();
                 var infoRowContent = infoRow
@@ -47,7 +47,7 @@ namespace PravoAdder.Readers
                     .ToDictionary(key => key.key, value => new FieldAddress(value.value));
 
                 var table = new List<Dictionary<int, FieldAddress>>();
-	            var startPosition = args.RowNum != 0 ? args.RowNum : settings.DataRowPosition;
+	            var startPosition = settings.RowNum != 0 ? settings.RowNum : settings.DataRowPosition;
 				for (var rowNum = startPosition; rowNum <= totalRows; rowNum++)
                 {
                     var row = new List<string>();

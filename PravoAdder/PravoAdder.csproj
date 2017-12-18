@@ -84,6 +84,7 @@
     <Reference Include="System.ValueTuple, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ValueTuple.4.3.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
     </Reference>
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -91,19 +92,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Domain\Attributes\IsRequiredAttribute.cs" />
+    <Compile Include="Domain\Attributes\DefaultValueAttribute.cs" />
+    <Compile Include="Domain\Attributes\RequiredAttribute.cs" />
     <Compile Include="Domain\Conveyor\RemoteFilesProcessModel.cs" />
+    <Compile Include="Domain\Instance.cs" />
+    <Compile Include="Domain\InstanceEnviroment.cs" />
     <Compile Include="Domain\Table\ReadingMode.cs" />
-    <Compile Include="Domain\Attributes\ReadingTypeAttribute.cs" />
     <Compile Include="Domain\HeaderBlockInfo.cs" />
     <Compile Include="Domain\Conveyor\ProcessType.cs" />
     <Compile Include="Domain\Conveyor\ProcessTypes.cs" />
     <Compile Include="Domain\Table\Row.cs" />
-    <Compile Include="Domain\ApplicationArguments.cs" />
     <Compile Include="Domain\Table\XmlAddress.cs" />
     <Compile Include="Domain\Conveyor\ConveyorItem.cs" />
     <Compile Include="Engine.cs" />
     <Compile Include="Domain\Conveyor\EngineMessage.cs" />
+    <Compile Include="GuiEngine.cs" />
     <Compile Include="Helpers\RowHelper.cs" />
     <Compile Include="Helpers\StringHelper.cs" />
     <Compile Include="Processors\ConveyorException.cs" />
@@ -132,7 +135,7 @@
     <Compile Include="Readers\Case\ExcelRuleReader.cs" />
     <Compile Include="Readers\Case\ExcelReferenceReader.cs" />
     <Compile Include="Readers\EventCreator.cs" />
-    <Compile Include="Readers\ICreator.cs" />
+    <Compile Include="Readers\Creator.cs" />
     <Compile Include="Readers\ParticipantCreator.cs" />
     <Compile Include="Readers\ProjectFieldCreator.cs" />
     <Compile Include="Readers\TaskCreator.cs" />
@@ -146,12 +149,10 @@
     <Compile Include="Domain\Attributes\FieldNameAttribute.cs" />
     <Compile Include="Domain\Table\Table.cs" />
     <Compile Include="Domain\Table\FieldAddress.cs" />
-    <Compile Include="Domain\Attributes\IgnoreAttribute.cs" />
     <Compile Include="Helpers\CollectionHelper.cs" />
     <Compile Include="Helpers\JsonHelper.cs" />
     <Compile Include="Processors\GroupedProcessors.cs" />
     <Compile Include="Wrappers\Counter.cs" />
-    <Compile Include="Wrappers\SettingsWrapper.cs" />
     <Compile Include="Wrappers\CaseBuilder.cs" />
     <Compile Include="Readers\Case\ExcelReader.cs" />
     <Compile Include="Wrappers\ApiEnviroment.cs" />
@@ -164,9 +165,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="config.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

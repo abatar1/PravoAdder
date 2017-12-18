@@ -2,7 +2,7 @@
 
 namespace PravoAdder.Api.Repositories
 {
-	public class CalculationRepository : TemplateRepository<CalculationFormula>
+	public class CalculationRepository : TemplateRepository<CalculationFormula, CalculationFormulasApi>
 	{
 	}
 }

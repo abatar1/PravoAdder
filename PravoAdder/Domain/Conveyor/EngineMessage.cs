@@ -15,8 +15,8 @@ namespace PravoAdder.Domain
 		public int Total { get; set; }
 		public bool IsUpdate { get; set; }
 		public bool IsFinal { get; set; }
+		public bool IsContinue { get; set; }
 		public ParallelOptions ParallelOptions { get; set; }
-		public ApplicationArguments Args { get; set; }
 		public Settings Settings { get; set; }	
 		
 		// Wrappers
@@ -24,7 +24,7 @@ namespace PravoAdder.Domain
 		public HttpAuthenticator Authenticator { get; set; }
 		public ApiEnviroment ApiEnviroment { get; set; }
 		public CaseBuilder CaseBuilder { get; set; }
-		public Creator Creator { get; set; }
+		public IDictionary<string, Creator> Creators { get; set; }
 
 		// Data
 		public List<ConveyorItem> Child { get; set; }
@@ -47,9 +47,9 @@ namespace PravoAdder.Domain
 			}
 		}
 
-		public ICreatable GetCreatable(DatabaseEntityItem item = null)
+		public TType GetCreatable<TType>(DatabaseEntityItem item = null) where TType : ICreatable
 		{
-			return Creator.Create(Table.Header, Row, item);
+			return (TType) Creators[typeof(TType).Name + "Creator"].Create(Table.Header, Row, item);
 		}
 
 		public string GetValueFromRow(string name)

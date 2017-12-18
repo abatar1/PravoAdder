@@ -34,7 +34,7 @@ namespace PravoAdder.Readers
 				var infoRow = Worksheet
 					.Cells[settings.InformationRowPosition, 1, settings.InformationRowPosition, TotalColumns];
 				ColorHeader = infoRow
-					.Where(c => settings.AllowedColors.Contains(c.Style.Fill.BackgroundColor.Rgb))
+					.Where(c => settings.AllowedColor == c.Style.Fill.BackgroundColor.Rgb)
 					.Select(c => c.Start.Column)
 					.ToList();
 				var headerContent = infoRow
@@ -69,13 +69,13 @@ namespace PravoAdder.Readers
 			return base.GetFileInfo(name, extentions);
 		}				
 	
-		public override Table Read(ApplicationArguments args, Settings settings)
+		public override Table Read(Settings settings)
 		{
-			var mainTableInfo = new TableInfo(settings, args.SourceName);
+			var mainTableInfo = new TableInfo(settings, settings.SourceName);
 			var table = new List<Row>();
 			var referenceTableInfos = new Dictionary<string, TableInfo>();
 
-			for (var rowNum = settings.DataRowPosition + args.RowNum - 1; rowNum <= mainTableInfo.TotalRows; rowNum++)
+			for (var rowNum = settings.DataRowPosition + settings.RowNum - 1; rowNum <= mainTableInfo.TotalRows; rowNum++)
 			{
 				var row = new List<string>();
 				var participants = new HashSet<string>();

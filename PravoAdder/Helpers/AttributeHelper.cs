@@ -6,9 +6,9 @@ namespace PravoAdder.Helpers
 {
 	public static class AttributeHelper
 	{
-		public static T LoadAttribute<T>(this MemberInfo property) where T : Attribute
+		public static T GetAttribute<T>(this MemberInfo property) where T : Attribute
 		{
-			return (T)property
+			return (T) property
 				.GetCustomAttributes(typeof(T))
 				.FirstOrDefault();
 		}

@@ -26,11 +26,11 @@ namespace PravoAdder.Readers
 				var projectTypeName = Table.GetValue(header, row, "Practice Area");
 				if (string.IsNullOrEmpty(projectTypeName))
 				{
-					projectTypes.AddRange(ProjectTypeRepository.GetMany<ProjectTypesApi>(HttpAuthenticator));
+					projectTypes.AddRange(ProjectTypeRepository.GetMany(HttpAuthenticator));
 				}
 				else
 				{
-					projectTypes.Add(ProjectTypeRepository.Get<ProjectTypesApi>(HttpAuthenticator, projectTypeName));
+					projectTypes.Add(ProjectTypeRepository.Get(HttpAuthenticator, projectTypeName));
 				}				
 			}
 
@@ -44,7 +44,7 @@ namespace PravoAdder.Readers
 			return new BillingRuleWrapper {BillingRules = billingRules};
 		}
 
-		public BillingRuleCreator(HttpAuthenticator httpAuthenticator, ApplicationArguments applicationArguments) : base(httpAuthenticator, applicationArguments)
+		public BillingRuleCreator(HttpAuthenticator httpAuthenticator, Settings settings) : base(httpAuthenticator, settings)
 		{
 		}
 	}

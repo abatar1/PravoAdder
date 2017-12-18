@@ -39,7 +39,7 @@ namespace PravoAdder.Readers
 				IsRepeatable = isRepeatingBlock,
 				Lines = new List<VisualBlockLineModel>()
 			};
-			VisualBlock = VisualBlockRepository.GetOrCreate<VisualBlockApi>(HttpAuthenticator, visualBlockName, puttingVisualBlock);
+			VisualBlock = VisualBlockRepository.GetOrCreate(HttpAuthenticator, visualBlockName, puttingVisualBlock);
 
 			var newField = GetVisualBlockField(HttpAuthenticator, header, row);
 			if (newField == null) return null;
@@ -81,7 +81,7 @@ namespace PravoAdder.Readers
 				PlaceholderText = fieldName,
 				ProjectFieldFormat = _formats.FirstOrDefault(f => f.Name.Equals("Text"))
 			};
-			var projectField = ProjectFieldRepository.GetOrCreate<ProjectFieldsApi>(autenticator, fieldName, newProjectField);
+			var projectField = ProjectFieldRepository.GetOrCreate(autenticator, fieldName, newProjectField);
 			
 			return new VisualBlockFieldModel
 			{
@@ -92,7 +92,7 @@ namespace PravoAdder.Readers
 			};
 		}
 
-		public VisualBlockLineCreator(HttpAuthenticator httpAuthenticator, ApplicationArguments applicationArguments) : base(httpAuthenticator, applicationArguments)
+		public VisualBlockLineCreator(HttpAuthenticator httpAuthenticator, Settings settings) : base(httpAuthenticator, settings)
 		{
 			_formats = ApiRouter.Bootstrap.GetFieldTypes(httpAuthenticator);
 			_lineTypes = ApiRouter.Bootstrap.GetLineTypes(HttpAuthenticator);

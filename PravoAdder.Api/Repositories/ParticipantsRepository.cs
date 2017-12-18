@@ -4,11 +4,11 @@ using PravoAdder.Api.Domain;
 
 namespace PravoAdder.Api.Repositories
 {
-	public class ParticipantsRepository : TemplateRepository<Participant>
+	public class ParticipantsRepository : TemplateRepository<Participant, ParticipantsApi>
 	{
 		public static IEnumerable<Participant> GetManyDetailed(HttpAuthenticator authenticator)
 		{
-			return GetMany<ParticipantsApi>(authenticator).Select(p => GetDetailed<ParticipantsApi>(authenticator, p.FullName));
+			return GetMany(authenticator).Select(p => GetDetailed(authenticator, p.DisplayName));
 		}
 	}
 }

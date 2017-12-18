@@ -6,15 +6,18 @@ using PravoAdder.Api.Domain;
 
 namespace PravoAdder.Api.Repositories
 {
-	public abstract class TemplateRepository<T> where T : DatabaseEntityItem
+	public abstract class TemplateRepository<TEntity, TRoute> where TEntity : DatabaseEntityItem
 	{
-		protected static ConcurrentDictionary<string, T> Container;
-		protected static IApi<T> Api;
+		protected static ConcurrentDictionary<string, TEntity> Container;
+
+		private static IApi<TEntity> _api;
+
+		protected static IApi<TEntity> Api => _api ?? (_api = (IApi<TEntity>) Activator.CreateInstance(typeof(TRoute)));
 
 		public static bool IsContainerEmpty;
 		private static readonly object IsContainerEmptyLock = new object();	
 
-		private static void FillContainer<TApi>(HttpAuthenticator authenticator, string optional = null) where TApi : IApi<T>
+		private static void FillContainer(HttpAuthenticator authenticator, string optional = null)
 		{
 			lock (IsContainerEmptyLock)
 			{
@@ -23,37 +26,42 @@ namespace PravoAdder.Api.Repositories
 
 			if (IsContainerEmpty)
 			{
-				Api = (IApi<T>) Activator.CreateInstance(typeof(TApi));
-
 				var container = Api.GetMany(authenticator, optional)
-					.Select(x => new KeyValuePair<string, T>(x.Name?.ToLower() ?? x.DisplayName.ToLower(), x))
+					.Select(x => new KeyValuePair<string, TEntity>(x.Name?.ToLower() ?? x.DisplayName.ToLower(), x))
 					.GroupBy(x => x.Key)
 					.Select(g => g.First())
 					.ToList();
 				if (optional != null)
 				{
-					if (Container == null) Container = new ConcurrentDictionary<string, T>();
+					if (Container == null) Container = new ConcurrentDictionary<string, TEntity>();
 					container.ForEach(c => Container.AddOrUpdate(c.Key, c.Value, (s, arg2) => arg2));
 				}
 				else
 				{
-					Container = new ConcurrentDictionary<string, T>(container);
+					Container = new ConcurrentDictionary<string, TEntity>(container);
 				}				
 			}
 		}
 
-		public static List<T> GetMany<TApi>(HttpAuthenticator authenticator, string optional = null) where TApi : IApi<T>
+		public static IEnumerable<TEntity> GetMany(HttpAuthenticator authenticator, string optional = null)
 		{
-			FillContainer<TApi>(authenticator, optional);
-			return Container?.Values.ToList() ?? new List<T>();
+			FillContainer(authenticator, optional);
+			return Container?.Values.ToList() ?? new List<TEntity>();
 		}
 
-		public static T Get<TApi>(HttpAuthenticator authenticator, string name) where TApi : IApi<T>
+		public static IEnumerable<Lazy<TEntity>> GetManyDetailed(HttpAuthenticator authenticator, string optional = null)
+		{
+			FillContainer(authenticator, optional);
+			return Container?.Values.Select(x => new Lazy<TEntity>(() => GetDetailed(authenticator, x.Name))).ToList() ??
+			       new List<Lazy<TEntity>>();
+		}
+
+		public static TEntity Get(HttpAuthenticator authenticator, string name)
 		{
 			if (string.IsNullOrEmpty(name)) return null;
 			var formattedName = name.ToLower();
 
-			FillContainer<TApi>(authenticator);
+			FillContainer(authenticator);
 
 			var value = Container.TryGetValue(formattedName, out var result) ? result : null;
 
@@ -63,33 +71,32 @@ namespace PravoAdder.Api.Repositories
 			return mKey != null ? Container[mKey] : null;
 		}
 
-		public static T GetDetailed<TApi>(HttpAuthenticator authenticator, string name) where TApi : IApi<T>
+		public static TEntity GetDetailed(HttpAuthenticator authenticator, string name)
 		{
-			var item = Get<TApi>(authenticator, name);
+			var item = Get(authenticator, name);
 
 			if (item == null) return null;
 			if (item.WasDetailed) return item;
 
 			var detailedItem = Api.Get(authenticator, item.Id);
 			detailedItem.WasDetailed = true;
-			Container.AddOrUpdate(name, detailedItem, (key, value) => value);
+			Container.AddOrUpdate(name.ToLower(), detailedItem, (key, value) => detailedItem);
 
 			return detailedItem;
 		}
 
-		public static T GetOrCreate<TApi>(HttpAuthenticator authenticator, string name, T puttingObject) where TApi : IApi<T>
+		public static TEntity Create(HttpAuthenticator authenticator, TEntity puttingObject)
+		{
+			var item = Api.Create(authenticator, puttingObject);
+			Container.AddOrUpdate(item.Name.ToLower(), item, (key, value) => item);
+			return item;
+		}
+
+		public static TEntity GetOrCreate(HttpAuthenticator authenticator, string name, TEntity puttingObject)
 		{
 			if (string.IsNullOrEmpty(name)) return null;
 
-			var item = Get<TApi>(authenticator, name);
-
-			if (item == null)
-			{
-				item = Api.Create(authenticator, puttingObject);
-				Container.AddOrUpdate(name, item, (key, type) => type);
-			}
-
-			return item;
-		}
+			return Get(authenticator, name) ?? Create(authenticator, puttingObject);
+		}		
 	}
 }

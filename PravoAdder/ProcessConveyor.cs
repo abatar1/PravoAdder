@@ -12,12 +12,12 @@ namespace PravoAdder
 		private static List<ConveyorItem> Conveyor { get; set; }
 		private EngineMessage FirstMessage { get; }
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-		private static ApplicationArguments _args;
+		private static Settings _settings;
 
-		public ProcessConveyor(ApplicationArguments arguments)
+		public ProcessConveyor(Settings settings)
 		{
-			FirstMessage = new EngineMessage { Args = arguments };
-			_args = arguments;
+			FirstMessage = new EngineMessage { Settings = settings };
+			_settings = settings;
 		}
 
 		public void Add(Func<EngineMessage, EngineMessage> processor, int depth = 0)
@@ -84,8 +84,8 @@ namespace PravoAdder
 
 		public ProcessConveyor Create()
 		{
-			var conveyor = new ProcessConveyor(_args);
-			var processType = _args.ProcessType;
+			var conveyor = new ProcessConveyor(_settings);
+			var processType = _settings.ProcessType;
 
 			Console.Title = $@"Pravo.{ProcessTypes.GetByName(processType).Name}";
 
@@ -113,10 +113,9 @@ namespace PravoAdder
 					break;					
 				case "CaseDeleteByDate":					
 					conveyor.AddRange(GroupedProcessors.LoadWithoutTable);
-					conveyor.Add(SingleProcessors.Project.Delete, 2);
-					conveyor.Add(SingleProcessors.Core.ProcessCount, 2);
-					conveyor.Add(ForEachProcessors.ProjectByDate, 1);
-					conveyor.Add(ForEachProcessors.ProjectGroup);
+					conveyor.Add(SingleProcessors.Project.Delete, 1);
+					conveyor.Add(SingleProcessors.Core.ProcessCount, 1);
+					conveyor.Add(ForEachProcessors.ProjectByDate);
 					break;					
 				case "TaskCreate":
 					SetTableProcessor(SingleProcessors.CreateTask);
@@ -220,6 +219,18 @@ namespace PravoAdder
 					conveyor.Add(SingleProcessors.Project.DocumentsToMultilines, 1);
 					conveyor.Add(SingleProcessors.Core.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.Project);
+					break;
+				case "BillingEventCreate":
+					SetTableProcessor(SingleProcessors.CreateTimeLog, SingleProcessors.CreateEvent, 
+						SingleProcessors.CreateBill, SingleProcessors.UpdateBillRate);
+					break;
+				case "CreateBillsByClientName":
+					conveyor.AddRange(GroupedProcessors.LoadWithTable);
+					conveyor.Add(SingleProcessors.Project.GetProjectByClientName, 1);
+					conveyor.Add(SingleProcessors.CreateExpense, 1);
+					conveyor.Add(SingleProcessors.CreateBill, 1);
+					conveyor.Add(SingleProcessors.Core.ProcessCount, 1);
+					conveyor.Add(ForEachProcessors.Row);
 					break;
 				default:
 					throw new ArgumentException("Неизвестный тип конвеера.");

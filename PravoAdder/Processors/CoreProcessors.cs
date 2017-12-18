@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using NLog;
 using PravoAdder.Domain;
@@ -13,26 +14,16 @@ namespace PravoAdder.Processors
 	{
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-		public Func<EngineMessage, EngineMessage> LoadSettings = message =>
-		{
-			var settingsController = new SettingsWrapper();
-			return new EngineMessage
-			{
-				Settings = settingsController.LoadSettingsFromConsole(message.Args),
-				ParallelOptions = new ParallelOptions { MaxDegreeOfParallelism = message.Args.ParallelOptions }
-			};
-		};
-
 		public Func<EngineMessage, EngineMessage> LoadTable = message =>
 		{
-			Logger.Info($"Reading {message.Args.SourceName} file.");
-			message.Table = TableEnviroment.Create(message.Args.SourceName, message.Args, message.Settings);
+			Logger.Info($"Reading {message.Settings.SourceName} file.");
+			message.Table = TableEnviroment.Create(message.Settings.SourceName, message.Settings);
 			return message;
 		};
 
 		public Func<EngineMessage, EngineMessage> InitializeApp = message =>
 		{
-			var authenticatorController = new AuthentificatorWrapper(message.Args, TimeSpan.FromMinutes(10));
+			var authenticatorController = new AuthentificatorWrapper(message.Settings, TimeSpan.FromMinutes(2), 5);
 			var authenticator = authenticatorController.Authenticate();
 			if (authenticator == null)
 			{
@@ -40,21 +31,15 @@ namespace PravoAdder.Processors
 				return message;
 			}
 
-			var processType = message.Args.ProcessType;
+			var processType = message.Settings.ProcessType;
 			var processName = ProcessTypes.GetByName(processType).Name;
 			if (processName == null) return new EngineMessage { IsFinal = true };
 
-			var subjectType = processName.SplitCamelCase()[0];
-			var creatorType = AppDomain.CurrentDomain.GetAssemblies()
-				.SelectMany(s => s.GetTypes())
-				.Where(p => typeof(Creator).IsAssignableFrom(p))
-				.FirstOrDefault(x => x.Name.Equals($"{subjectType}Creator"));
-
-			Creator creator = null;
-			if (creatorType != null)
-			{
-				creator = (Creator) Activator.CreateInstance(creatorType, new object[] { authenticator, message.Args });
-			}			
+			var creators = Assembly
+				.GetAssembly(typeof(Creator))
+				.GetTypes()
+				.Where(t => t.IsSubclassOf(typeof(Creator)))
+				.ToDictionary(key => key.Name, value => (Creator)Activator.CreateInstance(value, authenticator, message.Settings));
 
 			return new EngineMessage
 			{
@@ -62,14 +47,15 @@ namespace PravoAdder.Processors
 				CaseBuilder = new CaseBuilder(message.Table, message.Settings, authenticator),
 				ApiEnviroment = new ApiEnviroment(authenticator),
 				Counter = new Counter(),
-				Creator = creator
+				Creators = creators,
+				ParallelOptions = new ParallelOptions {MaxDegreeOfParallelism = message.Settings.ParallelOptions}
 			};
 		};
 
 		public Func<EngineMessage, EngineMessage> ProcessCount = message =>
 		{
 			if (message.Item == null) return message;
-			message.Counter.ProcessCount(message.Count, message.Total, message.Args.RowNum, message.Item, 70);
+			message.Counter.ProcessCount(message.Count, message.Total, message.Settings.RowNum, message.Item, 70);
 			return message;
 		};
 	}

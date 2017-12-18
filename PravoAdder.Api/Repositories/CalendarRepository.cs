@@ -2,7 +2,7 @@
 
 namespace PravoAdder.Api.Repositories
 {
-	public class CalendarRepository : TemplateRepository<Calendar>
+	public class CalendarRepository : TemplateRepository<Calendar, CalendarApi>
 	{
 	}
 }

@@ -5,18 +5,22 @@ namespace PravoAdder.Api.Domain
 {
 	public abstract class DatabaseEntityItem : IEquatable<DatabaseEntityItem>
 	{
+		[Required]
 		public string Name { get; set; }
 
 		public string Id { get; set; }
 
 		public string SysName { get; set; }
 
-		public string DisplayName { get; set; }
+		public virtual string DisplayName { get; set; }
 
 		public virtual bool ShouldSerializeId() => true;
 
 		[JsonIgnore]
 		public bool WasDetailed { get; set; }
+
+		[JsonIgnore]
+		public bool IsNew { get; set; }
 
 		public override string ToString()
 		{

@@ -48,7 +48,7 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> CreateTask = message =>
 		{
-			var task = (Task) message.GetCreatable();
+			var task = message.GetCreatable<Task>();
 			ApiRouter.Task.Create(message.Authenticator, task);
 			if (task.IsArchive) ApiRouter.Projects.Archive(message.Authenticator, task.Project.Id);
 			return message;
@@ -56,13 +56,13 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> AddVisualBlockLine = message =>
 		{
-			var line = (VisualBlockLineModel) message.GetCreatable();
+			var line = message.GetCreatable<VisualBlockLineModel>();
 			if (line == null) return null;
 
 			var sumWidth = line.Fields.Sum(f => f?.Width);
 			if (sumWidth == 0) return null;
 
-			var creator = (VisualBlockLineCreator) message.Creator;
+			var creator = (VisualBlockLineCreator) message.Creators[typeof(VisualBlockLineCreator).Name];
 			if (sumWidth < 12)
 			{
 				creator.ConstructedLineModel = line;
@@ -91,20 +91,29 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> CreateEvent = message =>
 		{
-			var newEvent = (Event) message.GetCreatable(message.Item);
+			var newEvent = message.GetCreatable<Event>(message.Item);
 			if (newEvent == null) return null;
 
-			var isRestored = false;			
+			var timeLogs = ApiRouter.TimeLogs.GetMany(message.Authenticator, newEvent.Project.Id);
+			var events = timeLogs.Select(x => ApiRouter.Events.Get(message.Authenticator, x.EntityId));
+			if (events.Any(x => x.Name == newEvent.Name))
+			{
+				message.IsContinue = true;
+				return message;
+			}
+
+			var isRestored = false;		
 			if (newEvent.Project.IsArchive)
 			{
 				ApiRouter.Projects.Restore(message.Authenticator, newEvent.Project.Id);
 				isRestored = true;
 			}
-			message.Item = ApiRouter.Events.Create(message.Authenticator, newEvent);
+			newEvent = ApiRouter.Events.Create(message.Authenticator, newEvent);
 			if (isRestored)
 			{
 				ApiRouter.Projects.Archive(message.Authenticator, newEvent.Project.Id);
 			}
+			message.Item = newEvent.Project;
 			return message;
 		};
 
@@ -120,19 +129,35 @@ namespace PravoAdder.Processors
 		public static Func<EngineMessage, EngineMessage> CreateTimeLog = message =>
 		{
 			if (_activityTags == null) _activityTags = ApiRouter.Bootstrap.GetActivityTags(message.Authenticator);
-			var activityType = message.GetValueFromRow("Activity Type");
-			if (string.IsNullOrEmpty(activityType)) return null;
 
-			var logType = EventTypeRepository.GetOrPut(message.Authenticator, message.GetValueFromRow("Activity Type"));
-			if (logType == null) return null;
+			var timeValue = message.GetValueFromRow("Timer");
+			int time;
+			if (timeValue == null)
+			{
+				var rate = double.Parse(message.GetValueFromRow("Rate"));
+				var total = double.Parse(message.GetValueFromRow("Total"));
+				time = (int) Math.Round(rate / total * 60);
+			}
+			else
+			{
+				if (!int.TryParse(timeValue, out time)) return null;			
+			}
 
 			var newTimeLog = new TimeLog
 			{
-				LogType = logType,
-				LogDate = message.GetValueFromRow("Log Date").FormatDate(),
+				LogDate = DateTime.Parse(message.GetValueFromRow("Log Date")),
 				Tag = _activityTags.First(t => t.Name.Equals("Event")),
-				Time = int.Parse(message.GetValueFromRow("Timer"))
+				Time = time
 			};
+
+			try
+			{
+				newTimeLog.LogType = EventTypeRepository.GetOrPut(message.Authenticator, message.GetValueFromRow("Activity Type"));
+			}
+			catch (Exception)
+			{
+				// ignored
+			}
 
 			message.Item = ApiRouter.TimeLogs.Create(message.Authenticator, newTimeLog);
 			return message;
@@ -143,7 +168,7 @@ namespace PravoAdder.Processors
 			var dictionaryName = message.GetValueFromRow("Name");
 			if (string.IsNullOrEmpty(dictionaryName)) return null;
 
-			var dictionary = DictionaryRepository.GetOrCreate<DictionaryApi>(message.Authenticator, dictionaryName, new DictionaryInfo { Name = dictionaryName });
+			var dictionary = DictionaryRepository.GetOrCreate(message.Authenticator, dictionaryName, new DictionaryInfo { Name = dictionaryName });
 
 			var dictionaryItemName = message.GetValueFromRow("Value");
 			var dictItems = ApiRouter.DictionaryItems.GetMany(message.Authenticator, dictionary.SystemName);
@@ -171,16 +196,16 @@ namespace PravoAdder.Processors
 			ExcelWorksheet worksheet = null;
 			if (!newTableInfo.Exists)
 			{
-				if (!HeaderBlockInfo.Languages.ContainsKey(message.Args.Language))
+				if (!HeaderBlockInfo.Languages.ContainsKey(message.Settings.Language))
 				{
 					message.IsFinal = true;
 					return message;
 				}
-				var lKey = HeaderBlockInfo.Languages[message.Args.Language];
+				var lKey = HeaderBlockInfo.Languages[message.Settings.Language];
 				worksheet = excelPackage.Workbook.Worksheets.Add(pageName);
 				var alphabet = Enumerable.Range(0, 26).Select(i => Convert.ToChar('A' + i));			
 
-				foreach (var p in headProperties.Zip(alphabet, (info, c) => new {Info = info.LoadAttribute<FieldNameAttribute>(), Letter = c}))
+				foreach (var p in headProperties.Zip(alphabet, (info, c) => new {Info = info.GetAttribute<FieldNameAttribute>(), Letter = c}))
 				{
 					worksheet.Cells[$"{p.Letter}1"].Value = $"-b {HeaderBlockInfo.SystemNames[lKey]} -f {p.Info.FieldNames[lKey]}";
 
@@ -215,9 +240,17 @@ namespace PravoAdder.Processors
 
 		public static Func<EngineMessage, EngineMessage> CreateExpense = message =>
 		{
-			var projectName = Table.GetValue(message.Table.Header, message.Row, "Case Name");
-			var project = ProjectRepository.Get<ProjectsApi>(message.Authenticator, projectName);
-			if (project == null) return null;
+			Project project;
+			if (message.Item != null && message.Item.GetType() == typeof(Project))
+			{
+				project = (Project) message.Item;
+			}
+			else
+			{
+				var projectName = Table.GetValue(message.Table.Header, message.Row, "Case Name");
+				project = ProjectRepository.Get(message.Authenticator, projectName);
+				if (project == null) return null;
+			}		
 
 			var name = message.GetValueFromRow("Expense");
 			if (string.IsNullOrEmpty(name)) return null;
@@ -228,24 +261,71 @@ namespace PravoAdder.Processors
 				Date = DateTime.Parse(message.GetValueFromRow("Date")),
 				Name = name,
 				Project = project,
-				Files = new List<string>()
+				Files = new List<string>(),
+				Description = message.GetValueFromRow("Description")
 			};
 
 			message.Item = ApiRouter.Expenses.Create(message.Authenticator, expense);
+
+			return message;
+		};
+
+		public static Func<EngineMessage, EngineMessage> UpdateBillRate = message =>
+		{
+			var rateValue = message.GetValueFromRow("Rate");
+			if (rateValue == null || message.Item == null || message.Item.GetType() != typeof(Bill)) return null;
+
+			var billedTime = ApiRouter.BilledTimes.GetMany(message.Authenticator, message.Item.Id).FirstOrDefault();
+			if (billedTime == null) return null;
+
+			var bill = ApiRouter.Bills.Get(message.Authenticator, message.Item.Id);
+			var billStatus = bill.BillStatus;
+
+			var statusChanged = false;
+			if (billStatus.Name == "Paid")
+			{
+				ApiRouter.Bills.UpdateStatus(message.Authenticator,
+					new BillStatusGroup {BillIds = new List<string> {bill.Id}, BillStatusSysName = "DRAFT"});
+				statusChanged = true;
+			}
+
+			billedTime.Rate = double.Parse(rateValue);				
+
+			ApiRouter.BilledTimes.Update(message.Authenticator, billedTime);
+			ApiRouter.Bills.Rebuild(message.Authenticator, message.Item.Id);
+
+			if (statusChanged)
+			{
+				ApiRouter.Bills.UpdateStatus(message.Authenticator,
+					new BillStatusGroup { BillIds = new List<string> { bill.Id }, BillStatusSysName = billStatus.SysName });
+			}
+
+			message.Item = bill.Project;
 			return message;
 		};
 
 		public static Func<EngineMessage, EngineMessage> CreateBill = message =>
 		{
-			var bill = (Bill) message.Creator.Create(message.Table.Header, message.Row, message.Item);
-			message.Item = bill;
+			if (message.Item != null && message.Item.GetType() != typeof(Project)) throw new ArgumentException();
+
+			try
+			{
+				var invoicedValue = message.GetValueFromRow("Invoiced");
+				var status = bool.TryParse(invoicedValue, out var isInvoice);
+				if (status && isInvoice) message.Item = message.GetCreatable<Bill>(message.Item);
+			}
+			catch (Exception)
+			{
+				message.Item = message.GetCreatable<Bill>(message.Item);
+			}
+			
 			return message;
 		};
 
 		public static Func<EngineMessage, EngineMessage> UpdateBillingSettings = message =>
 		{
 			var billingSettings = ApiRouter.BillingSettings.Get(message.Authenticator);
-			var newBillingRules = ((BillingRuleWrapper) message.GetCreatable()).BillingRules;
+			var newBillingRules = message.GetCreatable<BillingRuleWrapper>().BillingRules;
 			billingSettings.BillingRules.AddRange(newBillingRules);
 
 			message.Item = ApiRouter.BillingSettings.Put(message.Authenticator, billingSettings);

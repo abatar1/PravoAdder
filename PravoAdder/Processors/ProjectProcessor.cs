@@ -7,7 +7,6 @@ using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Repositories;
 using PravoAdder.Domain;
-using PravoAdder.Wrappers;
 
 namespace PravoAdder.Processors
 {
@@ -15,7 +14,7 @@ namespace PravoAdder.Processors
 	{
 		public Func<EngineMessage, EngineMessage> Update = message =>
 		{
-			message.Item = ProjectRepository.Get<ProjectsApi>(message.Authenticator, message.HeaderBlock.Name);
+			message.Item = ProjectRepository.Get(message.Authenticator, message.HeaderBlock.Name);
 			return message;
 		};
 
@@ -24,10 +23,12 @@ namespace PravoAdder.Processors
 			var headerBlock = message.HeaderBlock;
 			if (string.IsNullOrEmpty(headerBlock.Name) || string.IsNullOrEmpty(headerBlock.ProjectType)) return null;
 
-			var projectGroup = message.ApiEnviroment.AddProjectGroup(message.Args.IsOverwrite, headerBlock);
-			message.Item = message.ApiEnviroment.AddProject(message.Args.IsOverwrite, headerBlock,
-				projectGroup?.Id, message.Count, message.IsUpdate);
+			var projectGroup = message.ApiEnviroment.AddProjectGroup(message.Settings.IsOverwrite, headerBlock);
 
+			var project = message.ApiEnviroment.AddProject(message.Settings, headerBlock, projectGroup?.Id, message.Count);
+			if (project == null) return null;
+
+			message.Item = project;
 			return message;
 		};
 
@@ -40,7 +41,7 @@ namespace PravoAdder.Processors
 		public Func<EngineMessage, EngineMessage> Rename = message =>
 		{
 			var projectName = Table.GetValue(message.Table.Header, message.Row, "Case name");
-			var project = ProjectRepository.Get<ProjectsApi>(message.Authenticator, projectName);
+			var project = ProjectRepository.Get(message.Authenticator, projectName);
 			if (project == null) return null;
 
 			project.Name = Table.GetValue(message.Table.Header, message.Row, "New case name");
@@ -52,7 +53,7 @@ namespace PravoAdder.Processors
 		{
 			var projectName = message.GetValueFromRow("Case Name");
 
-			var project = ProjectRepository.Get<ProjectsApi>(message.Authenticator, projectName);
+			var project = ProjectRepository.Get(message.Authenticator, projectName);
 			if (project == null) return null;
 
 			var note = new Note
@@ -65,11 +66,28 @@ namespace PravoAdder.Processors
 			return new EngineMessage { Item = project };
 		};
 
+		public Func<EngineMessage, EngineMessage> GetProjectByClientName = message =>
+		{
+			var projects = ProjectRepository.GetManyDetailed(message.Authenticator).ToList();
+			var clientName = message.GetValueFromRow("Client");
+
+			var project = projects.FirstOrDefault(x => x.Value.Name.Contains(clientName)) ?? projects
+				              .Where(x => x.Value.Client != null).FirstOrDefault(x => x.Value.Client.DisplayName == clientName);
+			if (project != null)
+			{
+				message.Item = project.Value;
+				return message;
+			}
+
+			message.IsContinue = true;
+			return message;
+		};
+
 		public Func<EngineMessage, EngineMessage> Synchronize = message =>
 		{
 			if (!string.IsNullOrEmpty(message.HeaderBlock.CasebookNumber))
 			{			
-				var project = ProjectRepository.Get<ProjectsApi>(message.Authenticator, message.HeaderBlock.Name);
+				var project = ProjectRepository.Get(message.Authenticator, message.HeaderBlock.Name);
 				if (project == null) return null;
 
 				var asyncResult = ApiRouter.Casebook.CheckAsync(message.Authenticator, project.Id,
@@ -93,8 +111,6 @@ namespace PravoAdder.Processors
 			{
 				foreach (var blockInfo in repeatBlock.VisualBlocks)
 				{
-					var projectVisualBlock = ApiRouter.ProjectCustomValues.GetAllVisualBlocks(message.Authenticator, projectId)
-						.Blocks.First(x => x.Name.Equals(blockInfo.NameInConstructor));
 					message.ApiEnviroment.AddInformation(blockInfo, message.Row, projectId, repeatBlock.Order);
 				}
 			}
@@ -152,7 +168,7 @@ namespace PravoAdder.Processors
 
 		public Func<EngineMessage, EngineMessage> CreateProjectField = message =>
 		{
-			var projectField = (ProjectField) message.GetCreatable();
+			var projectField = message.GetCreatable<ProjectField>();
 			if (projectField == null) return null;
 
 			var result = ApiRouter.ProjectFields.Create(message.Authenticator, projectField);
@@ -162,7 +178,7 @@ namespace PravoAdder.Processors
 
 		public Func<EngineMessage, EngineMessage> SetClient = message =>
 		{
-			var project = ProjectRepository.GetDetailed<ProjectsApi>(message.Authenticator, message.GetValueFromRow("Case Name"));
+			var project = ProjectRepository.GetDetailed(message.Authenticator, message.GetValueFromRow("Case Name"));
 			if (project == null) return null;
 
 			if (project.Client == null)
@@ -172,8 +188,8 @@ namespace PravoAdder.Processors
 
 				try
 				{
-					var client = new Participant(clientName, ' ', ParticipantType.GetPersonType(message.Authenticator));
-					project.Client = ParticipantsRepository.GetOrCreate<ParticipantsApi>(message.Authenticator, clientName, client);
+					var client = new Participant(message.Authenticator, clientName, ' ');
+					project.Client = ParticipantsRepository.GetOrCreate(message.Authenticator, clientName, client);
 				}
 				catch (Exception)
 				{
@@ -196,7 +212,7 @@ namespace PravoAdder.Processors
 			var processingType = ProjectTypeRepository.GetDetailedOrPut(message.Authenticator, typeName, abbreviation);		
 
 			var blockName = message.GetValueFromRow("Blocks");
-			var block = VisualBlockRepository.Get<VisualBlockApi>(message.Authenticator, blockName);
+			var block = VisualBlockRepository.Get(message.Authenticator, blockName);
 			if (block == null) return null;
 
 			if (processingType.VisualBlocks == null) processingType.VisualBlocks = new List<VisualBlockModel>();
@@ -212,12 +228,12 @@ namespace PravoAdder.Processors
 		public Func<EngineMessage, EngineMessage> AttachParticipant = message =>
 		{
 			var projectName = message.GetValueFromRow("Case Name");
-			var project = ProjectRepository.Get<ProjectsApi>(message.Authenticator, projectName);
+			var project = ProjectRepository.Get(message.Authenticator, projectName);
 			if (project == null) return null;
 
 			var participantName = message.GetValueFromRow("Participant");
 			var detailedParticipant =
-				ParticipantsRepository.GetDetailed<ParticipantsApi>(message.Authenticator, participantName);
+				ParticipantsRepository.GetDetailed(message.Authenticator, participantName);
 			if (detailedParticipant == null) return null;
 
 			detailedParticipant.IncludeInProjectId = project.Id;
@@ -232,10 +248,10 @@ namespace PravoAdder.Processors
 		public Func<EngineMessage, EngineMessage> UpdateSettings = message =>
 		{
 			var projectName = message.GetValueFromRow("Case Name");
-			var project = ProjectRepository.Get<ProjectsApi>(message.Authenticator, projectName);
+			var project = ProjectRepository.Get(message.Authenticator, projectName);
 			if (project == null) return null;
 
-			var billingRules = (BillingRuleWrapper) message.GetCreatable(project);
+			var billingRules = message.GetCreatable<BillingRuleWrapper>(project);
 
 			var projectSettings = ApiRouter.ProjectSettings.Get(message.Authenticator, project.Id);
 			if (_calculationTypes == null)
@@ -267,7 +283,7 @@ namespace PravoAdder.Processors
 					ReceivedDate = DateTime.Today,
 					DocumentContentType = new {file.Name}
 				};
-				message.Counter.ProcessCount(message.Count, message.Total, message.Args.RowNum, file);
+				message.Counter.ProcessCount(message.Count, message.Total, message.Settings.RowNum, file);
 
 				bulks.Add(bulk);
 			}
@@ -342,9 +358,9 @@ namespace PravoAdder.Processors
 			if (_documentTypes == null)
 				_documentTypes = ApiRouter.DefaultDictionaryItems.GetMany(message.Authenticator, "CaseMap.Modules.Documents.DAL.Data.DocumentType");
 			
-			var searchingFolder = message.Args.SearchKey;
+			var searchingFolder = message.Settings.SearchKey;
 
-			var project = ProjectRepository.GetDetailed<ProjectsApi>(message.Authenticator, message.Item.Name);
+			var project = ProjectRepository.GetDetailed(message.Authenticator, message.Item.Name);
 			if (!project.Name.Equals("Mary-MVA-2014-145")) return null;
 
 			var searchingBlockMetadata = ApiRouter.ProjectCustomValues.GetAllVisualBlocks(message.Authenticator, project.Id)
@@ -381,7 +397,7 @@ namespace PravoAdder.Processors
 			if (_documentTypes == null)
 				_documentTypes = ApiRouter.DefaultDictionaryItems.GetMany(message.Authenticator, "CaseMap.Modules.Documents.DAL.Data.DocumentType");
 
-			var project = ProjectRepository.GetDetailed<ProjectsApi>(message.Authenticator, message.HeaderBlock.Name);
+			var project = ProjectRepository.GetDetailed(message.Authenticator, message.HeaderBlock.Name);
 			var directoryInfo = new DirectoryInfo(message.HeaderBlock.FilesPath);
 			var existingFolders = ApiRouter.VirtualCatalog.GetContext(message.Authenticator, project.DocumentFolderId);
 

@@ -15,9 +15,9 @@ namespace PravoAdder.Readers
 		private VisualBlockModel _visualBlock;
 		private readonly string _currentType;
 
-		public ParticipantCreator(HttpAuthenticator httpAuthenticator, ApplicationArguments applicationArguments) : base(httpAuthenticator, applicationArguments)
+		public ParticipantCreator(HttpAuthenticator httpAuthenticator, Settings settings) : base(httpAuthenticator, settings)
 		{
-			_currentType = applicationArguments.ParticipantType;
+			_currentType = settings.ParticipantType;
 		}
 
 		public override ICreatable Create(Row info, Row row, DatabaseEntityItem item = null)
@@ -55,24 +55,24 @@ namespace PravoAdder.Readers
 				{
 					foreach (var prop in participantProperties)
 					{					
-						var displayName = prop.LoadAttribute<DisplayNameAttribute>()?.DisplayName;
+						var displayName = prop.GetAttribute<DisplayNameAttribute>()?.DisplayName;
 						if (displayName == null || !displayName.Equals(fieldName)) continue;
 
-						var isRequired = prop.LoadAttribute<RequiredAttribute>();
+						var isRequired = prop.GetAttribute<Domain.RequiredAttribute>();
 						if (isRequired != null && string.IsNullOrEmpty(value)) return null;
 
 						prop.SetValue(participant, value);
 					}
-					if (fieldName == "Company Name")
+					if (fieldName == "Company")
 					{
 						var newCompany = new Participant {Type = ParticipantType.GetCompanyType(HttpAuthenticator), Organization = value};
-						var company = ParticipantsRepository.GetOrCreate<ParticipantsApi>(HttpAuthenticator, value, newCompany);
+						var company = ParticipantsRepository.GetOrCreate(HttpAuthenticator, value, newCompany);
 						participant.Company = company;
 					}
 				}
 				else if (_currentType == ParticipantType.CompanyTypeName)
 				{
-					if (fieldName == "Organization")
+					if (fieldName == "Company")
 					{
 						participant.Organization = value;
 						continue;

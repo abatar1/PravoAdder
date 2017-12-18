@@ -8,9 +8,10 @@ namespace PravoAdder.Api
 {
 	public class EventApi : IApi<Event>
 	{
-		public Event Get(HttpAuthenticator authenticator, string parameter)
+		public Event Get(HttpAuthenticator authenticator, string eventId)
 		{
-			throw new System.NotImplementedException();
+			var parameter = ApiHelper.CreateParameters(("EventId", eventId));
+			return ApiHelper.GetItem<Event>(authenticator, "events", HttpMethod.Get, parameter);
 		}
 
 		public Event Create(HttpAuthenticator authenticator, Event newEvent)

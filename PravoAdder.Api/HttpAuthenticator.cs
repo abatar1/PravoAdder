@@ -10,7 +10,7 @@ namespace PravoAdder.Api
 {
     public class HttpAuthenticator : IDisposable
     {
-        public HttpAuthenticator(string baseUri, TimeSpan timeSpan)
+        public HttpAuthenticator(string baseUri, TimeSpan timeSpan, int maxRetries)
         {
             BaseAddress = new Uri(baseUri);
             CookieContainer = new CookieContainer();
@@ -19,7 +19,7 @@ namespace PravoAdder.Api
             {
                 CookieContainer = CookieContainer
             };
-            var retryHandler = new RetryHandler(clientHandler, 5, TimeSpan.FromMinutes(5));
+            var retryHandler = new RetryHandler(clientHandler, maxRetries, timeSpan);
             Client = new HttpClient(retryHandler)
             {
                 BaseAddress = BaseAddress

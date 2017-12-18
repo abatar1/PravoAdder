@@ -7,7 +7,7 @@ namespace PravoAdder.Readers
 {
     public abstract class TemplateTableReader
     {
-        public abstract Table Read(ApplicationArguments arg, Settings settings);
+        public abstract Table Read(Settings settings);
 
         protected virtual string FormatCell(object cell)
         {

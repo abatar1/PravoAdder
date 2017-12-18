@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
+using PravoAdder.Api.Domain;
 using PravoAdder.Domain;
 using PravoAdder.Helpers;
 
@@ -22,7 +23,7 @@ namespace PravoAdder.Processors
 				if (cell.Value.IsSystem)
 				{
 					var systemHeaderName = typeof(HeaderBlockInfo).GetProperties()
-						.Select(p => p.LoadAttribute<FieldNameAttribute>().FieldNames)
+						.Select(p => p.GetAttribute<FieldNameAttribute>().FieldNames)
 						.FirstOrDefault(p => p.Contains(cell.Value.FieldName));
 					if (systemHeaderName != null) continue;
 				}
@@ -50,7 +51,7 @@ namespace PravoAdder.Processors
 					errorKeys.Add(cell.Key);
 				}
 			}
-			using (var xlPackage = new ExcelPackage(new FileInfo(message.Args.SourceName + ".xlsx")))
+			using (var xlPackage = new ExcelPackage(new FileInfo(message.Settings.SourceName + ".xlsx")))
 			{
 				var worksheet = xlPackage.Workbook.Worksheets.First();
 				foreach (var key in errorKeys)
@@ -64,14 +65,17 @@ namespace PravoAdder.Processors
 
 		private static void ProcessHeader(EngineMessage message, Func<string, string> cellProcessor)
 		{
-			using (var xlPackage = new ExcelPackage(new FileInfo(message.Args.SourceName + ".xlsx")))
+			using (var xlPackage = new ExcelPackage(new FileInfo(message.Settings.SourceName + ".xlsx")))
 			{
 				var worksheet = xlPackage.Workbook.Worksheets.First();
 				var totalColumns = worksheet.Dimension.End.Column;
 
 				for (var columnNum = 1; columnNum <= totalColumns; columnNum++)
 				{
-					var cellValue = worksheet.Cells[message.Settings.InformationRowPosition, columnNum].Text;
+					var cellValue = worksheet.Cells[message.Settings.InformationRowPosition, columnNum].Text
+						.Replace("Summary", "")
+						.Replace("/", "")
+						.Trim();
 					var processedValue = cellProcessor(cellValue);
 					if (processedValue == null) continue;
 
@@ -121,7 +125,9 @@ namespace PravoAdder.Processors
 					case "Atty-Div":
 						return new FieldAddress("Summary", "Assignee").ToString();
 					case "Liability":
-						return new FieldAddress("Summary", "Practice Area").ToString();					
+						return new FieldAddress("Summary", "Practice Area").ToString();
+					case "Billable Client":
+						return new FieldAddress("Summary", "Practice Area").ToString();
 					default:
 						return null;
 				}
@@ -129,5 +135,102 @@ namespace PravoAdder.Processors
 
 			return message;
 		};
+
+		public Func<EngineMessage, EngineMessage> Contact = message =>
+		{
+			Func<string, string> processor = str => str;
+			if (message.Settings.ParticipantType == ParticipantType.PersonTypeName)
+			{
+				processor = cellValue =>
+				{
+					switch (cellValue)
+					{					
+						case "Company":
+							return new FieldAddress("Summary", "Company").ToString();
+						case "First Name":
+							return new FieldAddress("Summary", "First Name").ToString();
+						case "Last Name":
+							return new FieldAddress("Summary", "Last Name").ToString();
+						case "Job Title":
+							return new FieldAddress("Summary", "Job Title").ToString();
+						case "Web Page":
+							return new FieldAddress("Summary", "Site").ToString();
+						case "E-mail Address":
+							return new FieldAddress("Summary", "Email").ToString();
+
+						case "Title":
+							return new FieldAddress("More", "Title").ToString();
+						case "Business Street":
+							return new FieldAddress("More", "Work Address").ToString();
+						case "Business City":
+							return new FieldAddress("More", "Work City").ToString();
+						case "Business State":
+							return new FieldAddress("More", "Work State").ToString();
+						case "Business CountryRegion":
+							return new FieldAddress("More", "Work Country").ToString();
+						case "Business Postal Code":
+							return new FieldAddress("More", "Work Zip").ToString();
+						case "Business Phone":
+							return new FieldAddress("More", "Work Phone").ToString();
+						case "Home Street":
+							return new FieldAddress("More", "Home Address").ToString();
+						case "Home City":
+							return new FieldAddress("More", "Home City").ToString();
+						case "Home State":
+							return new FieldAddress("More", "Home State").ToString();
+						case "Home CountryRegion":
+							return new FieldAddress("More", "Home Country").ToString();
+						case "Home Postal Code":
+							return new FieldAddress("More", "Home Zip").ToString();
+						case "Home Phone":
+							return new FieldAddress("More", "Home Phone").ToString();
+						case "Mobile Phone":
+							return new FieldAddress("More", "Cellphone").ToString();
+						case "Business Fax":
+							return new FieldAddress("More", "FAX").ToString();
+						default:
+							return null;
+					}
+				};
+			}
+			else if (message.Settings.ParticipantType == ParticipantType.CompanyTypeName)
+			{
+				processor = cellValue =>
+				{
+					switch (cellValue)
+					{
+						case "Company":
+							return new FieldAddress("Summary", "Company").ToString();
+						case "Web Page":
+							return new FieldAddress("Summary", "Site").ToString();
+						case "E-mail Address":
+							return new FieldAddress("Summary", "Email").ToString();
+						case "Business Street":
+							return new FieldAddress("Summary", "Address").ToString();
+
+						case "Business City":
+							return new FieldAddress("More", "City").ToString();
+						case "Business State":
+							return new FieldAddress("More", "State").ToString();
+						case "Business CountryRegion":
+							return new FieldAddress("More", "Country").ToString();
+						case "Business Postal Code":
+							return new FieldAddress("More", "Zip").ToString();
+						case "Business Phone":
+							return new FieldAddress("More", "Phone").ToString();
+						case "Mobile Phone":
+							return new FieldAddress("More", "Cellphone").ToString();
+						case "Business Fax":
+							return new FieldAddress("More", "FAX").ToString();
+						default:
+							return null;
+					}
+				};
+			}
+
+			ProcessHeader(message, processor);
+			return message;
+		};
+
 	}
 }

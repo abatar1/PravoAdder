@@ -29,7 +29,7 @@ namespace PravoAdder.Readers
 		        var value = valuePair.Value.Value?.Trim();
 		        if (fieldName == "Case name")
 		        {
-			        var projectFolders = ProjectFolderRepository.GetMany<ProjectFoldersApi>(HttpAuthenticator);
+			        var projectFolders = ProjectFolderRepository.GetMany(HttpAuthenticator);
 		            foreach (var folder in projectFolders)
 		            {
 		                if (!_projects.ContainsKey(folder.Name))
@@ -81,13 +81,13 @@ namespace PravoAdder.Readers
 		        }               
                 else if (fieldName == "Responsible")
 		        {
-			        task.ResponseUser = ResponsibleRepository.Get<ResponsiblesApi>(HttpAuthenticator, value);
+			        task.ResponseUser = ResponsibleRepository.Get(HttpAuthenticator, value);
 		        }
 		    }
 			return task;
 		}
 
-		public TaskCreator(HttpAuthenticator httpAuthenticator, ApplicationArguments applicationArguments) : base(httpAuthenticator, applicationArguments)
+		public TaskCreator(HttpAuthenticator httpAuthenticator, Settings settings) : base(httpAuthenticator, settings)
 		{
 			_projects = new Dictionary<string, IEnumerable<Project>>();
 		}

@@ -9,28 +9,28 @@ namespace PravoAdder.Wrappers
 	{
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-		public static Table Create(string filename, ApplicationArguments args, Settings settings)
+		public static Table Create(string filename, Settings settings)
 		{
 			TemplateTableReader tableReader;
-			switch (args.ReaderMode)
+			switch (settings.ReadingMode)
 			{
 				case ReadingMode.Excel:
 					tableReader = new ExcelReader(filename);
-					return tableReader.Read(args, settings);
+					return tableReader.Read(settings);
 				case ReadingMode.XmlMap:
 					tableReader = new XmlMappingReader();
-					return tableReader.Read(args, settings);
+					return tableReader.Read(settings);
 				case ReadingMode.ExcelRule:
 					tableReader = new ExcelRuleReader();
-					return tableReader.Read(args, settings);
+					return tableReader.Read(settings);
 				case ReadingMode.ExcelReference:
 					tableReader = new ExcelReferenceReader();
-					return tableReader.Read(args, settings);
+					return tableReader.Read(settings);
 				case ReadingMode.ExcelSplit:
 					tableReader = new ExcelSplitTables();
-					return tableReader.Read(args, settings);
+					return tableReader.Read(settings);
 				default:
-					var message = $"Типа блоков {args.ReaderMode} не существует.";
+					var message = $"Типа блоков {settings.ReadingMode} не существует.";
 					Logger.Error(message);
 					throw new ArgumentException(message);
 			}

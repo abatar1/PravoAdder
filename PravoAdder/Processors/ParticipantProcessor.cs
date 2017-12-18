@@ -16,7 +16,7 @@ namespace PravoAdder.Processors
 		{
 			if (participant.VisualBlockValueLines == null) participant.VisualBlockValueLines = new List<VisualBlockLine>();
 
-			var blockLines = ParticipantsRepository.Get<ParticipantsApi>(authenticator, participant.Id).VisualBlock.Lines;
+			var blockLines = ParticipantsRepository.Get(authenticator, participant.Id).VisualBlock.Lines;
 
 			var fieldValue = Table.GetValue(header, row, searchKey)?.Trim();
 			if (string.IsNullOrEmpty(fieldValue)) return null;
@@ -48,10 +48,12 @@ namespace PravoAdder.Processors
 
 		public Func<EngineMessage, EngineMessage> Create = message =>
 		{
-			var newParticipant = (Participant) message.GetCreatable();
+			var newParticipant = message.GetCreatable<Participant>();
 			if (newParticipant == null) return null;
 			var existedParticipant =
-				ParticipantsRepository.GetOrCreate<ParticipantsApi>(message.Authenticator, newParticipant.FullName, newParticipant);
+				ParticipantsRepository.GetOrCreate(message.Authenticator, newParticipant.DisplayName, newParticipant);
+			if (existedParticipant!= null && !existedParticipant.IsNew) return null;
+
 			message.Item = existedParticipant;
 			return message;
 		};
@@ -104,7 +106,7 @@ namespace PravoAdder.Processors
 			);
 			if (participant == null) return null;
 
-			var editedParticipant = EditParticipant(participant, message.Authenticator, message.Table.Header, message.Row, message.Args.SearchKey);
+			var editedParticipant = EditParticipant(participant, message.Authenticator, message.Table.Header, message.Row, message.Settings.SearchKey);
 			if (editedParticipant == null) return null;
 
 			var result = ApiRouter.Participants.Create(message.Authenticator, editedParticipant);
@@ -115,10 +117,10 @@ namespace PravoAdder.Processors
 		public Func<EngineMessage, EngineMessage> Edit = message =>
 		{
 			var participantName = Table.GetValue(message.Table.Header, message.Row, "Participant");
-			var detailedParticipant = ParticipantsRepository.GetDetailed<ParticipantsApi>(message.Authenticator, participantName);
+			var detailedParticipant = ParticipantsRepository.GetDetailed(message.Authenticator, participantName);
 			if (detailedParticipant == null) return null;
 
-			var editedParticipant = EditParticipant(detailedParticipant, message.Authenticator, message.Table.Header, message.Row, message.Args.SearchKey);
+			var editedParticipant = EditParticipant(detailedParticipant, message.Authenticator, message.Table.Header, message.Row, message.Settings.SearchKey);
 			if (editedParticipant == null) return null;
 
 			var result = ApiRouter.Participants.Create(message.Authenticator, editedParticipant);

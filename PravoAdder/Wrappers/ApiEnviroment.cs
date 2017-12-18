@@ -54,7 +54,7 @@ namespace PravoAdder.Wrappers
 
 			if (needOverwrite)
 			{
-				var projectGroupResponse = ProjectGroupRepository.Get<ProjectGroupsApi>(_httpAuthenticator, headerInfo.ProjectGroup);
+				var projectGroupResponse = ProjectGroupRepository.Get(_httpAuthenticator, headerInfo.ProjectGroup);
 				if (projectGroupResponse != null) return projectGroupResponse;
 			}
 
@@ -75,19 +75,37 @@ namespace PravoAdder.Wrappers
 	    public static ProjectFolder TryCreateProjectFolder(HttpAuthenticator authenticator, HeaderBlockInfo headerInfo)
 	    {
 		    var folderName = headerInfo.ProjectFolder.SliceSpaceIfMore(MaxWordLength);
-		    return ProjectFolderRepository.GetOrCreate<ProjectFoldersApi>(authenticator,
+		    return ProjectFolderRepository.GetOrCreate(authenticator,
 			    headerInfo.ProjectFolder, new ProjectFolder {Name = folderName});
 	    }
 
-	    public static ProjectType GetProjectType(HttpAuthenticator authenticator, HeaderBlockInfo headerInfo, int count)
+	    public static ProjectType GetProjectType(HttpAuthenticator authenticator, HeaderBlockInfo headerInfo, int count, bool createNewType = false)
 	    {
-		    var projectType = ProjectTypeRepository.Get<ProjectTypesApi>(authenticator, headerInfo.ProjectType);
+		    var projectType = ProjectTypeRepository.Get(authenticator, headerInfo.ProjectType);
+
 		    if (projectType == null)
 		    {
-			    Logger.Error(
-				    $"{DateTime.Now} | {count} | Project type {headerInfo.ProjectType} doesn't exist. Project name: {headerInfo.Name}");
-			    return null;
+				if (!createNewType)
+				{
+					Logger.Error(
+						$"{DateTime.Now} | {count} | Project type {headerInfo.ProjectType} doesn't exist. Project name: {headerInfo.Name}");
+					return null;
+				}
+			    var newType = new ProjectType
+			    {
+				    Name = headerInfo.ProjectType,
+				    Abbreviation = headerInfo.ProjectType.SmartRemove(10)
+			    };
+			    projectType = ProjectTypeRepository.Create(authenticator, newType);
 		    }
+
+		    if (projectType.IsArchive)
+		    {
+				projectType = ProjectTypeRepository.GetDetailed(authenticator, headerInfo.ProjectType);
+			    projectType.IsArchive = false;
+				projectType = ApiRouter.ProjectTypes.Update(authenticator, projectType);
+		    }
+
 		    return projectType;
 	    }
 
@@ -96,7 +114,7 @@ namespace PravoAdder.Wrappers
 			var responsibleName = headerInfo.Responsible?.Replace(".", "");
 		    if (string.IsNullOrEmpty(responsibleName)) responsibleName = "empty_string";
 
-		    var responsible = ResponsibleRepository.Get<ResponsiblesApi>(_httpAuthenticator, responsibleName);
+		    var responsible = ResponsibleRepository.Get(_httpAuthenticator, responsibleName);
 		    if (responsible == null)
 		    {
 			    Logger.Error(
@@ -106,18 +124,14 @@ namespace PravoAdder.Wrappers
 		    return responsible;
 	    }
 
-        public Project AddProject(bool needOverwrite, HeaderBlockInfo headerInfo, string projectGroupId, int count, bool isUpdate)
-        {			
-			if (needOverwrite)
-			{
-				var projectResponse = ProjectRepository.Get<ProjectsApi>(_httpAuthenticator, headerInfo.Name);
-			    if (projectResponse != null) return projectResponse;					       
-            }
-
-	        if (string.IsNullOrEmpty(headerInfo.Name)) headerInfo.Name = "Название проекта по-умолчанию";
+        public Project AddProject(Settings settings, HeaderBlockInfo headerInfo, string projectGroupId, int count)
+        {						
+	        if (string.IsNullOrEmpty(headerInfo.Name)) headerInfo.Name = "Default project name";
 
 	        var projectFolder = TryCreateProjectFolder(_httpAuthenticator, headerInfo);
-	        var projectType = GetProjectType(_httpAuthenticator, headerInfo, count);
+
+	        var projectType = GetProjectType(_httpAuthenticator, headerInfo, count, settings.CreateNewPracticeArea);
+	        if (projectType == null) return null;
 
 	        var responsible = GetResponsible(_httpAuthenticator, headerInfo, count);
 
@@ -126,11 +140,7 @@ namespace PravoAdder.Wrappers
 		        : new ProjectGroup(headerInfo.ProjectGroup, projectGroupId);
 
 			var projectName = headerInfo.Name;
-	        if (projectName.Length > MaxWordLength) projectName = projectName.Remove(MaxWordLength);
-
-	        var newClient = new Participant(headerInfo.Client, ' ', ParticipantType.GetPersonType(_httpAuthenticator));
-	        var client =
-		        ParticipantsRepository.GetOrCreate<ParticipantsApi>(_httpAuthenticator, headerInfo.Client, newClient);
+	        if (projectName.Length > MaxWordLength) projectName = projectName.Remove(MaxWordLength);        
 
 	        var newProject = new Project
 	        {
@@ -141,11 +151,29 @@ namespace PravoAdder.Wrappers
 				ProjectGroup = projectGroup,
 				ProjectFolder = projectFolder,
 				Description = headerInfo.Description,
-				Client = client
 			};
 
-	        var project = ApiRouter.Projects.Create(_httpAuthenticator, newProject);
-			if (project == null) Logger.Error($"{DateTime.Now} | {count} | Failed to add {headerInfo.Name} project");
+	        var project = settings.IsOverwrite
+		        ? ProjectRepository.GetOrCreate(_httpAuthenticator, headerInfo.Name, newProject)
+		        : ProjectRepository.Create(_httpAuthenticator, newProject);
+	        if (project == null)
+	        {
+		        Logger.Error($"{DateTime.Now} | {count} | Failed to add {headerInfo.Name} project");
+		        return null;
+	        }
+
+			if (!string.IsNullOrEmpty(headerInfo.Client))
+	        {
+				var newClient = new Participant(_httpAuthenticator, headerInfo.Client, ' ');
+		        project.Client = ParticipantsRepository.GetOrCreate(_httpAuthenticator, headerInfo.Client, newClient);
+				project = ApiRouter.Projects.Put(_httpAuthenticator, project);
+			}
+
+	        if (headerInfo.IsArchive)
+	        {
+		        ApiRouter.Projects.Archive(_httpAuthenticator, project.Id);
+	        }
+			
 			return project;
 		}
 
@@ -158,7 +186,6 @@ namespace PravoAdder.Wrappers
 		    
 		    foreach (var line in visualBlock.Lines)
 		    {
-			    object value;
 			    var contentFields = new List<VisualBlockField>();
 			    foreach (var fieldInfo in line.Fields)
 			    {
@@ -185,10 +212,10 @@ namespace PravoAdder.Wrappers
 
 				    try
 				    {
-					    value = FieldBuilder.CreateFieldValueFromData(_httpAuthenticator, fieldInfo, fieldData);
-
+					    var value = FieldBuilder.CreateFieldValueFromData(_httpAuthenticator, fieldInfo, fieldData);
 					    var newFieldInfo = fieldInfo.CloneWithValue(value);
-					    contentFields.Add((VisualBlockField)newFieldInfo);
+
+					    contentFields.Add((VisualBlockField) newFieldInfo);
 				    }
 				    catch (Exception e)
 				    {

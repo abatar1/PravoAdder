@@ -35,6 +35,7 @@ namespace PravoAdder
 		public static VirtualCatalogApi VirtualCatalog;
 		public static DocumentFoldersApi DocumentFolders;
 		public static UploadApi Upload;
+		public static BilledTimesApi BilledTimes;
 
 		public static int PageSize = 50;
 
@@ -70,6 +71,7 @@ namespace PravoAdder
 			VirtualCatalog = new VirtualCatalogApi();
 			DocumentFolders = new DocumentFoldersApi();
 			Upload = new UploadApi();
+			BilledTimes = new BilledTimesApi();
 		}
 	}
 }

@@ -2,7 +2,7 @@
 
 namespace PravoAdder.Api.Repositories
 {
-	public class ProjectGroupRepository : TemplateRepository<ProjectGroup>
+	public class ProjectGroupRepository : TemplateRepository<ProjectGroup, ProjectGroupsApi>
 	{
 	}
 }

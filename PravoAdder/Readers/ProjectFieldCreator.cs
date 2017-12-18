@@ -48,7 +48,7 @@ namespace PravoAdder.Readers
 			switch (fieldFormat)
 			{
 				case "Dictionary":
-					var dictionary = DictionaryRepository.GetOrCreate<DictionaryApi>(HttpAuthenticator, format[1], new DictionaryInfo { Name = format[1] });
+					var dictionary = DictionaryRepository.GetOrCreate(HttpAuthenticator, format[1], new DictionaryInfo { Name = format[1] });
 					projectFieldFormat = _formats.First(f => f.Name.Equals(fieldFormat));
 					projectFieldFormat.Dictionary = dictionary;
 					break;
@@ -79,7 +79,7 @@ namespace PravoAdder.Readers
 			return projectField;
 		}
 
-		public ProjectFieldCreator(HttpAuthenticator httpAuthenticator, ApplicationArguments applicationArguments) : base(httpAuthenticator, applicationArguments)
+		public ProjectFieldCreator(HttpAuthenticator httpAuthenticator, Settings settings) : base(httpAuthenticator, settings)
 		{
 		}
 	}

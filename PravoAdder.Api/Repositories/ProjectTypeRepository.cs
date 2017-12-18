@@ -3,13 +3,13 @@ using PravoAdder.Api.Domain;
 
 namespace PravoAdder.Api.Repositories
 {
-	public class ProjectTypeRepository : TemplateRepository<ProjectType>
+	public class ProjectTypeRepository : TemplateRepository<ProjectType, ProjectTypesApi>
 	{
 		public static ProjectType GetDetailedOrPut(HttpAuthenticator authenticator, string typeName, string abbreviation)
 		{
 			if (string.IsNullOrEmpty(typeName) || string.IsNullOrEmpty(abbreviation)) return null;
 
-			var projectType = GetDetailed<ProjectTypesApi>(authenticator, typeName);
+			var projectType = GetDetailed(authenticator, typeName);
 
 			if (projectType == null)
 			{

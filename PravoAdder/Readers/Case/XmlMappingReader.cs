@@ -13,9 +13,9 @@ namespace PravoAdder.Readers
 	{
 		private Dictionary<string, HashSet<XmlAddress>> _matching;
 
-		public override Table Read(ApplicationArguments args, Settings settings)
+		public override Table Read(Settings settings)
 		{
-			var sourceInfo = GetFileInfo(args.SourceName, ".xml");			
+			var sourceInfo = GetFileInfo(settings.SourceName, ".xml");			
 			var mappingInfo = GetFileInfo(settings.XmlMappingPath, ".json");
 			if (sourceInfo == null || mappingInfo == null) throw new FileNotFoundException();
 
@@ -27,7 +27,7 @@ namespace PravoAdder.Readers
 
 			foreach (var p in xdoc.Elements("Cases").Elements().Select((value, count) => new { Value = value, Count = count + 1}))
 			{
-				if (p.Count < args.RowNum) continue;
+				if (p.Count < settings.RowNum) continue;
 				
 				var project = p.Value;		
 				var header = ReadHeaderFromX(project);

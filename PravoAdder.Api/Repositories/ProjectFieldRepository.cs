@@ -2,7 +2,7 @@
 
 namespace PravoAdder.Api.Repositories
 {
-	public class ProjectFieldRepository : TemplateRepository<ProjectField>
+	public class ProjectFieldRepository : TemplateRepository<ProjectField, ProjectFieldsApi>
 	{ 
 	}
 }

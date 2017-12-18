@@ -35,7 +35,7 @@ namespace PravoAdder.Wrappers
 				case "CalculationFormula":
 					return GetCalculationFormulaValueFromData(httpAuthenticator, fieldData, fieldInfo.ProjectField.ProjectFieldFormat.Dictionary.SystemName);
 				case "Dictionary":
-					return GetDictionaryFromData(httpAuthenticator, fieldData, fieldInfo.ProjectField.CalculationFormulas.First().Name);
+					return GetDictionaryFromData(httpAuthenticator, fieldData, fieldInfo.ProjectField.ProjectFieldFormat.Dictionary.SystemName);
 				case "Participant":
 					return GetParticipantFromData(httpAuthenticator, fieldData);
 				default:
@@ -78,9 +78,9 @@ namespace PravoAdder.Wrappers
 
 		private static CalculationFormulaValue GetCalculationFormulaValueFromData(HttpAuthenticator httpAuthenticator, string data, string specialData)
 		{
-			var calculationFormula = CalculationRepository.Get<CalculationFormulasApi>(httpAuthenticator, specialData);
-			
+			var calculationFormula = CalculationRepository.Get(httpAuthenticator, specialData);		
 			if (calculationFormula == null) return null;
+
 			return new CalculationFormulaValue
 			{
 				Result = GetNumberFromData(data),
@@ -90,9 +90,10 @@ namespace PravoAdder.Wrappers
 
 		private static Participant GetParticipantFromData(HttpAuthenticator httpAuthenticator, string participantName)
 		{
-			// TODO доделать создание участника, сейчас передается заглушка new Participant()
-			return ParticipantsRepository.GetOrCreate<ParticipantsApi>(httpAuthenticator, participantName,
-				new Participant());
+			var participant = ParticipantsRepository.Get(httpAuthenticator, participantName) ??
+			                  new Participant(httpAuthenticator, participantName, ' ');
+
+			return ParticipantsRepository.GetOrCreate(httpAuthenticator, participantName, participant);
 		}
 
 		private static DictionaryItem GetDictionaryFromData(HttpAuthenticator httpAuthenticator, string fieldData, string dictionaryName)
@@ -133,11 +134,13 @@ namespace PravoAdder.Wrappers
 					new DictionaryItem {SystemName = dictionaryName, Name = correctItemName});
 				if (dictionaryItem == null) return null;
 
-				Dictionaries[dictionaryName].Add(new DictionaryItem(correctItemName, dictionaryItem.Id));
+				var newItem = new DictionaryItem(correctItemName, dictionaryItem.Id);
+				Dictionaries[dictionaryName].Add(newItem);
+				itemsBag = new ConcurrentBag<DictionaryItem>(Dictionaries[dictionaryName]);
 			}
 
 			return itemsBag
-				.First(d => d.Name == correctItemName);
+				.First(d => InvEqual(d.Name, correctItemName));
 		}
 	}
 }

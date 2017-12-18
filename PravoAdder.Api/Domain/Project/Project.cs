@@ -14,5 +14,6 @@ namespace PravoAdder.Api.Domain
 		public string Description { get; set; }
 		public Participant Client { get; set; }
 		public string DocumentFolderId { get; set; }
+		public int? Number { get; set; }
 	}
 }
