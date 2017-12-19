@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
-using PravoAdder.Api;
 using PravoAdder.Api.Domain;
 using PravoAdder.Api.Repositories;
 using PravoAdder.Domain;
@@ -258,14 +258,23 @@ namespace PravoAdder.Processors
 			var expense = new Expense
 			{
 				Amount = double.Parse(message.GetValueFromRow("Amount")),
-				Date = DateTime.Parse(message.GetValueFromRow("Date")),
 				Name = name,
 				Project = project,
 				Files = new List<string>(),
 				Description = message.GetValueFromRow("Description")
 			};
 
-			message.Item = ApiRouter.Expenses.Create(message.Authenticator, expense);
+			try
+			{
+				var dateTimeValue = message.GetValueFromRow("Date");
+				expense.Date = DateTime.Parse(dateTimeValue);
+			}
+			catch (Exception)
+			{
+				expense.Date = DateTime.Today;
+			}
+
+			ApiRouter.Expenses.Create(message.Authenticator, expense);
 
 			return message;
 		};

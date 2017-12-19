@@ -53,7 +53,7 @@ namespace PravoAdder.Api.Domain
 				{
 					return Organization;
 				}			
-				return string.Empty;
+				return Name;
 			}
 		}		
 

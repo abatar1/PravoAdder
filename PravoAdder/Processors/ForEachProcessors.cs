@@ -34,6 +34,7 @@ namespace PravoAdder.Processors
 					var itemizedMessage = messageProcessor(childConveyer.Message, item);
 					itemizedMessage.Count = (int) index;
 					itemizedMessage.Total = items.Count;
+					itemizedMessage.IsContinue = false;
 
 					var newMessage = childConveyer.Processor.Invoke(itemizedMessage);
 

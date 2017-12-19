@@ -71,8 +71,14 @@ namespace PravoAdder.Processors
 			var projects = ProjectRepository.GetManyDetailed(message.Authenticator).ToList();
 			var clientName = message.GetValueFromRow("Client");
 
-			var project = projects.FirstOrDefault(x => x.Value.Name.Contains(clientName)) ?? projects
-				              .Where(x => x.Value.Client != null).FirstOrDefault(x => x.Value.Client.DisplayName == clientName);
+			var project = projects.FirstOrDefault(x => x.Value.Name.Contains(clientName));
+			if (project == null)
+			{
+				project = projects
+					.Where(x => x.Value.Client != null)
+					.FirstOrDefault(x => x.Value.Client.Name == clientName);
+			}
+				
 			if (project != null)
 			{
 				message.Item = project.Value;

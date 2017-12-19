@@ -1,6 +1,6 @@
 ﻿using System.Net.Http;
-using PravoAdder.Api.Domain;
 using PravoAdder.Api.Helpers;
+using Task = PravoAdder.Api.Domain.Task;
 
 namespace PravoAdder.Api
 {
