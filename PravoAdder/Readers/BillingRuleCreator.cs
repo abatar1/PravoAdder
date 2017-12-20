@@ -11,19 +11,19 @@ namespace PravoAdder.Readers
 	{
 		private List<DictionaryItem> _calculationTypes;
 
-		public override ICreatable Create(Row header, Row row, DatabaseEntityItem item = null)
+		public override ICreatable Create(Table table, Row row, DatabaseEntityItem item = null)
 		{
-			var eventTypeName = Table.GetValue(header, row, "Activity Type");
+			var eventTypeName = table.GetValue(row, "Activity Type");
 			var eventType = EventTypeRepository.GetOrPut(HttpAuthenticator, eventTypeName);
 
-			var rateFieldValue = Table.GetValue(header, row, "Rate");
+			var rateFieldValue = table.GetValue(row, "Rate");
 			if (string.IsNullOrEmpty(rateFieldValue)) return null;
 			var rate = double.Parse(rateFieldValue);
 
 			var projectTypes = new List<ProjectType>();
 			if (item == null)
 			{
-				var projectTypeName = Table.GetValue(header, row, "Practice Area");
+				var projectTypeName = table.GetValue(row, "Practice Area");
 				if (string.IsNullOrEmpty(projectTypeName))
 				{
 					projectTypes.AddRange(ProjectTypeRepository.GetMany(HttpAuthenticator));

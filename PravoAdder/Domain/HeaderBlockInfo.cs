@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
+using PravoAdder.Helpers;
 
 namespace PravoAdder.Domain
 {
@@ -35,6 +36,9 @@ namespace PravoAdder.Domain
 		[FieldName("Файлы", "Files")]
 		public string FilesPath { get; set; }
 
+		[FieldName("Номер", "Number")]
+		public string Number { get; set; }
+
 		[JsonIgnore]
 		public static Dictionary<string, int> Languages = new Dictionary<string, int> {["RU"] = 0, ["ENG"] = 1};
 
@@ -43,8 +47,8 @@ namespace PravoAdder.Domain
 
 		public HeaderBlockInfo Format()
 		{
-			if (Name.Length > 350) Name = Name.Remove(350);
-			if (ProjectFolder.Length > 100) ProjectFolder = ProjectFolder.Remove(100);
+			if (Name.Length > 350) Name = Name.SliceSpaceIfMore(350);
+			if (ProjectFolder.Length > 100) ProjectFolder = ProjectFolder.SliceSpaceIfMore(100);
 			return this;
 		}
 	}

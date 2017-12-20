@@ -6,6 +6,7 @@ using System.Linq;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using PravoAdder.Api.Domain;
+using PravoAdder.Api.Repositories;
 using PravoAdder.Domain;
 using PravoAdder.Helpers;
 
@@ -87,6 +88,31 @@ namespace PravoAdder.Processors
 				xlPackage.Save();
 			}			
 		}
+
+		public Func<EngineMessage, EngineMessage> CheckPracticeAreas = message =>
+		{
+			using (var xlPackage = new ExcelPackage(new FileInfo(message.Settings.SourceName + ".xlsx")))
+			{
+				var worksheet = xlPackage.Workbook.Worksheets.First();
+				var totalRows = worksheet.Dimension.End.Row;
+
+				var columnIndex = message.Table.GetIndexes(new FieldAddress("Summary", "Practice Area")).First();
+
+				for (var rowNum = message.Settings.DataRowPosition; rowNum <= totalRows; rowNum++)
+				{
+					var cellValue = worksheet.Cells[rowNum, columnIndex].Text;
+
+					if (ProjectTypeRepository.Get(message.Authenticator, cellValue) != null) continue;
+
+					worksheet.Cells[rowNum, columnIndex].Style.Fill.PatternType = ExcelFillStyle.Solid;
+					worksheet.Cells[rowNum, columnIndex].Style.Fill.BackgroundColor.SetColor(ColorTranslator.FromHtml("#ffc7ce"));
+					worksheet.Cells[rowNum, columnIndex].Style.Font.Color.SetColor(ColorTranslator.FromHtml("#be0006"));
+				}
+				xlPackage.Save();
+			}
+
+			return message;
+		};
 
 		public Func<EngineMessage, EngineMessage> Expenses = message =>
 		{

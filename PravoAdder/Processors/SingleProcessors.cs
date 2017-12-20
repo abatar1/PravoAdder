@@ -247,7 +247,7 @@ namespace PravoAdder.Processors
 			}
 			else
 			{
-				var projectName = Table.GetValue(message.Table.Header, message.Row, "Case Name");
+				var projectName = message.GetValueFromRow("Case Name");
 				project = ProjectRepository.Get(message.Authenticator, projectName);
 				if (project == null) return null;
 			}		

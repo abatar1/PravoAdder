@@ -46,7 +46,8 @@ namespace PravoAdder.Domain
 		public static ProcessType VisualBlockLineAdd { get; } = new ProcessType("VisualBlockLineAdd", true);
 		public static ProcessType DictionaryCreate { get; } = new ProcessType("DictionaryCreate", true);		
 		public static ProcessType NoteCreate { get; } = new ProcessType("NoteCreate", false);
-		public static ProcessType BillCreate { get; } = new ProcessType("BillCreate", false);			
+		public static ProcessType BillCreate { get; } = new ProcessType("BillCreate", false);
+		public static ProcessType PracticeAreaCheck { get; } = new ProcessType("PracticeAreaCheck", true);
 
 		public static readonly IEnumerable<PropertyInfo> Properties;
 

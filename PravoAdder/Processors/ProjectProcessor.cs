@@ -40,11 +40,11 @@ namespace PravoAdder.Processors
 
 		public Func<EngineMessage, EngineMessage> Rename = message =>
 		{
-			var projectName = Table.GetValue(message.Table.Header, message.Row, "Case name");
+			var projectName = message.GetValueFromRow("Case name");
 			var project = ProjectRepository.Get(message.Authenticator, projectName);
 			if (project == null) return null;
 
-			project.Name = Table.GetValue(message.Table.Header, message.Row, "New case name");
+			project.Name = message.GetValueFromRow("New case name");
 			message.Item = ApiRouter.Projects.Put(message.Authenticator, project);
 			return message;
 		};

@@ -23,9 +23,11 @@ namespace PravoAdder.Domain
 
 		[Required]
 		[DefaultValue(1)]
-		public int ParallelOptions { get; set; }
+		public int ParallelOptions { get; set; }		
 
-		public ReadingMode ReadingMode { get; set; }
+		public DataReadingMode DataReadingMode { get; set; }
+
+		public FieldReadingMode FieldReadingMode { get; set; }
 
 		[DefaultValue(2)]
 		public int DataRowPosition { get; set; }

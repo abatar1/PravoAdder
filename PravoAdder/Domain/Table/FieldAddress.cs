@@ -8,50 +8,81 @@ namespace PravoAdder.Domain
 {
     public class FieldAddress : IEquatable<FieldAddress>
     {
-		public FieldAddress(string address)
-		{ 			
+		public FieldAddress(string address, FieldReadingMode readingMode)
+		{
+			FieldReadingMode = readingMode;
+			switch (readingMode)
+			{
+				case FieldReadingMode.Param:
+					ReadAsParam(address);
+					break;
+				case FieldReadingMode.Slash:
+					ReadAsSlash(address);
+					break;
+			}
+		}
+
+	    private void ReadAsSlash(string address)
+	    {
+		    var parsedAddress = address
+				.Split('/')
+				.Select(x => x.Trim())
+				.ToArray();
+		    if (parsedAddress.Length == 1)
+		    {
+			    Value = parsedAddress[0];
+		    }
+		    else
+		    {
+				BlockName = parsedAddress[0];
+			    FieldName = parsedAddress[1];
+			}	    
+	    }
+
+	    private void ReadAsParam(string address)
+	    {
 			var parser = new FluentCommandLineParser();
 
-			parser.Setup<string>('b')
-				.Callback(blockName => BlockName = blockName)
-				.Required();
-			parser.Setup<string>('f')
-				.Callback(fieldName => FieldName = fieldName)
-				.Required();
-			parser.Setup<int>('r')
-				.Callback(repeatFieldnumber =>
-				{
-					RepeatFieldNumber = repeatFieldnumber;
-				})
-				.SetDefault(-1);
-			parser.Setup<int>('m')
-				.Callback(repeatBlockNumber =>
-				{
-					if (repeatBlockNumber != 0) IsRepeatBlock = true;
-					RepeatBlockNumber = repeatBlockNumber;
-				})
-				.SetDefault(0);
-			parser.Setup<string>('s')
-				.Callback(referenceAddress =>
-				{
-					if (!string.IsNullOrEmpty(referenceAddress)) IsReference = true;
-					Reference = referenceAddress;
-				})
-				.SetDefault(string.Empty);
-			parser.Setup<string>('k')
-				.Callback(key =>
-				{
-					if (!string.IsNullOrEmpty(key)) IsKey = true;
-				})
-				.SetDefault(string.Empty);
+		    parser.Setup<string>('b')
+			    .Callback(blockName => BlockName = blockName)
+			    .Required();
+		    parser.Setup<string>('f')
+			    .Callback(fieldName => FieldName = fieldName)
+			    .Required();
+		    parser.Setup<int>('r')
+			    .Callback(repeatFieldnumber =>
+			    {
+				    RepeatFieldNumber = repeatFieldnumber;
+			    })
+			    .SetDefault(-1);
+		    parser.Setup<int>('m')
+			    .Callback(repeatBlockNumber =>
+			    {
+				    if (repeatBlockNumber != 0) IsRepeatBlock = true;
+				    RepeatBlockNumber = repeatBlockNumber;
+			    })
+			    .SetDefault(0);
+		    parser.Setup<string>('s')
+			    .Callback(referenceAddress =>
+			    {
+				    if (!string.IsNullOrEmpty(referenceAddress)) IsReference = true;
+				    Reference = referenceAddress;
+			    })
+			    .SetDefault(string.Empty);
+		    parser.Setup<string>('k')
+			    .Callback(key =>
+			    {
+				    if (!string.IsNullOrEmpty(key)) IsKey = true;
+			    })
+			    .SetDefault(string.Empty);
 
-			var formatAddress = address.Replace('=', ' ').Replace('\"', ' ').Trim();
-			var result = parser.Parse(formatAddress.GetCommandsFromString());
-			if (result.HasErrors)
-			{
-				Value = address;
-			}
-		}		
+		    var formatAddress = address.Replace('=', ' ').Replace('\"', ' ').Trim();
+		    var result = parser.Parse(formatAddress.GetCommandsFromString());
+		    if (result.HasErrors)
+		    {
+			    Value = address;
+		    }
+		}
 
 		public FieldAddress(string blockName, string fieldName, bool repeatBlock = false, int repeatBlockNumber = 0)
 		{
@@ -64,6 +95,8 @@ namespace PravoAdder.Domain
 	    public FieldAddress()
 	    {
 	    }
+
+		private FieldReadingMode FieldReadingMode { get; }
 
 		public string BlockName { get; private set; }
 
@@ -80,14 +113,27 @@ namespace PravoAdder.Domain
 		{
 			get
 			{
+				if (!string.IsNullOrEmpty(_fullName)) return _fullName;
 				var fullName = new StringBuilder();
-				fullName.Append(Value);
-				if (!IsValue)
+				switch (FieldReadingMode)
 				{
-					fullName.Append($"-b {BlockName} -f {FieldName}");
-					if (IsRepeatField) fullName.Append($" -r {RepeatFieldNumber}");
-					if (IsRepeatBlock) fullName.Append($" -m {RepeatBlockNumber}");
-					if (IsReference) fullName.Append($" -s {Reference}");
+					case FieldReadingMode.Param:
+						fullName.Append(Value);
+						if (!IsValue)
+						{
+							fullName.Append($"-b {BlockName} -f {FieldName}");
+							if (IsRepeatField) fullName.Append($" -r {RepeatFieldNumber}");
+							if (IsRepeatBlock) fullName.Append($" -m {RepeatBlockNumber}");
+							if (IsReference) fullName.Append($" -s {Reference}");
+						}
+						break;
+					case FieldReadingMode.Slash:
+						fullName.Append(Value);
+						if (!IsValue)
+						{
+							fullName.Append($"{BlockName} / {FieldName}");
+						}
+						break;
 				}
 				_fullName = fullName.ToString();
 				return _fullName;

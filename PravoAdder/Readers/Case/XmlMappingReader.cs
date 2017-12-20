@@ -33,34 +33,36 @@ namespace PravoAdder.Readers
 				var header = ReadHeaderFromX(project);
 				if (header == null) continue;
 
+				var readingMode = settings.FieldReadingMode;
+
 				var row = new Dictionary<int, FieldAddress>();
-				row.AddRange(AdaptHeader(header));
+				row.AddRange(AdaptHeader(header, readingMode));		
 
 				var attributes = project.Elements("Attributes")
 					.Elements()
 					.Skip(1)
 					.Elements();
-				row.AddRange(AdaptXElement(attributes));
+				row.AddRange(AdaptXElement(attributes, readingMode));
 
 				var instances = project.Elements("Instances")
 					.Elements()
 					.Elements();
-				row.AddRange(AdaptXElement(instances));
+				row.AddRange(AdaptXElement(instances, readingMode));
 
 				var activities = project.Elements("Activities")
 					.Elements()
 					.Elements();
-				row.AddRange(AdaptXElement(activities));
+				row.AddRange(AdaptXElement(activities, readingMode));
 
 				var recoveries = project.Elements("Recoveries")
 					.Elements()
 					.Elements();
-				row.AddRange(AdaptXElement(recoveries));
+				row.AddRange(AdaptXElement(recoveries, readingMode));
 
 				var payments = project.Elements("Payments")
 					.Elements()
 					.Elements();
-				row.AddRange(AdaptXElement(payments));
+				row.AddRange(AdaptXElement(payments, readingMode));
 
 				table.Add(row);
 			}
@@ -72,7 +74,7 @@ namespace PravoAdder.Readers
 			return new Table(table.Select(row => new Row(row)), new Row(infos));
 		}
 
-		private Dictionary<int, FieldAddress> AdaptXElement(IEnumerable<XElement> xElements)
+		private Dictionary<int, FieldAddress> AdaptXElement(IEnumerable<XElement> xElements, FieldReadingMode readingMode)
 		{
 			if (xElements == null) return null;
 
@@ -84,7 +86,7 @@ namespace PravoAdder.Readers
 				var xmlTag = xElement.Elements("Tag").First().Value;
 				if (!_matching.ContainsKey(xmlTag)) continue;
 
-				var value = new FieldAddress(xElement.Elements("Value").First().Value);
+				var value = new FieldAddress(xElement.Elements("Value").First().Value, readingMode);
 				foreach (var xmlAddress in _matching[xmlTag].Where(x => x.RepeatBlockNumber <= 1))
 				{				
 					if (row.ContainsKey(xmlAddress.Count))
@@ -144,7 +146,7 @@ namespace PravoAdder.Readers
 			return matching;
 		}
 
-		private Dictionary<int, FieldAddress> AdaptHeader(HeaderBlockInfo headerInfo)
+		private Dictionary<int, FieldAddress> AdaptHeader(HeaderBlockInfo headerInfo, FieldReadingMode readingMode)
 		{
 			var row = new Dictionary<int, FieldAddress>();
 			foreach (var property in headerInfo.GetType().GetProperties())
@@ -155,7 +157,7 @@ namespace PravoAdder.Readers
 				var key = $"Sys_{property.Name}";
 				_matching[key].ForEach(address =>
 				{
-					row.Add(address.Count, new FieldAddress(value.ToString()));
+					row.Add(address.Count, new FieldAddress(value.ToString(), readingMode));
 				});			
 			}
 			return row;

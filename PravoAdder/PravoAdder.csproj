@@ -97,10 +97,11 @@
     <Compile Include="Domain\Conveyor\RemoteFilesProcessModel.cs" />
     <Compile Include="Domain\Instance.cs" />
     <Compile Include="Domain\InstanceEnviroment.cs" />
-    <Compile Include="Domain\Table\ReadingMode.cs" />
+    <Compile Include="Domain\Table\DataReadingMode.cs" />
     <Compile Include="Domain\HeaderBlockInfo.cs" />
     <Compile Include="Domain\Conveyor\ProcessType.cs" />
     <Compile Include="Domain\Conveyor\ProcessTypes.cs" />
+    <Compile Include="Domain\Table\FieldReadingMode.cs" />
     <Compile Include="Domain\Table\Row.cs" />
     <Compile Include="Domain\Table\XmlAddress.cs" />
     <Compile Include="Domain\Conveyor\ConveyorItem.cs" />

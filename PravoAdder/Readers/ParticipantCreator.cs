@@ -20,7 +20,7 @@ namespace PravoAdder.Readers
 			_currentType = settings.ParticipantType;
 		}
 
-		public override ICreatable Create(Row info, Row row, DatabaseEntityItem item = null)
+		public override ICreatable Create(Table table, Row row, DatabaseEntityItem item = null)
 		{
 			var type = ParticipantType.GetType(HttpAuthenticator, _currentType);
 
@@ -36,7 +36,7 @@ namespace PravoAdder.Readers
 
 			foreach (var valuePair in row.Content)
 			{
-				var fieldName = info[valuePair.Key].FieldName;
+				var fieldName = table.Header[valuePair.Key].FieldName;
 				var value = valuePair.Value.Value?.Trim();			
 
 				var contactProperty = contactProperties.FirstOrDefault(p => p.Name == fieldName);

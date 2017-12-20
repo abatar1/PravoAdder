@@ -15,6 +15,6 @@ namespace PravoAdder.Readers
 		protected HttpAuthenticator HttpAuthenticator { get; }
 		protected Settings Settings { get; }
 
-		public abstract ICreatable Create(Row header, Row row, DatabaseEntityItem item = null);
+		public abstract ICreatable Create(Table table, Row row, DatabaseEntityItem item = null);
 	}
 }

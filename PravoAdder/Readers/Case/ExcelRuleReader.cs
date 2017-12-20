@@ -33,7 +33,7 @@ namespace PravoAdder.Readers
 						{
 							if (cell.Value.Value == null || cell.Value.Value == "Общее")
 							{
-								return new KeyValuePair<int, FieldAddress>(cell.Key, new FieldAddress("Неназначенный Ответственный"));
+								return new KeyValuePair<int, FieldAddress>(cell.Key, new FieldAddress("Неназначенный Ответственный", settings.FieldReadingMode));
 							}
 						}
 						return cell;
@@ -42,7 +42,7 @@ namespace PravoAdder.Readers
 					{
 						var isDate = DateTime.TryParseExact(value.Value.Value, "dd.MM.yyyy h:mm:ss", System.Globalization.CultureInfo.InvariantCulture,
 							System.Globalization.DateTimeStyles.None, out var dateTime);
-						return new FieldAddress(FormatCell(isDate ? dateTime : (object) value.Value));
+						return new FieldAddress(FormatCell(isDate ? dateTime : (object) value.Value), settings.FieldReadingMode);
 					}))
 				.Select(row => new Row(row))
 				.ToList();

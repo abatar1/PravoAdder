@@ -81,6 +81,11 @@ namespace PravoAdder.Wrappers
 
 	    public static ProjectType GetProjectType(HttpAuthenticator authenticator, HeaderBlockInfo headerInfo, int count, bool createNewType = false)
 	    {
+		    if (string.IsNullOrEmpty(headerInfo.ProjectType))
+		    {
+			    return null;
+		    }
+
 		    var projectType = ProjectTypeRepository.Get(authenticator, headerInfo.ProjectType);
 
 		    if (projectType == null)

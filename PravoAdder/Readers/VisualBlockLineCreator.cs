@@ -18,14 +18,14 @@ namespace PravoAdder.Readers
 		public VisualBlockModel VisualBlock { get; set; }
 		public VisualBlockLineModel ConstructedLineModel { get; set; }
 
-		public override ICreatable Create(Row header, Row row, DatabaseEntityItem item = null)
+		public override ICreatable Create(Table table, Row row, DatabaseEntityItem item = null)
 		{
-			var visualBlockName = Table.GetValue(header, row, "Data Block");
+			var visualBlockName = table.GetValue(row, "Data Block");
 
 			string repeatingFieldValue;
 			try
 			{
-				repeatingFieldValue = Table.GetValue(header, row, "Repeating Block");
+				repeatingFieldValue = table.GetValue(row, "Repeating Block");
 			}
 			catch (Exception)
 			{
@@ -41,7 +41,7 @@ namespace PravoAdder.Readers
 			};
 			VisualBlock = VisualBlockRepository.GetOrCreate(HttpAuthenticator, visualBlockName, puttingVisualBlock);
 
-			var newField = GetVisualBlockField(HttpAuthenticator, header, row);
+			var newField = GetVisualBlockField(HttpAuthenticator, table, row);
 			if (newField == null) return null;
 
 			VisualBlockLineModel lineModel;
@@ -53,7 +53,7 @@ namespace PravoAdder.Readers
 			else
 			{
 				var rowNamingRule = new Regex("[^a-яA-Яa-zA-Z ]");
-				var rowType = rowNamingRule.Replace(Table.GetValue(header, row, "Row"), "").Trim();
+				var rowType = rowNamingRule.Replace(table.GetValue(row, "Row"), "").Trim();
 				var lineType = _lineTypes.First(t => t.Name.Equals(rowType, StringComparison.InvariantCultureIgnoreCase));
 				lineModel = new VisualBlockLineModel
 				{
@@ -70,9 +70,9 @@ namespace PravoAdder.Readers
 		private static List<ProjectFieldFormat> _formats;
 		private static List<LineType> _lineTypes;
 
-		private static VisualBlockFieldModel GetVisualBlockField(HttpAuthenticator autenticator, Row header, Row row)
+		private static VisualBlockFieldModel GetVisualBlockField(HttpAuthenticator autenticator, Table table, Row row)
 		{
-			var fieldName = Table.GetValue(header, row, "Field Name")?.SliceSpaceIfMore(256);
+			var fieldName = table.GetValue(row, "Field Name")?.SliceSpaceIfMore(256);
 			if (string.IsNullOrEmpty(fieldName)) return null;
 			
 			var newProjectField = new ProjectField
@@ -85,9 +85,9 @@ namespace PravoAdder.Readers
 			
 			return new VisualBlockFieldModel
 			{
-				IsRequired = bool.Parse(Table.GetValue(header, row, "Required")),
-				Tag = Table.GetValue(header, row, "Tag").ToTag(),
-				Width = int.Parse(Table.GetValue(header, row, "Width")),
+				IsRequired = bool.Parse(table.GetValue(row, "Required")),
+				Tag = table.GetValue(row, "Tag").ToTag(),
+				Width = int.Parse(table.GetValue(row, "Width")),
 				ProjectField = projectField
 			};
 		}

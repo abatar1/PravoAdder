@@ -22,20 +22,30 @@ namespace PravoAdder.Domain
 
 	    public long Size => TableContent.Count;
 
-	    public static string GetValue(Row header, Row tableRow, string name)
+	    public string GetValue(Row tableRow, string fieldName)
 	    {
-			var index = header.Content.FirstOrDefault(h => h.Value.FieldName == name).Key;
+			var index = Header.Content.FirstOrDefault(h => h.Value.FieldName == fieldName).Key;
 		    return tableRow[index].Value?.Trim();
 		}
 
-	    public static string GetValue(Row header, Row tableRow, FieldAddress fieldAddress)
+	    public bool TryGetValue(Row tableRow, string fieldName, out string value)
+	    {
+		    var index = Header.Content.FirstOrDefault(h => h.Value.FieldName == fieldName).Key;
+		    if (tableRow.ContainsKey(index))
+		    {
+			    value = tableRow[index].Value?.Trim();
+			    return true;
+		    }
+		    value = string.Empty;
+		    return false;
+	    }
+
+		public static string GetValue(Row header, Row tableRow, FieldAddress fieldAddress)
 	    {
 		    var index = header.Content.First(h => h.Value.FieldName == fieldAddress.FieldName &&
 		                                                   h.Value.BlockName == fieldAddress.BlockName).Key;
 		    return tableRow[index].Value?.Trim();
-	    }
-
-	   
+	    }   
 
 		public bool IsComplexRepeat(FieldAddress fieldAddress)
         {
@@ -73,7 +83,7 @@ namespace PravoAdder.Domain
 
         public List<int> GetIndexes(FieldAddress fieldAddress, int blockNumber = 0)
         {
-            _infoRowContentSti.TryGetValue(fieldAddress, out List<int> result);
+            _infoRowContentSti.TryGetValue(fieldAddress, out var result);
             if (result == null) return null;
 
 			var resultList = new List<int>();

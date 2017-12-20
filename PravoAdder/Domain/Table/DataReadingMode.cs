@@ -1,6 +1,6 @@
 ﻿namespace PravoAdder.Domain
 {
-	public enum ReadingMode
+	public enum DataReadingMode
 	{
 		All,
 		Excel,

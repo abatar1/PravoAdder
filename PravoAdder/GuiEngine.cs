@@ -116,6 +116,25 @@ namespace PravoAdder
 					};
 				}
 
+				if (property.PropertyType.IsEnum)
+				{
+					Dictionary<string, int> actionsList;
+					if (property.Name == typeof(ProcessType).Name)
+					{
+						actionsList = ProcessTypes.Properties
+							.Select((value, count) => new KeyValuePair<string, int>(value.Name, count))
+							.ToDictionary(x => x.Key, y => y.Value);
+					}
+					else
+					{
+						actionsList = Enum.GetValues(property.PropertyType)
+							.OfType<object>()
+							.ToDictionary(key => Enum.GetName(property.PropertyType, key), value => (int)value);
+					}					
+
+					control = CreateComboBox(columnCount, topPosition, actionsList, property.Name);
+				}
+
 				if (property.Name == "Name")
 				{
 					var actionsList = _instanceEnviroment.Instances
@@ -130,24 +149,6 @@ namespace PravoAdder
 						SetGui(new Settings(instanceName));
 					};
 					control = comboBox;
-				}
-
-				if (property.Name == typeof(ReadingMode).Name)
-				{
-					var actionsList = Enum.GetValues(property.PropertyType)
-						.OfType<object>()
-						.ToDictionary(key => Enum.GetName(property.PropertyType, key), value => (int) value);
-
-					control = CreateComboBox(columnCount, topPosition, actionsList, property.Name);
-				}
-
-				if (property.Name == typeof(ProcessType).Name)
-				{
-					var actionsList = ProcessTypes.Properties
-						.Select((value, count) => new KeyValuePair<string, int>(value.Name, count))
-						.ToDictionary(x => x.Key, y => y.Value);
-
-					control = CreateComboBox(columnCount, topPosition, actionsList, property.Name);
 				}
 
 				var labelText = property.Name;

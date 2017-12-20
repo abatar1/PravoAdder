@@ -10,9 +10,9 @@ namespace PravoAdder.Readers
 {
 	public class EventCreator : Creator
 	{
-		public override ICreatable Create(Row header, Row row, DatabaseEntityItem item = null)
+		public override ICreatable Create(Table table, Row row, DatabaseEntityItem item = null)
 		{
-			var projectName = Table.GetValue(header, row, "Case Name");
+			var projectName = table.GetValue(row, "Case Name");
 			var project = ProjectRepository.GetDetailed(HttpAuthenticator, projectName);			
 			if (project == null) return null;			
 
@@ -20,25 +20,20 @@ namespace PravoAdder.Readers
 
 			var newEvent = new Event
 			{
-				Name = Table.GetValue(header, row, "Event Name").SliceSpaceIfMore(100),
-				Description = Table.GetValue(header, row, "Event Description").SliceSpaceIfMore(100),
+				Name = table.GetValue(row, "Event Name").SliceSpaceIfMore(100),
+				Description = table.GetValue(row, "Event Description").SliceSpaceIfMore(100),
 				Project = project,
 				AllDay = false,
 				Calendar = calendar,
 				TimeLogs = new List<string> { item?.Id }
 			};
 
-			try
+			if (table.TryGetValue(row, "Event Type", out var value))
 			{
-				var eventTypeName = Table.GetValue(header, row, "Event Type");
-				newEvent.EventType = EventTypeRepository.GetOrPut(HttpAuthenticator, eventTypeName);
-			}
-			catch (Exception)
-			{
-				// ignored
+				newEvent.EventType = EventTypeRepository.GetOrPut(HttpAuthenticator, value);
 			}
 
-			var endDateValue = Table.GetValue(header, row, "Log Date");
+			var endDateValue = table.GetValue(row, "Log Date");
 			if (endDateValue == null)
 			{
 				newEvent.EndDate = DateTime.Today;
@@ -47,7 +42,7 @@ namespace PravoAdder.Readers
 			else
 			{
 				newEvent.EndDate = DateTime.Parse(endDateValue);
-				var logTimer = int.Parse(Table.GetValue(header, row, "Timer"));
+				var logTimer = int.Parse(table.GetValue(row, "Timer"));
 				newEvent.StartDate = newEvent.EndDate.Subtract(new TimeSpan(0, logTimer, 0));
 			}
 

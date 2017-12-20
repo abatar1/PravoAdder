@@ -49,12 +49,17 @@ namespace PravoAdder.Domain
 
 		public TType GetCreatable<TType>(DatabaseEntityItem item = null) where TType : ICreatable
 		{
-			return (TType) Creators[typeof(TType).Name + "Creator"].Create(Table.Header, Row, item);
+			return (TType) Creators[typeof(TType).Name + "Creator"].Create(Table, Row, item);
 		}
 
 		public string GetValueFromRow(string name)
 		{
-			return Table.GetValue(Table.Header, Row, name);
+			return Table.GetValue(Row, name);
+		}
+
+		public bool TryGetValueFromRow(string name, out string value)
+		{
+			return Table.TryGetValue(Row, name, out value);
 		}
 
 		#region IDisposable Support

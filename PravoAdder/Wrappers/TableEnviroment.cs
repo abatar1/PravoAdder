@@ -12,25 +12,25 @@ namespace PravoAdder.Wrappers
 		public static Table Create(string filename, Settings settings)
 		{
 			TemplateTableReader tableReader;
-			switch (settings.ReadingMode)
+			switch (settings.DataReadingMode)
 			{
-				case ReadingMode.Excel:
+				case DataReadingMode.Excel:
 					tableReader = new ExcelReader(filename);
 					return tableReader.Read(settings);
-				case ReadingMode.XmlMap:
+				case DataReadingMode.XmlMap:
 					tableReader = new XmlMappingReader();
 					return tableReader.Read(settings);
-				case ReadingMode.ExcelRule:
+				case DataReadingMode.ExcelRule:
 					tableReader = new ExcelRuleReader();
 					return tableReader.Read(settings);
-				case ReadingMode.ExcelReference:
+				case DataReadingMode.ExcelReference:
 					tableReader = new ExcelReferenceReader();
 					return tableReader.Read(settings);
-				case ReadingMode.ExcelSplit:
+				case DataReadingMode.ExcelSplit:
 					tableReader = new ExcelSplitTables();
 					return tableReader.Read(settings);
 				default:
-					var message = $"Типа блоков {settings.ReadingMode} не существует.";
+					var message = $"Типа блоков {settings.DataReadingMode} не существует.";
 					Logger.Error(message);
 					throw new ArgumentException(message);
 			}

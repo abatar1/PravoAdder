@@ -25,16 +25,16 @@ namespace PravoAdder.Readers
 				.First(f => f.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
 		}
 
-		public override ICreatable Create(Row header, Row row, DatabaseEntityItem item = null)
+		public override ICreatable Create(Table table, Row row, DatabaseEntityItem item = null)
 		{
 			var projectField = new ProjectField
 			{
-				Name = Table.GetValue(header, row, "Field Name").SliceSpaceIfMore(256),
-				PlaceholderText = Table.GetValue(header, row, "Placeholder Text").SliceSpaceIfMore(256),
-				Tag = Table.GetValue(header, row, "Tag").ToTag()
+				Name = table.GetValue(row, "Field Name").SliceSpaceIfMore(256),
+				PlaceholderText = table.GetValue(row, "Placeholder Text").SliceSpaceIfMore(256),
+				Tag = table.GetValue(row, "Tag").ToTag()
 			};
 
-			var rawFormat = Table.GetValue(header, row, "Data Format");
+			var rawFormat = table.GetValue(row, "Data Format");
 			if (string.IsNullOrEmpty(rawFormat) || string.IsNullOrEmpty(projectField.Name) || string.IsNullOrEmpty(projectField.PlaceholderText))
 			{
 				return null;

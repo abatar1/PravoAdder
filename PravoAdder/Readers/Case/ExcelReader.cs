@@ -44,7 +44,7 @@ namespace PravoAdder.Readers
                     .Where(c => colorColumnsPositions.Contains(c.Start.Column))
                     .Select(c => FormatCell(c.Value) ?? string.Empty)
                     .Zip(colorColumnsPositions, (value, key) => new {value, key})
-                    .ToDictionary(key => key.key, value => new FieldAddress(value.value));
+                    .ToDictionary(key => key.key, value => new FieldAddress(value.value, settings.FieldReadingMode));
 
                 var table = new List<Dictionary<int, FieldAddress>>();
 	            var startPosition = settings.RowNum != 0 ? settings.RowNum : settings.DataRowPosition;
@@ -59,7 +59,7 @@ namespace PravoAdder.Readers
                     var coloredRow = row
                         .Zip(Enumerable.Range(1, totalColumns), (value, index) => new {value, index})
                         .Where(z => colorColumnsPositions.Contains(z.index))
-                        .ToDictionary(key => key.index, value => new FieldAddress(value.value));
+                        .ToDictionary(key => key.index, value => new FieldAddress(value.value, settings.FieldReadingMode));
                     table.Add(coloredRow);
                 }
                 return new Table(table.Select(row => new Row(row)), new Row(infoRowContent));

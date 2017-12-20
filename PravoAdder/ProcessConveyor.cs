@@ -232,6 +232,10 @@ namespace PravoAdder
 					conveyor.Add(SingleProcessors.Core.ProcessCount, 1);
 					conveyor.Add(ForEachProcessors.Row);
 					break;
+				case "PracticeAreaCheck":
+					conveyor.AddRange(GroupedProcessors.LoadWithTable);
+					conveyor.Add(SingleProcessors.Format.CheckPracticeAreas);
+					break;
 				default:
 					throw new ArgumentException("Неизвестный тип конвеера.");
 			}

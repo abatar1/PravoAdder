@@ -19,13 +19,13 @@ namespace PravoAdder.Readers
 	        return new TaskState(item?.Name, item?.Id, item?.SysName);
         }
 
-		public override ICreatable Create(Row info, Row row, DatabaseEntityItem item = null)
+		public override ICreatable Create(Table table, Row row, DatabaseEntityItem item = null)
 		{
 			var task = new Task {Id = null, TimeLogs = new List<string> {item?.Id}};
 
 		    foreach (var valuePair in row.Content)
 		    {
-		        var fieldName = info[valuePair.Key].FieldName;
+		        var fieldName = table.Header[valuePair.Key].FieldName;
 		        var value = valuePair.Value.Value?.Trim();
 		        if (fieldName == "Case name")
 		        {
