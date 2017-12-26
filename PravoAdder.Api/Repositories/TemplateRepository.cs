@@ -88,7 +88,8 @@ namespace PravoAdder.Api.Repositories
 		public static TEntity Create(HttpAuthenticator authenticator, TEntity puttingObject)
 		{
 			var item = Api.Create(authenticator, puttingObject);
-			Container.AddOrUpdate(item.Name.ToLower(), item, (key, value) => item);
+		    var name = item.Name?.ToLower() ?? item.DisplayName?.ToLower() ?? throw new ArgumentException("Cannot response rule for reading item name.");
+			Container.AddOrUpdate(name, item, (key, value) => item);
 			return item;
 		}
 

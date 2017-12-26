@@ -7,7 +7,8 @@ namespace PravoAdder.Domain
     public class Settings
 	{
 		[Required]
-		public string Name { get; set; }
+		[DefaultValue("template name")]
+        public string Name { get; set; }
 
 		[Required]
 		public string BaseUri { get; set; }

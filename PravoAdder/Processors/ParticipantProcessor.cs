@@ -50,9 +50,8 @@ namespace PravoAdder.Processors
 		{
 			var newParticipant = message.GetCreatable<Participant>();
 			if (newParticipant == null) return null;
-			var existedParticipant =
-				ParticipantsRepository.GetOrCreate(message.Authenticator, newParticipant.DisplayName, newParticipant);
-			if (existedParticipant!= null && !existedParticipant.IsNew) return null;
+            var existedParticipant =
+                ParticipantsRepository.GetOrCreate(message.Authenticator, newParticipant.DisplayName, newParticipant);
 
 			message.Item = existedParticipant;
 			return message;

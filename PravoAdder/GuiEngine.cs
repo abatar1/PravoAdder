@@ -17,7 +17,7 @@ namespace PravoAdder
 		private const int WidthOffset = 20;
 		private const int LineHeight = 25;
 		private const int ColumnWidth = 150;
-		private const int MaxLineCount = 10;
+		private const int MaxLineCount = 12;
 
 		public GuiEngine(string instanceEnviromentPath)
 		{
@@ -38,11 +38,11 @@ namespace PravoAdder
 				if (string.IsNullOrEmpty(control.Name)) continue;
 			
 				var property = properties.First(p => p.Name.Equals(control.Name));
-				var defaultValue = property.GetAttribute<DefaultValueAttribute>();
+				var defaultValue = property.GetAttribute<DefaultValueAttribute>()?.DefaultValue.ToString();
 
 				if (control.GetType() == typeof(TextBox))
 				{
-					control.Text = defaultValue?.DefaultValue.ToString() ?? property.GetValue(settings)?.ToString();
+				    control.Text = defaultValue ?? property.GetValue(settings)?.ToString();
 				}
 
 				if (control.GetType() == typeof(CheckBox))
@@ -61,11 +61,10 @@ namespace PravoAdder
 				if (control.GetType() == typeof(ComboBox))
 				{
 					var comboBox = (ComboBox) control;
-					var value = property.GetValue(settings).ToString();
+					var value = property.GetValue(settings)?.ToString() ?? defaultValue;
 					var index = comboBox.FindStringExact(value);
 					if (index >= 0)
-					{
-						
+					{						
 						comboBox.SelectedIndex = index;
 					}				
 				}
@@ -118,24 +117,21 @@ namespace PravoAdder
 
 				if (property.PropertyType.IsEnum)
 				{
-					Dictionary<string, int> actionsList;
-					if (property.Name == typeof(ProcessType).Name)
-					{
-						actionsList = ProcessTypes.Properties
-							.Select((value, count) => new KeyValuePair<string, int>(value.Name, count))
-							.ToDictionary(x => x.Key, y => y.Value);
-					}
-					else
-					{
-						actionsList = Enum.GetValues(property.PropertyType)
-							.OfType<object>()
-							.ToDictionary(key => Enum.GetName(property.PropertyType, key), value => (int)value);
-					}					
-
-					control = CreateComboBox(columnCount, topPosition, actionsList, property.Name);
+				    var actionsList = Enum.GetValues(property.PropertyType)
+				        .OfType<object>()
+				        .ToDictionary(key => Enum.GetName(property.PropertyType, key), value => (int)value);
+				    control = CreateComboBox(columnCount, topPosition, actionsList, property.Name);
 				}
 
-				if (property.Name == "Name")
+			    if (property.Name == typeof(ProcessType).Name)
+			    {
+			        var actionsList = ProcessTypes.Properties
+			            .Select((value, count) => new KeyValuePair<string, int>(value.Name, count))
+			            .ToDictionary(x => x.Key, y => y.Value);
+			        control = CreateComboBox(columnCount, topPosition, actionsList, property.Name);
+                }
+
+                if (property.Name == "Name")
 				{
 					var actionsList = _instanceEnviroment.Instances
 						.Select((x, count) => (x.Name, count))
@@ -205,7 +201,7 @@ namespace PravoAdder
 
 			_form.Controls.AddRange(controls.ToArray());
 
-			_form.Width = columnCount * ColumnWidth * 2 + WidthOffset * 2;
+			_form.Width = (columnCount + 1) * ColumnWidth * 2 + WidthOffset * 2;
 			_form.Height = inputsHeight + 75;
 			_form.Text = @"Initializer";
 			_form.FormBorderStyle = FormBorderStyle.FixedSingle;
